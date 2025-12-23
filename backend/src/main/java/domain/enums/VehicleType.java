@@ -1,4 +1,4 @@
-package main.java.domain.entities;
+package main.java.domain.enums;
 
 public enum VehicleType {
 	STANDARD,
