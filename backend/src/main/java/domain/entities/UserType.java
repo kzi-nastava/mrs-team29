@@ -1,6 +1,6 @@
 package main.java.domain.entities;
 
-public enum userType {
+public enum UserType {
 	CLIENT,
 	DRIVER,
 	ADMIN

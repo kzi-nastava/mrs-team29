@@ -1,6 +1,6 @@
 package main.java.domain.entities;
 
-public enum vehicleType {
+public enum VehicleType {
 	STANDARD,
 	LUXURY,
 	VAN
