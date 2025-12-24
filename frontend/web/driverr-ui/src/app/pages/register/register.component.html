@@ -1,2 +1,51 @@
-<h2>Register</h2>
+<div class="register-page">
+  <div class="register-card">
+    <h1 class="title">Create account</h1>
+    <p class="subtitle">Sign up to get started</p>
+
+    <form>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First name</label>
+          <input type="text" id="firstName" placeholder="John" />
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last name</label>
+          <input type="text" id="lastName" placeholder="Doe" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="you@example.com" />
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="johndoe" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••" />
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm password</label>
+        <input type="password" id="confirmPassword" placeholder="••••••••" />
+      </div>
+
+      <button type="submit" class="primary-btn">
+        Create account
+      </button>
+    </form>
+
+    <p class="footer-text">
+      Already have an account?
+      <a routerLink="/login">Log in</a>
+    </p>
+  </div>
+</div>
+
 
