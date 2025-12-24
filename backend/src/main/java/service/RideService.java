@@ -1,8 +1,8 @@
-package main.java.service;
+package service;
 
 import java.util.List;
 
-import main.java.domain.entities.Ride;
+import domain.entities.Ride;
 
 public interface RideService {
 	Ride createRide(Ride ride);

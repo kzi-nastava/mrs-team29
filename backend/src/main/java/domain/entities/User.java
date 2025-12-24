@@ -1,7 +1,7 @@
-package main.java.domain.entities;
+package domain.entities;
 
-import main.java.domain.enums.Gender;
-import main.java.domain.enums.UserType;
+import domain.enums.Gender;
+import domain.enums.UserType;
 
 public class User {
 	private String id;

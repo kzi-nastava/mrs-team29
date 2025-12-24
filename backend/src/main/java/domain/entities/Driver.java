@@ -1,6 +1,6 @@
-package main.java.domain.entities;
+package domain.entities;
 
-import main.java.domain.enums.DriverStatus;
+import domain.enums.DriverStatus;
 
 public class Driver {
 	private Vehicle vehicle;

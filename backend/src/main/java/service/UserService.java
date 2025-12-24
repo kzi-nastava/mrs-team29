@@ -1,8 +1,8 @@
-package main.java.service;
+package service;
 
 import java.util.List;
 
-import main.java.domain.entities.User;
+import domain.entities.User;
 
 public interface UserService {
 	public User register(User user);

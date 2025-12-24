@@ -1,7 +1,7 @@
-package main.java.service;
+package service;
 
-import main.java.domain.entities.Driver;
-import main.java.domain.enums.DriverStatus;
+import domain.entities.Driver;
+import domain.enums.DriverStatus;
 
 public interface DriverService {
 	public Driver getAvailableDriver();

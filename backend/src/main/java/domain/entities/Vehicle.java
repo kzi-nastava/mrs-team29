@@ -1,6 +1,6 @@
-package main.java.domain.entities;
+package domain.entities;
 
-import main.java.domain.enums.VehicleType;
+import domain.enums.VehicleType;
 
 public class Vehicle {
 	private String vehicleModel;

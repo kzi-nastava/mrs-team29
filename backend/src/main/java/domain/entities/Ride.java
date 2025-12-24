@@ -1,9 +1,9 @@
-package main.java.domain.entities;
+package domain.entities;
 
 import java.time.LocalDate;
 import java.util.List;
 
-import main.java.domain.enums.RideStatus;
+import domain.enums.RideStatus;
 
 public class Ride {
 	private String id;
