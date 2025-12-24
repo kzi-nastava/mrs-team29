@@ -3,7 +3,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { DriverHistoryComponent } from './pages/driver-history/driver-history.component';
-import { Navbar } from './components/navbar/navbar';
+import { NavbarComponent } from './components/navbar/navbar.component';
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
