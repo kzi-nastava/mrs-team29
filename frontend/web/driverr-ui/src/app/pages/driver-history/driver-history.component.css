@@ -1,0 +1,73 @@
+.history-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.history-card {
+  width: 100%;
+  max-width: 720px;
+  padding: 32px;
+  background: #f9f9f7;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2933;
+}
+
+.subtitle {
+  margin: 6px 0 24px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Table */
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.history-table th {
+  text-align: left;
+  padding: 12px;
+  background: #eef2f1;
+  color: #374151;
+  font-weight: 600;
+}
+
+.history-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+.history-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status badges */
+.status {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status.completed {
+  background: rgba(46, 196, 182, 0.15);
+  color: #2ec4b6;
+}
+
+.status.canceled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}

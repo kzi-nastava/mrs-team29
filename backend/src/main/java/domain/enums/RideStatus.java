@@ -1,0 +1,12 @@
+package domain.enums;
+
+public enum RideStatus {
+	REQUESTED,
+	SCHEDULED,
+	ASSIGNED,
+	ACTIVE,
+	FINISHED,
+	CANCELED_BY_DRIVER,
+	CANCELED_BY_CLIENT,
+	REJECTED
+}
