@@ -2,7 +2,7 @@ package domain.entities;
 
 import domain.enums.DriverStatus;
 
-public class Driver {
+public class Driver extends User{
 	private Vehicle vehicle;
 	private DriverStatus status;
 	
