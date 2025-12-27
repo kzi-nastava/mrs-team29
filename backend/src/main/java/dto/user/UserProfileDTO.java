@@ -5,7 +5,7 @@ import domain.enums.*;
 
 public class UserProfileDTO {
 
-    private Long id;
+    private String id;
     private String firstName;
     private String lastName;
     private Gender gender;
@@ -19,7 +19,7 @@ public class UserProfileDTO {
     public UserProfileDTO() {}
 
     // === GETTERS ===
-    public Long getId() { return id; }
+    public String getId() { return id; }
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
     public Gender getGender() { return gender; }
@@ -31,7 +31,7 @@ public class UserProfileDTO {
     public UserType getUserType() { return userType; }
 
     // === SETTERS ===
-    public void setId(Long id) { this.id = id; }
+    public void setId(String id) { this.id = id; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
     public void setLastName(String lastName) { this.lastName = lastName; }
     public void setGender(Gender gender) { this.gender = gender; }
