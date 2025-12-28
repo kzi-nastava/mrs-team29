@@ -1,9 +1,9 @@
 package service.impl;
 
-import dto.ride.RideOrderDTO;
-import dto.ride.RideResponseDTO;
+import dto.ride.*;
 
 import java.util.List;
+import java.util.UUID;
 
 import domain.entities.Ride;
 import domain.enums.RideStatus;
@@ -21,6 +21,21 @@ public class RideServiceImpl implements RideService {
 
         return response;
     }
+    
+    @Override
+    public RideResponseDTO orderRideFromFavorite(
+            String favoriteRouteId,
+            FavoriteRideOrderDTO dto
+    ) {
+        RideResponseDTO response = new RideResponseDTO();
+
+        response.setRideId(UUID.randomUUID().toString());
+        response.setStatus(RideStatus.REQUESTED);
+        response.setPrice(700.0); // "jeftinije jer je omiljena ruta"
+
+        return response;
+    }
+
 
 	@Override
 	public Ride createRide(Ride ride) {

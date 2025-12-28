@@ -11,4 +11,5 @@ public interface RideService {
 	Ride getRidebyId(String rideId);
 	List<Ride> getActiveRides();
 	RideResponseDTO orderRide(RideOrderDTO dto);
+	RideResponseDTO orderRideFromFavorite(String favoriteRouteId, FavoriteRideOrderDTO dto);
 }
