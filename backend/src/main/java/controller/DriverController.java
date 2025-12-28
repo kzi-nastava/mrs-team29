@@ -17,9 +17,6 @@ public class DriverController {
         this.driverService = driverService;
     }
 
-    /**
-     * 2.2.3 – Driver registration
-     */
     @PostMapping("/register")
     public Driver registerDriver(@RequestBody DriverRegistrationDTO dto) {
         return driverService.registerDriver(dto);
