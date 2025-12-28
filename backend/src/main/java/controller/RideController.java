@@ -20,4 +20,12 @@ public class RideController {
         RideResponseDTO response = rideService.orderRide(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    
+    @PatchMapping("/{rideId}/start")
+    public ResponseEntity<RideStartResponseDTO> startRide(
+            @PathVariable String rideId
+    ) {
+        RideStartResponseDTO response = rideService.startRide(rideId);
+        return ResponseEntity.ok(response);
+    }
 }
