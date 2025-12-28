@@ -36,7 +36,16 @@ public class RideServiceImpl implements RideService {
         return response;
     }
 
+    @Override
+    public RideStartResponseDTO startRide(String rideId) {
 
+        return new RideStartResponseDTO(
+                rideId,
+                RideStatus.ACTIVE,
+                LocalDateTime.now()
+        );
+    }
+    
 	@Override
 	public Ride createRide(Ride ride) {
 		// TODO Auto-generated method stub
