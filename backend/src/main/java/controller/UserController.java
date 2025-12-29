@@ -14,9 +14,6 @@ public class UserController {
         this.userService = userService;
     }
 
-
-    //2.3 – User profile
-
     @GetMapping("/{id}")
     public UserProfileDTO getUserProfile(@PathVariable String id) {
         return userService.getUserProfile(id);
