@@ -1,8 +1,8 @@
 package service.impl;
 
-import dto.driver.ActiveDriverDTO;
-import dto.driver.DriverRegistrationDTO;
+import dto.driver.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +48,7 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public List<ActiveDriverDTO> getActiveDrivers() {
 
-        // Stub response – bez baze
+        // Stub response – No database
         List<ActiveDriverDTO> result = new ArrayList<>();
 
         result.add(new ActiveDriverDTO(
@@ -80,5 +80,11 @@ public class DriverServiceImpl implements DriverService {
 	public void updateStatus(String driverId, DriverStatus status) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public List<DriverRideHistoryDTO> getDriverRideHistory(String driverId, LocalDate from, LocalDate to) {
+		// TODO Auto-generated method stub
+		return List.of();
 	}
 }
