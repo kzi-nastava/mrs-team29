@@ -5,8 +5,10 @@ import service.*;
 
 import domain.entities.Driver;
 
+import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import service.DriverService;
@@ -30,6 +32,19 @@ public class DriverController {
     public ResponseEntity<List<ActiveDriverDTO>> getActiveDrivers() {
         List<ActiveDriverDTO> drivers = driverService.getActiveDrivers();
         return ResponseEntity.ok(drivers);
+    }
+    
+    @GetMapping("/{driverId}/rides/history")
+    public List<DriverRideHistoryDTO> getDriverRideHistory(
+            @PathVariable String driverId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate from,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate to) {
+
+        return driverService.getDriverRideHistory(driverId, from, to);
     }
 }
 
