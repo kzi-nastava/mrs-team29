@@ -1,9 +1,13 @@
 package controller;
 
-import dto.driver.DriverRegistrationDTO;
+import dto.driver.*;
+import service.*;
 
 import domain.entities.Driver;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import service.DriverService;
 
@@ -20,6 +24,12 @@ public class DriverController {
     @PostMapping("/register")
     public Driver registerDriver(@RequestBody DriverRegistrationDTO dto) {
         return driverService.registerDriver(dto);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<ActiveDriverDTO>> getActiveDrivers() {
+        List<ActiveDriverDTO> drivers = driverService.getActiveDrivers();
+        return ResponseEntity.ok(drivers);
     }
 }
 
