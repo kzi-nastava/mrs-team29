@@ -12,4 +12,7 @@ public interface RideService {
 	List<Ride> getActiveRides();
 	RideResponseDTO orderRide(RideOrderDTO dto);
 	RideResponseDTO orderRideFromFavorite(String favoriteRouteId, FavoriteRideOrderDTO dto);
-	RideStartResponseDTO startRide(String rideId);}
+	RideStartResponseDTO startRide(String rideId);
+	RideTrackingDTO getRideTracking(String rideId);
+	void reportInconsistency(RideInconsistencyReportDTO dto);
+}
