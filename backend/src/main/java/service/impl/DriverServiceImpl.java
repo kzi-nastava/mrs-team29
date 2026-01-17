@@ -1,6 +1,11 @@
 package service.impl;
 
+import dto.driver.ActiveDriverDTO;
 import dto.driver.DriverRegistrationDTO;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import domain.entities.*;
 import domain.enums.*;
 import service.DriverService;
@@ -38,6 +43,31 @@ public class DriverServiceImpl implements DriverService {
         driver.setStatus(DriverStatus.AVAILABLE);
 
         return driver;
+    }
+    
+    @Override
+    public List<ActiveDriverDTO> getActiveDrivers() {
+
+        // Stub response – bez baze
+        List<ActiveDriverDTO> result = new ArrayList<>();
+
+        result.add(new ActiveDriverDTO(
+                "driver-1",
+                "vehicle-1",
+                45.2671,
+                19.8335,
+                false
+        ));
+
+        result.add(new ActiveDriverDTO(
+                "driver-2",
+                "vehicle-2",
+                45.2550,
+                19.8450,
+                true
+        ));
+
+        return result;
     }
 
 	@Override
