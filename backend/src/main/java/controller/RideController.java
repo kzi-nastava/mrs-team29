@@ -28,4 +28,22 @@ public class RideController {
         RideStartResponseDTO response = rideService.startRide(rideId);
         return ResponseEntity.ok(response);
     }
+    
+    @GetMapping("/{rideId}/tracking")
+    public ResponseEntity<RideTrackingDTO> getRideTracking(
+            @PathVariable String rideId) {
+
+        RideTrackingDTO tracking = rideService.getRideTracking(rideId);
+        return ResponseEntity.ok(tracking);
+    }
+
+    @PostMapping("/{rideId}/inconsistency")
+    public ResponseEntity<Void> reportInconsistency(
+            @PathVariable String rideId,
+            @RequestBody RideInconsistencyReportDTO dto) {
+
+        dto.setRideId(rideId);
+        rideService.reportInconsistency(dto);
+        return ResponseEntity.ok().build();
+    }
 }
