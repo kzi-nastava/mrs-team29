@@ -65,6 +65,21 @@ public class RideServiceImpl implements RideService {
         System.out.println("Inconsistency reported for ride " + dto.getRideId());
     }
     
+    @Override
+    public RideFinishResponseDTO finishRide(RideFinishDTO dto) {
+
+        // Stub logika:
+        // - Ride Complete
+        // - Paid
+        // - Driver Available
+        // - No next Reserved Ride
+
+        return new RideFinishResponseDTO(
+                "AVAILABLE",
+                null
+        );
+    }
+    
 	@Override
 	public Ride createRide(Ride ride) {
 		// TODO Auto-generated method stub
