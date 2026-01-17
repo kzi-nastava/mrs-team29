@@ -47,6 +47,24 @@ public class RideServiceImpl implements RideService {
         );
     }
     
+    @Override
+    public RideTrackingDTO getRideTracking(String rideId) {
+
+        // Stub response
+        return new RideTrackingDTO(
+                rideId,
+                45.2675,
+                19.8339,
+                8
+        );
+    }
+
+    @Override
+    public void reportInconsistency(RideInconsistencyReportDTO dto) {
+        // Stub – Later saving into database
+        System.out.println("Inconsistency reported for ride " + dto.getRideId());
+    }
+    
 	@Override
 	public Ride createRide(Ride ride) {
 		// TODO Auto-generated method stub
