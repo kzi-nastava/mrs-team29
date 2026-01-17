@@ -15,4 +15,5 @@ public interface RideService {
 	RideStartResponseDTO startRide(String rideId);
 	RideTrackingDTO getRideTracking(String rideId);
 	void reportInconsistency(RideInconsistencyReportDTO dto);
+	RideFinishResponseDTO finishRide(RideFinishDTO dto);
 }

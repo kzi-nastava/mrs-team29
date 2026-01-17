@@ -46,4 +46,16 @@ public class RideController {
         rideService.reportInconsistency(dto);
         return ResponseEntity.ok().build();
     }
+    
+    @PostMapping("/{rideId}/finish")
+    public ResponseEntity<RideFinishResponseDTO> finishRide(
+            @PathVariable String rideId,
+            @RequestBody RideFinishDTO dto) {
+
+        dto.setRideId(rideId);
+
+        RideFinishResponseDTO response = rideService.finishRide(dto);
+
+        return ResponseEntity.ok(response);
+    }
 }
