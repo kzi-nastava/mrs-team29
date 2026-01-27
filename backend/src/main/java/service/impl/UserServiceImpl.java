@@ -68,8 +68,9 @@ public class UserServiceImpl implements UserService {
 	        if (user.getUserType() == UserType.DRIVER) {
 	            ProfileChangeRequest request = new ProfileChangeRequest();
 	            request.setId(UUID.randomUUID().toString());
-	            request.setOldProfile(user);
-	            request.setNewProfile(dto.toUser());
+	            request.setFieldName("profile");
+	            request.setOldValue(user.toString());   // ili JSON
+	            request.setNewValue(dto.toString());
 	            request.setStatus(ChangeRequestStatus.PENDING);
 
 	            profileChangeRequestRepository.save(request);
