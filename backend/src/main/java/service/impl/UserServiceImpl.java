@@ -66,25 +66,25 @@ public class UserServiceImpl implements UserService {
 	                .orElseThrow(() -> new RuntimeException("User not found"));
 
 	        if (user.getUserType() == UserType.DRIVER) {
-	            ProfileChangeRequest request = new ProfileChangeRequest();
-	            request.setId(UUID.randomUUID().toString());
-	            request.setFieldName("profile");
-	            request.setOldValue(user.toString());   // ili JSON
-	            request.setNewValue(dto.toString());
-	            request.setStatus(ChangeRequestStatus.PENDING);
+	            ProfileChangeRequest request = new ProfileChangeRequest(
+	                    user,
+	                    "PROFILE_UPDATE",
+	                    user.toString(),      // on reality JSON
+	                    dto.toString()
+	            );
 
 	            profileChangeRequestRepository.save(request);
-
 	            return UserProfileDTO.fromUser(user);
 	        }
-	        
+
 	        user.setFirstName(dto.getFirstName());
 	        user.setLastName(dto.getLastName());
+	        user.setGender(dto.getGender());
 	        user.setPhoneNumber(dto.getPhoneNumber());
+	        user.setAddress(dto.getAddress());
 	        user.setProfilePictureUrl(dto.getProfilePictureUrl());
 
 	        userRepository.save(user);
-
 	        return UserProfileDTO.fromUser(user);
 	    }
 	    
