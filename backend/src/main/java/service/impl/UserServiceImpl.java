@@ -5,11 +5,22 @@ import dto.user.UserProfileDTO;
 import java.util.List;
 
 import domain.entities.*;
+import domain.enums.*;
 import service.UserService;
+import repository.*;
 
 public class UserServiceImpl implements UserService {
 
-    @Override
+		private final UserRepository userRepository;
+	    private final ProfileChangeRequestRepository profileChangeRequestRepository;
+
+	    public UserServiceImpl(UserRepository userRepository,
+	                           ProfileChangeRequestRepository profileChangeRequestRepository) {
+	        this.userRepository = userRepository;
+	        this.profileChangeRequestRepository = profileChangeRequestRepository;
+	    }
+	
+   /* @Override
     public UserProfileDTO getUserProfile(String userId) {
 
         // Simulated user fetch (ISS purpose)
@@ -36,8 +47,46 @@ public class UserServiceImpl implements UserService {
         dto.setUserType(user.getUserType());
 
         return dto;
-    }
+    }*/
+	
+	    @Override
+	    public UserProfileDTO getUserProfile(String userId) {
 
+	        User user = userRepository.findById(userId)
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+
+	        return UserProfileDTO.fromUser(user);
+	    }
+
+	    @Override
+	    public UserProfileDTO updateProfile(String userId, UpdateUserProfileDTO dto) {
+
+	        User user = userRepository.findById(userId)
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+
+	        if (user.getType() == UserType.DRIVER) {
+	            ProfileChangeRequest request = new ProfileChangeRequest();
+	            request.setId(UUID.randomUUID().toString());
+	            request.setOldProfile(user);
+	            request.setNewProfile(dto.toUser());
+	            request.setStatus(ProfileChangeStatus.PENDING);
+
+	            profileChangeRequestRepository.save(request);
+
+	            return UserProfileDTO.fromUser(user);
+	        }
+	        
+	        //
+	        user.setFirstName(dto.getFirstName());
+	        user.setLastName(dto.getLastName());
+	        user.setPhoneNumber(dto.getPhoneNumber());
+	        user.setProfilePictureUrl(dto.getProfilePictureUrl());
+
+	        userRepository.save(user);
+
+	        return UserProfileDTO.fromUser(user);
+	    }
+	    
 	@Override
 	public User register(User user) {
 		// TODO Auto-generated method stub

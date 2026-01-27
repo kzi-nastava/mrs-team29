@@ -9,9 +9,20 @@ import java.util.List;
 import domain.entities.*;
 import domain.enums.*;
 import service.DriverService;
+import repository.*;
 
 public class DriverServiceImpl implements DriverService {
 
+	private final DriverRepository driverRepository;
+    private final ActivationTokenRepository activationTokenRepository;
+
+    public DriverServiceImpl(DriverRepository driverRepository,
+                             ActivationTokenRepository activationTokenRepository) {
+        this.driverRepository = driverRepository;
+        this.activationTokenRepository = activationTokenRepository;
+    }
+	
+	
     @Override
     public Driver registerDriver(DriverRegistrationDTO dto) {
 
