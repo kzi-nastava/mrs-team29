@@ -40,7 +40,7 @@ public class ActivationToken {
     public boolean isUsed() { return used; }
     
     public void setId(String id) { this.id = id; }
-    public void setUserId(User user) { this.user = user; }
+    public void setUser(User user) { this.user = user; }
     public void setToken(String token) { this.token = token; }
     public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
     public void setUsed (boolean used) {this.used = used; }
