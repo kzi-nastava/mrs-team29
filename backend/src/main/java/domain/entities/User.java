@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 public class User {
 	
 	@Id
-	@Column(nullable = false, updatable = false)
+	@GeneratedValue(strategy = GenerationType.UUID)
 	private String id;
 	
 	private String firstName;
@@ -32,7 +32,7 @@ public class User {
 	private String phoneNumber;
 	
 	@ManyToOne
-	@JoinedColumn(name = "address_id")
+	@JoinColumn(name = "address_id")
 	private Address address;
 	
 	private String profilePictureUrl;

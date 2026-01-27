@@ -35,6 +35,7 @@ public class Vehicle {
 		this.babiesAllowed = babiesAllowed;
 	}
 	
+	public String getId() {return id;}
 	public String getVehicleModel() {return vehicleModel;}
 	public VehicleType getType() {return type;}
 	public String getRegistrationPlate() {return registrationPlate;}
@@ -42,6 +43,7 @@ public class Vehicle {
 	public boolean isPetsAllowed() {return petsAllowed;}
 	public boolean isBabiesAllowed() {return babiesAllowed;}
 	
+	public void setId(String id) {this.id = id;}
 	public void setVehicleModel(String vehicleModel) {this.vehicleModel = vehicleModel;}
 	public void setType(VehicleType type) {this.type = type;}
 	public void setRegistrationPlate(String registrationPlate) {this.registrationPlate = registrationPlate;}

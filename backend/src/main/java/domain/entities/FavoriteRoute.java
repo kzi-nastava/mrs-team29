@@ -2,19 +2,42 @@ package domain.entities;
 
 import java.util.List;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "favorite_route")
 public class FavoriteRoute {
+	@Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+	
+	@ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+	
+	
+	@ManyToOne
+    @JoinColumn(name = "pickup_address_id", nullable = false)
     private Address pickupAddress;
+
+    @ManyToOne
+    @JoinColumn(name = "destination_address_id", nullable = false)
     private Address destinationAddress;
+
+    @ManyToMany
+    @JoinTable(
+        name = "favorite_route_stops",
+        joinColumns = @JoinColumn(name = "favorite_route_id"),
+        inverseJoinColumns = @JoinColumn(name = "address_id")
+    )
     private List<Address> stops;
+    
     private String name;
 
 	public FavoriteRoute() {}
 	
-	public FavoriteRoute(String id, User user, Address pickupAddress, Address destinationAddress,
+	public FavoriteRoute(User user, Address pickupAddress, Address destinationAddress,
 			List<Address> stops, String name) {
-		this.id = id;
 		this.user = user;
 		this.pickupAddress = pickupAddress;
 		this.destinationAddress = destinationAddress;
