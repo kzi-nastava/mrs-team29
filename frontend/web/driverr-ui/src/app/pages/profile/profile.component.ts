@@ -1,45 +1,41 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { ProfileService } from '../../services/profile.service';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.css'],
+  styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
 
   form!: FormGroup;
+  userId = 'HARDCODED_ID_ZA_SADA'; // kasnije iz auth-a
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private profileService: ProfileService
+  ) {}
 
-  ngOnInit(): void {
-    // TODO: kasnije ovo punimo iz backend-a
-    const mockUser = {
-      firstName: 'Nenad',
-      lastName: 'Jevremović',
-      email: 'nenad@example.com',
-      username: 'nightowl',
-      phoneNumber: '+381 64 123 456'
-    };
-
+  ngOnInit() {
     this.form = this.fb.group({
-      firstName: [mockUser.firstName, Validators.required],
-      lastName: [mockUser.lastName, Validators.required],
-      email: [mockUser.email, [Validators.required, Validators.email]],
-      username: [mockUser.username, Validators.required],
-      phoneNumber: [mockUser.phoneNumber]
+      firstName: [''],
+      lastName: [''],
+      gender: [''],
+      username: [{ value: '', disabled: true }],
+      email: [{ value: '', disabled: true }],
+      phoneNumber: [''],
+      profilePictureUrl: ['']
     });
+
+    this.profileService.getProfile(this.userId)
+      .subscribe(profile => this.form.patchValue(profile));
   }
 
-  save(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    console.log('Updated profile:', this.form.value);
-
-    // TODO: userService.updateProfile(this.form.value)
+  save() {
+    this.profileService.updateProfile(this.userId, this.form.getRawValue())
+      .subscribe(() => alert('Profile saved'));
   }
 }
+
