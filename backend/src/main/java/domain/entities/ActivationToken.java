@@ -26,8 +26,7 @@ public class ActivationToken {
     
     public ActivationToken() {}
     
-    public ActivationToken(String id, User user, String token, LocalDateTime expiresAt, boolean used) {
-    	this.id = id;
+    public ActivationToken(User user, String token, LocalDateTime expiresAt, boolean used) {
     	this.user = user;
     	this.token = token;
     	this.expiresAt = expiresAt;

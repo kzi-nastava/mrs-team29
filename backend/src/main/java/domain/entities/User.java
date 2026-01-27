@@ -40,10 +40,9 @@ public class User {
 	private boolean isActive;
 	
 	public User() {}
-	public User(String id, String firstName, String lastName, Gender gender,
+	public User(String firstName, String lastName, Gender gender,
 				String userName, String email, String password, UserType type, 
 				String phoneNumber, Address address, String profilePictureUrl, boolean isBlocked, boolean isActive) {
-		this.id = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.gender = gender;

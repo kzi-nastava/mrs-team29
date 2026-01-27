@@ -52,9 +52,8 @@ public class Ride {
 	private List<LocalDateTime> timestamps;
 	
 	public Ride() {}
-	public Ride(String id, Address pickupAddress, Address destinationAddress, List<Address> stops, List<User> passengers,
+	public Ride(Address pickupAddress, Address destinationAddress, List<Address> stops, List<User> passengers,
 				Driver driver, RideStatus status, double price, List<LocalDateTime> timestamps) {
-		this.id = id;
 		this.pickupAddress = pickupAddress;
 		this.destinationAddress = destinationAddress;
 		this.stops = stops;

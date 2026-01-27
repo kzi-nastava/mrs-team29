@@ -18,8 +18,7 @@ public class Address {
 	private double longitude;
 	 
 	public Address() {}
-	public Address(String id, String street, String streetNumber, String city, String postalCode, String country) {
-		this.id = id;
+	public Address(String street, String streetNumber, String city, String postalCode, String country) {
 		this.street = street;
 		this.streetNumber = streetNumber;
 		this.city = city;

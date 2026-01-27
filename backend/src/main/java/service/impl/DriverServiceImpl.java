@@ -42,7 +42,7 @@ public class DriverServiceImpl implements DriverService {
 
         ActivationToken token = new ActivationToken();
         token.setId(UUID.randomUUID().toString());
-        token.setUserId(driver.getId());
+        token.setUser(driver.getId());
         token.setExpiresAt(LocalDateTime.now().plusHours(24));
 
         activationTokenRepository.save(token);
