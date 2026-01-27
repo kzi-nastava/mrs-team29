@@ -42,10 +42,11 @@ public class DriverServiceImpl implements DriverService {
 
         ActivationToken token = new ActivationToken();
         token.setId(UUID.randomUUID().toString());
-        token.setUser(driver.getId());
+        token.setUser(driver);
         token.setExpiresAt(LocalDateTime.now().plusHours(24));
 
         activationTokenRepository.save(token);
+        return driver;
     }
     
     @Override
@@ -76,7 +77,7 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public void activateDriver(String tokenValue, String newPassword) {
 
-        ActivationToken token = activationTokenRepository.findById(tokenValue)
+        ActivationToken token = activationTokenRepository.findByToken(tokenValue)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
 
         if (token.getExpiresAt().isBefore(LocalDateTime.now())) {

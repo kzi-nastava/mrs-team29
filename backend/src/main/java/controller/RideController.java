@@ -54,7 +54,7 @@ public class RideController {
 
         dto.setRideId(rideId);
 
-        RideFinishResponseDTO response = rideService.finishRide(dto);
+        RideFinishResponseDTO response = rideService.finishRideResponse(dto);
 
         return ResponseEntity.ok(response);
     }

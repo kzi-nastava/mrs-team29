@@ -153,8 +153,8 @@ public class RideServiceImpl implements RideService {
         System.out.println("Inconsistency reported for ride " + dto.getRideId());
     }
     
-    /*@Override
-    public RideFinishResponseDTO finishRide(RideFinishDTO dto) {
+    @Override
+    public RideFinishResponseDTO finishRideResponse(RideFinishDTO dto) {
 
         // Stub logic:
         // - Ride Complete
@@ -166,7 +166,7 @@ public class RideServiceImpl implements RideService {
                 "AVAILABLE",
                 null
         );
-    }*/
+    }
     
 	@Override
 	public Ride createRide(Ride ride) {
@@ -191,5 +191,6 @@ public class RideServiceImpl implements RideService {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }
 
