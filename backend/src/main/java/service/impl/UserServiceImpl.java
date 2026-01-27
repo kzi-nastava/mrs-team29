@@ -1,6 +1,6 @@
 package service.impl;
 
-import dto.user.UserProfileDTO;
+import dto.user.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
 	        User user = userRepository.findById(userId)
 	                .orElseThrow(() -> new RuntimeException("User not found"));
 
-	        if (user.getType() == UserType.DRIVER) {
+	        if (user.getUserType() == UserType.DRIVER) {
 	            ProfileChangeRequest request = new ProfileChangeRequest();
 	            request.setId(UUID.randomUUID().toString());
 	            request.setOldProfile(user);

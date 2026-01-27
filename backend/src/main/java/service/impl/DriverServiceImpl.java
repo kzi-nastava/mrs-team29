@@ -29,13 +29,11 @@ public class DriverServiceImpl implements DriverService {
     public Driver registerDriver(DriverRegistrationDTO dto) {
 
     	Driver driver = new Driver();
-
-    	Driver driver = new Driver();
         driver.setId(UUID.randomUUID().toString());
         driver.setFirstName(dto.getFirstName());
         driver.setLastName(dto.getLastName());
         driver.setEmail(dto.getEmail());
-        driver.setVehicle(dto.getVehicle());
+        driver.setVehicle(dto.toVehicle());
         driver.setIsActive(false);
         driver.setIsBlocked(false);
         driver.setStatus(DriverStatus.INACTIVE);
