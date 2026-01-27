@@ -78,7 +78,6 @@ public class UserServiceImpl implements UserService {
 	            return UserProfileDTO.fromUser(user);
 	        }
 	        
-	        //
 	        user.setFirstName(dto.getFirstName());
 	        user.setLastName(dto.getLastName());
 	        user.setPhoneNumber(dto.getPhoneNumber());
