@@ -13,19 +13,9 @@ import domain.enums.*;
 public interface RideRepository extends JpaRepository<Ride, String> {
 
     List<Ride> findByStatus(RideStatus status);
-
     List<Ride> findByDriverIdAndStatus(String driverId, RideStatus status);
-
     List<Ride> findByPassengers_IdAndStatus(String passengerId, RideStatus status);
-
-    boolean existsByPassengers_IdAndStatusIn(
-        String passengerId,
-        List<RideStatus> statuses
-    );
-
-    Optional<Ride> findFirstByDriverIdAndStatusOrderByIdAsc(
-        String driverId,
-        RideStatus status
-    );
+    boolean existsByPassengers_IdAndStatusIn(String passengerId, List<RideStatus> statuses);
+    Optional<Ride> findFirstByDriverIdAndStatusOrderByIdAsc(String driverId, RideStatus status);
 }
 

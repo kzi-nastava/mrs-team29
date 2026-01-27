@@ -3,8 +3,10 @@ package service.impl;
 import dto.driver.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import domain.entities.*;
 import domain.enums.*;
@@ -28,32 +30,24 @@ public class DriverServiceImpl implements DriverService {
 
     	Driver driver = new Driver();
 
-        // === USER FIELDS (inherited) ===
+    	Driver driver = new Driver();
+        driver.setId(UUID.randomUUID().toString());
         driver.setFirstName(dto.getFirstName());
         driver.setLastName(dto.getLastName());
-        driver.setGender(dto.getGender());
-        driver.setUserName(dto.getUsername());
         driver.setEmail(dto.getEmail());
-        driver.setPassword(dto.getPassword());
-        driver.setUserType(dto.getUserType());
-        driver.setPhoneNumber(dto.getPhoneNumber());
-        driver.setAddress(dto.getAddress());
-        driver.setProfilePictureUrl(dto.getProfilePictureUrl());
-        
+        driver.setVehicle(dto.getVehicle());
+        driver.setIsActive(false);
+        driver.setIsBlocked(false);
+        driver.setStatus(DriverStatus.INACTIVE);
 
-        // === DRIVER FIELDS ===
-        Vehicle vehicle = new Vehicle();
-        vehicle.setVehicleModel(dto.getVehicleModel());
-        vehicle.setType(dto.getVehicleType());
-        vehicle.setRegistrationPlate(dto.getRegistrationPlate());
-        vehicle.setSeats(dto.getSeats());
-        vehicle.setBabiesAllowed(dto.isAllowsPets());
-        vehicle.setPetsAllowed(dto.isAllowsBabies());
+        driverRepository.save(driver);
 
-        driver.setVehicle(vehicle);
-        driver.setStatus(DriverStatus.AVAILABLE);
+        ActivationToken token = new ActivationToken();
+        token.setId(UUID.randomUUID().toString());
+        token.setUserId(driver.getId());
+        token.setExpiresAt(LocalDateTime.now().plusHours(24));
 
-        return driver;
+        activationTokenRepository.save(token);
     }
     
     @Override
@@ -81,6 +75,27 @@ public class DriverServiceImpl implements DriverService {
         return result;
     }
 
+    @Override
+    public void activateDriver(String tokenValue, String newPassword) {
+
+        ActivationToken token = activationTokenRepository.findById(tokenValue)
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Token expired");
+        }
+
+        Driver driver = driverRepository.findById(token.getUserId())
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+
+        driver.setPassword(newPassword);
+        driver.setIsActive(true);
+        driver.setStatus(DriverStatus.AVAILABLE);
+
+        driverRepository.save(driver);
+        activationTokenRepository.delete(token);
+    }
+    
 	@Override
 	public Driver getAvailableDriver() {
 		// TODO Auto-generated method stub

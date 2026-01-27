@@ -3,6 +3,7 @@ package service.impl;
 import dto.user.UserProfileDTO;
 
 import java.util.List;
+import java.util.UUID;
 
 import domain.entities.*;
 import domain.enums.*;
@@ -69,7 +70,7 @@ public class UserServiceImpl implements UserService {
 	            request.setId(UUID.randomUUID().toString());
 	            request.setOldProfile(user);
 	            request.setNewProfile(dto.toUser());
-	            request.setStatus(ProfileChangeStatus.PENDING);
+	            request.setStatus(ChangeRequestStatus.PENDING);
 
 	            profileChangeRequestRepository.save(request);
 
@@ -85,6 +86,20 @@ public class UserServiceImpl implements UserService {
 	        userRepository.save(user);
 
 	        return UserProfileDTO.fromUser(user);
+	    }
+	    
+	    @Override
+	    public void changePassword(String userId, ChangePasswordDTO dto) {
+
+	        User user = userRepository.findById(userId)
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+
+	        if (!user.getPassword().equals(dto.getOldPassword())) {
+	            throw new RuntimeException("Invalid old password");
+	        }
+
+	        user.setPassword(dto.getNewPassword());
+	        userRepository.save(user);
 	    }
 	    
 	@Override
