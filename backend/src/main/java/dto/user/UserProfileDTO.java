@@ -41,4 +41,23 @@ public class UserProfileDTO {
     public void setAddress(Address address) { this.address = address; }
     public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
     public void setUserType(UserType userType) { this.userType = userType; }
+    
+    public static UserProfileDTO fromUser(User user) {
+        UserProfileDTO dto = new UserProfileDTO();
+        dto.id = user.getId();
+        dto.firstName = user.getFirstName();
+        dto.lastName = user.getLastName();
+        dto.email = user.getEmail();
+        dto.profilePictureUrl = user.getProfilePictureUrl();
+        return dto;
+    }
+    
+    public User toUser() {
+        User u = new User();
+        u.setFirstName(firstName);
+        u.setLastName(lastName);
+        u.setPhoneNumber(phoneNumber);
+        u.setProfilePictureUrl(profilePictureUrl);
+        return u;
+    }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 public class RideOrderDTO {
 
+	private String creatorId;
     private Address pickupAddress;
     private Address destinationAddress;
     private List<Address> stops;
@@ -15,6 +16,7 @@ public class RideOrderDTO {
 
     public RideOrderDTO() {}
 
+    public String getCreatorId() { return creatorId; }
     public Address getPickupAddress() { return pickupAddress; }
     public Address getDestinationAddress() { return destinationAddress; }
     public List<Address> getStops() { return stops; }
@@ -22,6 +24,7 @@ public class RideOrderDTO {
     public boolean isPets() { return pets; }
     public boolean isBaby() { return baby; }
 
+    public void setCreatorId(String creatorId) { this.creatorId = creatorId; }
     public void setPickupAddress(Address pickupAddress) { this.pickupAddress = pickupAddress; }
     public void setDestinationAddress(Address destinationAddress) { this.destinationAddress = destinationAddress; }
     public void setStops(List<Address> stops) { this.stops = stops; }
