@@ -1,11 +1,24 @@
 package domain.entities;
 
 import domain.enums.VehicleType;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "vehicles")
 public class Vehicle {
+	
+	@Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+	private String id;
+	
 	private String vehicleModel;
+	
+	@Enumerated(EnumType.STRING)
 	private VehicleType type;
+	
+	@Column(unique = true)
 	private String registrationPlate;
+	
 	private int seats;
 	private boolean petsAllowed;
 	private boolean babiesAllowed;

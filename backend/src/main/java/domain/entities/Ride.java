@@ -5,17 +5,51 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import domain.enums.RideStatus;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "ride")
 public class Ride {
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
 	private String id;
+	
+	@ManyToOne
+    @JoinColumn(name = "pickup_address_id")
 	private Address pickupAddress;
+	
+	@ManyToOne
+    @JoinColumn(name = "destination_address_id")
 	private Address destinationAddress;
+	
+	@ManyToMany
+    @JoinTable(
+        name = "ride_stops",
+        joinColumns = @JoinColumn(name = "ride_id"),
+        inverseJoinColumns = @JoinColumn(name = "address_id")
+    )
 	private List<Address> stops;
+	
+	@ManyToMany
+    @JoinTable(
+        name = "ride_passengers",
+        joinColumns = @JoinColumn(name = "ride_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
 	private List<User> passengers;
+	
+	@ManyToOne
+    @JoinColumn(name = "driver_id")
 	private Driver driver;
+	
+	@Enumerated(EnumType.STRING)
 	private RideStatus status;
+	
 	private double price;
-	private List<LocalDateTime> timestamps; //Either change with Map<Address, LocalTime> or create class RideStops
+	
+	@ElementCollection
+    @CollectionTable(name = "ride_timestamps", joinColumns = @JoinColumn(name = "ride_id"))
+	private List<LocalDateTime> timestamps;
 	
 	public Ride() {}
 	public Ride(String id, Address pickupAddress, Address destinationAddress, List<Address> stops, List<User> passengers,
