@@ -1,0 +1,61 @@
+<div class="register-page">
+  <div class="register-card">
+    <h1 class="title">Create driver account</h1>
+    <p class="subtitle">Register as a driver to start driving</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First name</label>
+          <input id="firstName" type="text" placeholder="John" formControlName="firstName" />
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last name</label>
+          <input id="lastName" type="text" placeholder="Doe" formControlName="lastName" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="you@example.com" formControlName="email" />
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" type="text" placeholder="johndoe" formControlName="username" />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone number</label>
+        <input id="phone" type="text" placeholder="+381..." formControlName="phoneNumber" />
+      </div>
+
+      <!-- DRIVER SPECIFIC -->
+      <div class="form-group">
+        <label for="vehicleModel">Vehicle model</label>
+        <input id="vehicleModel" type="text" placeholder="Toyota Corolla" formControlName="vehicleModel" />
+      </div>
+
+      <div class="form-group">
+        <label for="plate">License plate</label>
+        <input id="plate" type="text" placeholder="NS-123-AB" formControlName="vehiclePlate" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="••••••••" formControlName="password" />
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm password</label>
+        <input id="confirmPassword" type="password" placeholder="••••••••" formControlName="confirmPassword" />
+      </div>
+
+      <button type="submit" class="primary-btn">
+        Create driver account
+      </button>
+    </form>
+  </div>
+</div>
