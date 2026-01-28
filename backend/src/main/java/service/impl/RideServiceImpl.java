@@ -3,8 +3,10 @@ package service.impl;
 import dto.ride.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import domain.entities.*;
 import domain.enums.*;
