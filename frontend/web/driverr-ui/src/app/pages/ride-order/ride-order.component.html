@@ -1,83 +1,37 @@
-<div class="ride-page">
-  <div class="ride-card">
-    <h1 class="title">Order a ride</h1>
-    <p class="subtitle">Define route and ride preferences</p>
+<h2>Order Ride</h2>
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
+<div class="card">
+  <label>Pickup</label>
+  <input [(ngModel)]="pickup" />
 
-      <!-- ROUTE -->
-      <div class="section">
-        <h3>Route</h3>
+  <label>Destination</label>
+  <input [(ngModel)]="destination" />
 
-        <div class="form-group">
-          <label>Start location</label>
-          <input type="text" formControlName="start" placeholder="Pickup address">
-        </div>
-
-        <div class="form-group" *ngFor="let stop of stops.controls; let i = index">
-          <label>Stop {{ i + 1 }}</label>
-          <div class="stop-row">
-            <input type="text" [formControl]="stop" placeholder="Intermediate stop">
-            <button type="button" class="remove-btn" (click)="removeStop(i)">✕</button>
-          </div>
-        </div>
-
-        <button type="button" class="secondary-btn" (click)="addStop()">
-          + Add stop
-        </button>
-
-        <div class="form-group">
-          <label>Destination</label>
-          <input type="text" formControlName="destination" placeholder="Final destination">
-        </div>
-      </div>
-
-      <!-- OPTIONS -->
-      <div class="section">
-        <h3>Preferences</h3>
-
-        <div class="form-group">
-          <label>Vehicle type</label>
-          <select formControlName="vehicleType">
-            <option value="STANDARD">Standard</option>
-            <option value="VAN">Van</option>
-            <option value="LUXURY">Luxury</option>
-          </select>
-        </div>
-
-        <div class="checkbox-row">
-          <label><input type="checkbox" formControlName="baby"> Baby on board</label>
-          <label><input type="checkbox" formControlName="pet"> Pet</label>
-        </div>
-      </div>
-
-      <!-- SCHEDULE -->
-      <div class="section">
-        <h3>Schedule</h3>
-        <input type="datetime-local" formControlName="scheduledAt">
-      </div>
-
-      <!-- ACTIONS -->
-      <button type="submit" class="primary-btn">
-        Order ride
-      </button>
-
-      <button type="button" class="secondary-btn full" (click)="openFavorites()">
-        Order from favorite route
-      </button>
-    </form>
+  <div *ngFor="let stop of stops; let i = index">
+    <label>Stop {{ i + 1 }}</label>
+    <input [(ngModel)]="stops[i]" />
   </div>
+
+  <button (click)="addStop()">+ Add stop</button>
+
+  <label>
+    <input type="checkbox" [(ngModel)]="pets" /> Pets
+  </label>
+
+  <label>
+    <input type="checkbox" [(ngModel)]="baby" /> Baby
+  </label>
+
+  <button class="primary" (click)="orderRide()">Order</button>
+
+  <p class="message">{{ message }}</p>
+
+  <button class="secondary" (click)="showFavorites = true">
+    Order from favorites
+  </button>
 </div>
 
-<!-- FAVORITES POPUP -->
-<div class="modal-backdrop" *ngIf="showFavorites">
-  <div class="modal">
-    <h3>Favorite routes</h3>
+<app-favorite-popup *ngIf="showFavorites"
+  (close)="showFavorites=false">
+</app-favorite-popup>
 
-    <div class="favorite" *ngFor="let route of favoriteRoutes" (click)="selectRoute(route)">
-      <strong>{{ route.start }}</strong> → {{ route.destination }}
-    </div>
-
-    <button class="secondary-btn full" (click)="closeFavorites()">Close</button>
-  </div>
-</div>

@@ -1,0 +1,12 @@
+<div class="overlay">
+  <div class="popup">
+    <h3>Favorite routes</h3>
+
+    <div *ngFor="let f of favorites">
+      <span>{{ f.name }}</span>
+      <button (click)="order(f.id)">Order</button>
+    </div>
+
+    <button (click)="close.emit()">Close</button>
+  </div>
+</div>

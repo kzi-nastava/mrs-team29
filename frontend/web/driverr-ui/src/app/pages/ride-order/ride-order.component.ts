@@ -1,77 +1,46 @@
 import { Component } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
+import { RideService } from '../../services/ride.service';
 
 @Component({
-  selector: 'app-ride-order',
-  standalone: true,
-  templateUrl: './ride-order.component.html',
-  styleUrls: ['./ride-order.component.css']
+  selector: 'app-order-ride',
+  templateUrl: './order-ride.component.html',
+  styleUrls: ['./order-ride.component.css']
 })
-export class RideOrderComponent {
+export class OrderRideComponent {
 
-  showFavorites = false;
+  creatorId = 'USER_ID_123'; // privremeno
 
-  favoriteRoutes = [
-    {
-      start: 'Faculty of Technical Sciences',
-      destination: 'Train station',
-      stops: ['Boulevard Europe']
-    },
-    {
-      start: 'Home',
-      destination: 'City center',
-      stops: []
-    }
-  ];
+  pickup = '';
+  destination = '';
+  stops: string[] = [];
 
-  form: FormGroup;
+  pets = false;
+  baby = false;
 
-  constructor(private fb: FormBuilder) {
-    this.form = this.fb.group({
-      start: [''],
-      destination: [''],
-      stops: this.fb.array([]),
-      vehicleType: ['STANDARD'],
-      baby: [false],
-      pet: [false],
-      scheduledAt: ['']
-    });
-  }
+  passengerEmails = '';
 
-  get stops() {
-    return this.form.get('stops') as FormArray;
-  }
+  message = '';
+
+  constructor(private rideService: RideService) {}
 
   addStop() {
-    this.stops.push(this.fb.control(''));
+    this.stops.push('');
   }
 
-  removeStop(index: number) {
-    this.stops.removeAt(index);
-  }
+  orderRide() {
+    const dto = {
+      creatorId: this.creatorId,
+      pickupAddress: { street: this.pickup },
+      destinationAddress: { street: this.destination },
+      stops: this.stops.map(s => ({ street: s })),
+      passengerIds: [],
+      pets: this.pets,
+      baby: this.baby
+    };
 
-  submit() {
-    console.log('Ride order:', this.form.value);
-    alert('Ride ordered (mock)');
-  }
-
-  openFavorites() {
-    this.showFavorites = true;
-  }
-
-  closeFavorites() {
-    this.showFavorites = false;
-  }
-
-  selectRoute(route: any) {
-    this.form.patchValue({
-      start: route.start,
-      destination: route.destination
+    this.rideService.orderRide(dto).subscribe({
+      next: res => this.message = `Ride ordered! Price: ${res.price}`,
+      error: err => this.message = err.error.message
     });
-
-    this.stops.clear();
-    route.stops.forEach((s: string) => this.stops.push(this.fb.control(s)));
-
-    this.closeFavorites();
   }
 }
