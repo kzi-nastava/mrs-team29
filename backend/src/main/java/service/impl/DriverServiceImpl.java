@@ -28,26 +28,39 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public Driver registerDriver(DriverRegistrationDTO dto) {
 
-    	Driver driver = new Driver();
-        driver.setId(UUID.randomUUID().toString());
+        Vehicle vehicle = dto.toVehicle();
+
+        Driver driver = new Driver();
         driver.setFirstName(dto.getFirstName());
         driver.setLastName(dto.getLastName());
+        driver.setGender(dto.getGender());
+        driver.setUserName(dto.getUsername());
         driver.setEmail(dto.getEmail());
-        driver.setVehicle(dto.toVehicle());
+        driver.setPassword(dto.getPassword()); // kasnije hash
+        driver.setPhoneNumber(dto.getPhoneNumber());
+        driver.setAddress(dto.getAddress());
+        driver.setProfilePictureUrl(dto.getProfilePictureUrl());
+
+        driver.setVehicle(vehicle);
+        driver.setUserType(UserType.DRIVER);
         driver.setIsActive(false);
         driver.setIsBlocked(false);
         driver.setStatus(DriverStatus.INACTIVE);
 
         driverRepository.save(driver);
 
-        ActivationToken token = new ActivationToken();
-        token.setId(UUID.randomUUID().toString());
-        token.setUser(driver);
-        token.setExpiresAt(LocalDateTime.now().plusHours(24));
+        ActivationToken token = new ActivationToken(
+                driver,
+                UUID.randomUUID().toString(),
+                LocalDateTime.now().plusHours(24),
+                false
+        );
 
         activationTokenRepository.save(token);
+
         return driver;
     }
+
     
     @Override
     public List<ActiveDriverDTO> getActiveDrivers() {
