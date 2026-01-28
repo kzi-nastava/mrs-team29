@@ -5,8 +5,8 @@ import { DriverService } from '../../services/driver.service';
 @Component({
   selector: 'app-admin-driver-register',
   standalone: true,
-  templateUrl: './admin-driver-register.component.html',
-  styleUrls: ['../register/register.css']
+  templateUrl: './driverRegister.component.html',
+  styleUrls: ['./register.component.css']
 })
 export class AdminDriverRegisterComponent {
 

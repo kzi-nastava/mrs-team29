@@ -1,10 +1,14 @@
 import { Component } from '@angular/core';
 import { RideService } from '../../services/ride.service';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-order-ride',
-  templateUrl: './order-ride.component.html',
-  styleUrls: ['./order-ride.component.css']
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './ride-order.component.html',
+  styleUrls: ['./ride-order.component.css']
 })
 export class OrderRideComponent {
 
