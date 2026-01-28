@@ -1,11 +1,24 @@
 package domain.entities;
 
 import domain.enums.VehicleType;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "vehicles")
 public class Vehicle {
+	
+	@Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+	private String id;
+	
 	private String vehicleModel;
+	
+	@Enumerated(EnumType.STRING)
 	private VehicleType type;
+	
+	@Column(unique = true)
 	private String registrationPlate;
+	
 	private int seats;
 	private boolean petsAllowed;
 	private boolean babiesAllowed;
@@ -22,6 +35,7 @@ public class Vehicle {
 		this.babiesAllowed = babiesAllowed;
 	}
 	
+	public String getId() {return id;}
 	public String getVehicleModel() {return vehicleModel;}
 	public VehicleType getType() {return type;}
 	public String getRegistrationPlate() {return registrationPlate;}
@@ -29,6 +43,7 @@ public class Vehicle {
 	public boolean isPetsAllowed() {return petsAllowed;}
 	public boolean isBabiesAllowed() {return babiesAllowed;}
 	
+	public void setId(String id) {this.id = id;}
 	public void setVehicleModel(String vehicleModel) {this.vehicleModel = vehicleModel;}
 	public void setType(VehicleType type) {this.type = type;}
 	public void setRegistrationPlate(String registrationPlate) {this.registrationPlate = registrationPlate;}

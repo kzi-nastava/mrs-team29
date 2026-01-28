@@ -1,0 +1,37 @@
+<h2>Order Ride</h2>
+
+<div class="card">
+  <label>Pickup</label>
+  <input [(ngModel)]="pickup" />
+
+  <label>Destination</label>
+  <input [(ngModel)]="destination" />
+
+  <div *ngFor="let stop of stops; let i = index">
+    <label>Stop {{ i + 1 }}</label>
+    <input [(ngModel)]="stops[i]" />
+  </div>
+
+  <button (click)="addStop()">+ Add stop</button>
+
+  <label>
+    <input type="checkbox" [(ngModel)]="pets" /> Pets
+  </label>
+
+  <label>
+    <input type="checkbox" [(ngModel)]="baby" /> Baby
+  </label>
+
+  <button class="primary" (click)="orderRide()">Order</button>
+
+  <p class="message">{{ message }}</p>
+
+  <button class="secondary" (click)="showFavorites = true">
+    Order from favorites
+  </button>
+</div>
+
+<app-favorite-popup *ngIf="showFavorites"
+  (close)="showFavorites=false">
+</app-favorite-popup>
+

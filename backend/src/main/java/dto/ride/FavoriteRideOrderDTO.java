@@ -6,11 +6,7 @@ public class FavoriteRideOrderDTO {
 
     public FavoriteRideOrderDTO() {}
 
-    public String getClientId() {
-        return clientId;
-    }
+    public String getClientId() { return clientId; }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
+    public void setClientId(String clientId) { this.clientId = clientId; }
 }

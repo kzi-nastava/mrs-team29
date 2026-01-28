@@ -8,36 +8,37 @@
       <button class="secondary-btn">Change photo</button>
     </div>
 
-    <form>
+    <form [formGroup]="form" (ngSubmit)="save()">
+
       <div class="form-row">
         <div class="form-group">
           <label for="firstName">First name</label>
-          <input type="text" id="firstName" value="Nenad" />
-        </div>
+         <input id="firstName" type="text" formControlName="firstName" />
+       </div>
 
         <div class="form-group">
           <label for="lastName">Last name</label>
-          <input type="text" id="lastName" value="Jevremović" />
-        </div>
+          <input id="lastName" type="text" formControlName="lastName" />
+       </div>
       </div>
 
-      <div class="form-group">
+     <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" id="email" value="nenad@example.com" />
-      </div>
+       <input id="email" type="email" formControlName="email" [disabled]="true"/>
+     </div>
 
-      <div class="form-group">
+     <div class="form-group">
         <label for="username">Username</label>
-        <input type="text" id="username" value="nightowl" />
-      </div>
+       <input id="username" type="text" formControlName="username" [disabled]="true"/>
+     </div>
 
-      <div class="form-group">
+     <div class="form-group">
         <label for="phone">Phone number</label>
-        <input type="text" id="phone" value="+381 64 123 456" />
-      </div>
+       <input id="phone" type="text" formControlName="phoneNumber" />
+     </div>
 
       <button type="submit" class="primary-btn">
-        Save changes
+       Save changes
       </button>
     </form>
   </div>

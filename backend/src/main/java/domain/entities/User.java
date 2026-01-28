@@ -2,27 +2,47 @@ package domain.entities;
 
 import domain.enums.Gender;
 import domain.enums.UserType;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "users")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
 	private String id;
+	
 	private String firstName;
 	private String lastName;
+	
+	@Enumerated(EnumType.STRING)
 	private Gender gender;
+	
 	private String userName;
+	
+	@Column(unique = true, nullable = false)
 	private String email;
+	
 	private String password;
+	
+	@Enumerated(EnumType.STRING)
 	private UserType type;
+	
 	private String phoneNumber;
+	
+	@ManyToOne
+	@JoinColumn(name = "address_id")
 	private Address address;
+	
 	private String profilePictureUrl;
 	private boolean isBlocked;
 	private boolean isActive;
 	
 	public User() {}
-	public User(String id, String firstName, String lastName, Gender gender,
+	public User(String firstName, String lastName, Gender gender,
 				String userName, String email, String password, UserType type, 
 				String phoneNumber, Address address, String profilePictureUrl, boolean isBlocked, boolean isActive) {
-		this.id = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.gender = gender;

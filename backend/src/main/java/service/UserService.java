@@ -9,5 +9,7 @@ public interface UserService {
 	public User register(User user);
 	public User getByUsername(String username);
 	public List<User> getAll();
-	public UserProfileDTO getUserProfile(String userId);
+	UserProfileDTO getUserProfile(String userId);
+    UserProfileDTO updateProfile(String userId, UpdateUserProfileDTO dto);
+    void changePassword(String userId, ChangePasswordDTO dto);
 }

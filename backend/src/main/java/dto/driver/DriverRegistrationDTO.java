@@ -68,4 +68,16 @@ public class DriverRegistrationDTO {
     public void setSeats(int seats) { this.seats = seats; }
     public void setAllowsPets(boolean allowsPets) { this.allowsPets = allowsPets; }
     public void setAllowsBabies(boolean allowsBabies) { this.allowsBabies = allowsBabies; }
+    
+    public Vehicle toVehicle() {
+        Vehicle vehicle = new Vehicle();
+        vehicle.setVehicleModel(vehicleModel);
+        vehicle.setType(vehicleType);
+        vehicle.setRegistrationPlate(registrationPlate);
+        vehicle.setSeats(seats);
+        vehicle.setPetsAllowed(allowsPets);
+        vehicle.setBabiesAllowed(allowsBabies);
+        return vehicle;
+    }
+    
 }

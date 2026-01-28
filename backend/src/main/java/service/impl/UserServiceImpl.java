@@ -1,15 +1,27 @@
 package service.impl;
 
-import dto.user.UserProfileDTO;
+import dto.user.*;
 
 import java.util.List;
+import java.util.UUID;
 
 import domain.entities.*;
+import domain.enums.*;
 import service.UserService;
+import repository.*;
 
 public class UserServiceImpl implements UserService {
 
-    @Override
+		private final UserRepository userRepository;
+	    private final ProfileChangeRequestRepository profileChangeRequestRepository;
+
+	    public UserServiceImpl(UserRepository userRepository,
+	                           ProfileChangeRequestRepository profileChangeRequestRepository) {
+	        this.userRepository = userRepository;
+	        this.profileChangeRequestRepository = profileChangeRequestRepository;
+	    }
+	
+   /* @Override
     public UserProfileDTO getUserProfile(String userId) {
 
         // Simulated user fetch (ISS purpose)
@@ -36,8 +48,60 @@ public class UserServiceImpl implements UserService {
         dto.setUserType(user.getUserType());
 
         return dto;
-    }
+    }*/
+	
+	    @Override
+	    public UserProfileDTO getUserProfile(String userId) {
 
+	        User user = userRepository.findById(userId)
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+
+	        return UserProfileDTO.fromUser(user);
+	    }
+
+	    @Override
+	    public UserProfileDTO updateProfile(String userId, UpdateUserProfileDTO dto) {
+
+	        User user = userRepository.findById(userId)
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+
+	        if (user.getUserType() == UserType.DRIVER) {
+	            ProfileChangeRequest request = new ProfileChangeRequest(
+	                    user,
+	                    "PROFILE_UPDATE",
+	                    user.toString(),      // on reality JSON
+	                    dto.toString()
+	            );
+
+	            profileChangeRequestRepository.save(request);
+	            return UserProfileDTO.fromUser(user);
+	        }
+
+	        user.setFirstName(dto.getFirstName());
+	        user.setLastName(dto.getLastName());
+	        user.setGender(dto.getGender());
+	        user.setPhoneNumber(dto.getPhoneNumber());
+	        user.setAddress(dto.getAddress());
+	        user.setProfilePictureUrl(dto.getProfilePictureUrl());
+
+	        userRepository.save(user);
+	        return UserProfileDTO.fromUser(user);
+	    }
+	    
+	    @Override
+	    public void changePassword(String userId, ChangePasswordDTO dto) {
+
+	        User user = userRepository.findById(userId)
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+
+	        if (!user.getPassword().equals(dto.getOldPassword())) {
+	            throw new RuntimeException("Invalid old password");
+	        }
+
+	        user.setPassword(dto.getNewPassword());
+	        userRepository.save(user);
+	    }
+	    
 	@Override
 	public User register(User user) {
 		// TODO Auto-generated method stub

@@ -13,4 +13,5 @@ public interface DriverService {
 	public Driver registerDriver(DriverRegistrationDTO dto);
 	public List<ActiveDriverDTO> getActiveDrivers();
 	List<DriverRideHistoryDTO> getDriverRideHistory(String driverId, LocalDate from, LocalDate to);
+	void activateDriver(String token, String newPassword);
 }

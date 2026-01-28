@@ -1,0 +1,86 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Inter', system-ui, sans-serif;
+  z-index: 1000;
+}
+
+.popup {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px;
+  background: #f9f9f7;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+h3 {
+  margin: 0 0 20px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2933;
+}
+
+.favorites-list {
+  margin-bottom: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.favorite-item {
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.favorite-item span {
+  color: #374151;
+  font-size: 14px;
+  flex: 1;
+}
+
+.favorite-item button {
+  padding: 8px 14px;
+  background: #2ec4b6;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.favorite-item button:hover {
+  background: #28b3a7;
+}
+
+.popup button {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid #2ec4b6;
+  color: #2ec4b6;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.popup button:hover {
+  background: rgba(46, 196, 182, 0.1);
+}

@@ -24,9 +24,11 @@ public class DriverController {
     }
 
     @PostMapping("/register")
-    public Driver registerDriver(@RequestBody DriverRegistrationDTO dto) {
-        return driverService.registerDriver(dto);
+    public ResponseEntity<?> registerDriver(@RequestBody DriverRegistrationDTO dto) {
+        driverService.registerDriver(dto);
+        return ResponseEntity.ok("Driver successfully registered");
     }
+
 
     @GetMapping("/active")
     public ResponseEntity<List<ActiveDriverDTO>> getActiveDrivers() {
