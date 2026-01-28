@@ -15,26 +15,30 @@ public class RideController {
     public RideController(RideService rideService) {
         this.rideService = rideService;
     }
+
     @PostMapping
     public ResponseEntity<RideResponseDTO> orderRide(@RequestBody RideOrderDTO dto) {
         RideResponseDTO response = rideService.orderRide(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    
-    @PatchMapping("/{rideId}/start")
-    public ResponseEntity<RideStartResponseDTO> startRide(
-            @PathVariable String rideId
-    ) {
-        RideStartResponseDTO response = rideService.startRide(rideId);
-        return ResponseEntity.ok(response);
-    }
-    
-    @GetMapping("/{rideId}/tracking")
-    public ResponseEntity<RideTrackingDTO> getRideTracking(
-            @PathVariable String rideId) {
 
-        RideTrackingDTO tracking = rideService.getRideTracking(rideId);
-        return ResponseEntity.ok(tracking);
+    @PostMapping("/favorites/{favoriteRouteId}")
+    public ResponseEntity<RideResponseDTO> orderFromFavorite(
+            @PathVariable String favoriteRouteId,
+            @RequestBody FavoriteRideOrderDTO dto
+    ) {
+        RideResponseDTO response = rideService.orderRideFromFavorite(favoriteRouteId, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PatchMapping("/{rideId}/start")
+    public ResponseEntity<RideStartResponseDTO> startRide(@PathVariable String rideId) {
+        return ResponseEntity.ok(rideService.startRide(rideId));
+    }
+
+    @GetMapping("/{rideId}/tracking")
+    public ResponseEntity<RideTrackingDTO> getRideTracking(@PathVariable String rideId) {
+        return ResponseEntity.ok(rideService.getRideTracking(rideId));
     }
 
     @PostMapping("/{rideId}/inconsistency")
@@ -46,16 +50,13 @@ public class RideController {
         rideService.reportInconsistency(dto);
         return ResponseEntity.ok().build();
     }
-    
+
     @PostMapping("/{rideId}/finish")
     public ResponseEntity<RideFinishResponseDTO> finishRide(
             @PathVariable String rideId,
             @RequestBody RideFinishDTO dto) {
 
         dto.setRideId(rideId);
-
-        RideFinishResponseDTO response = rideService.finishRideResponse(dto);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(rideService.finishRideResponse(dto));
     }
 }

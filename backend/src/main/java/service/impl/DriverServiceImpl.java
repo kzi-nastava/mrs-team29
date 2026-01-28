@@ -36,7 +36,7 @@ public class DriverServiceImpl implements DriverService {
         driver.setGender(dto.getGender());
         driver.setUserName(dto.getUsername());
         driver.setEmail(dto.getEmail());
-        driver.setPassword(dto.getPassword()); // kasnije hash
+        driver.setPassword(dto.getPassword());
         driver.setPhoneNumber(dto.getPhoneNumber());
         driver.setAddress(dto.getAddress());
         driver.setProfilePictureUrl(dto.getProfilePictureUrl());

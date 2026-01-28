@@ -1,7 +1,7 @@
 package dto.ride;
 
-import domain.enums.*;
-import domain.entities.*;
+import domain.entities.Ride;
+import domain.enums.RideStatus;
 
 public class RideResponseDTO {
 
@@ -21,16 +21,13 @@ public class RideResponseDTO {
     public void setRideId(String rideId) { this.rideId = rideId; }
     public void setStatus(RideStatus status) { this.status = status; }
     public void setPrice(double price) { this.price = price; }
-    
+
     public static RideResponseDTO fromRide(Ride ride) {
         RideResponseDTO dto = new RideResponseDTO();
         dto.rideId = ride.getId();
         dto.status = ride.getStatus();
         dto.price = ride.getPrice();
-        dto.driverId = ride.getDriver() != null
-                ? ride.getDriver().getId()
-                : null;
+        dto.driverId = ride.getDriver() != null ? ride.getDriver().getId() : null;
         return dto;
     }
 }
-

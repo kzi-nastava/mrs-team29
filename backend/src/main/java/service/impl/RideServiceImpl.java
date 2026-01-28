@@ -16,51 +16,66 @@ public class RideServiceImpl implements RideService {
 	private final RideRepository rideRepository;
     private final UserRepository userRepository;
     private final DriverRepository driverRepository;
+    private final FavoriteRouteRepository favoriteRouteRepository;
+    private final AddressRepository addressRepository;
 	
-    public RideServiceImpl(RideRepository rideRepository,
+    public RideServiceImpl(
+            RideRepository rideRepository,
             UserRepository userRepository,
-            DriverRepository driverRepository) {
-    	this.rideRepository = rideRepository;
-    	this.userRepository = userRepository;
-    	this.driverRepository = driverRepository;
+            DriverRepository driverRepository,
+            AddressRepository addressRepository,
+            FavoriteRouteRepository favoriteRouteRepository
+    ) {
+        this.rideRepository = rideRepository;
+        this.userRepository = userRepository;
+        this.driverRepository = driverRepository;
+        this.addressRepository = addressRepository;
+        this.favoriteRouteRepository = favoriteRouteRepository;
     }
     	
     @Override
     public RideResponseDTO orderRide(RideOrderDTO dto) {
 
-    	 User creator = userRepository.findById(dto.getCreatorId())
-                 .orElseThrow(() -> new RuntimeException("User not found"));
+        User creator = userRepository.findById(dto.getCreatorId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-         boolean hasActiveRide = rideRepository
-                 .existsByPassengerIdAndStatusIn(
-                         creator.getId(),
-                         List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.ACTIVE)
-                 );
+        boolean hasActiveRide = rideRepository.existsByPassengerIdAndStatusIn(
+                creator.getId(),
+                List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.ACTIVE)
+        );
 
-         if (hasActiveRide) {
-             throw new RuntimeException("User already has an active ride");
-         }
+        if (hasActiveRide) {
+            throw new RuntimeException("User already has active ride");
+        }
 
-         Ride ride = new Ride();
-         ride.setId(UUID.randomUUID().toString());
-         ride.setPickupAddress(dto.getPickupAddress());
-         ride.setDestinationAddress(dto.getDestinationAddress());
-         ride.setStops(dto.getStops());
-         ride.setPassengers(List.of(creator));
-         ride.setStatus(RideStatus.REQUESTED);
+        Address pickup = addressRepository.findById(dto.getPickupAddressId())
+                .orElseThrow(() -> new RuntimeException("Pickup address not found"));
 
-         ride.setPrice(1000);
+        Address destination = addressRepository.findById(dto.getDestinationAddressId())
+                .orElseThrow(() -> new RuntimeException("Destination address not found"));
 
-         ride.setTimestamps(List.of(LocalDateTime.now()));
+        List<Address> stops = dto.getStopAddressIds() == null ? new ArrayList<>() :
+                dto.getStopAddressIds().stream()
+                        .map(id -> addressRepository.findById(id).orElseThrow())
+                        .collect(Collectors.toList());
 
-         Driver driver = driverRepository.findFirstAvailableDriver()
-                 .orElseThrow(() -> new RuntimeException("No available drivers"));
+        Driver driver = driverRepository.findFirstAvailableDriver()
+                .orElseThrow(() -> new RuntimeException("No available drivers"));
 
-         ride.setDriver(driver);
+        Ride ride = new Ride();
+        ride.setId(UUID.randomUUID().toString());
+        ride.setPickupAddress(pickup);
+        ride.setDestinationAddress(destination);
+        ride.setStops(stops);
+        ride.setPassengers(List.of(creator));
+        ride.setDriver(driver);
+        ride.setStatus(RideStatus.REQUESTED);
+        ride.setPrice(1000);
+        ride.setTimestamps(List.of(LocalDateTime.now()));
 
-         rideRepository.save(ride);
+        rideRepository.save(ride);
 
-         return RideResponseDTO.fromRide(ride);
+        return RideResponseDTO.fromRide(ride);
     }
     
     @Override
@@ -112,17 +127,31 @@ public class RideServiceImpl implements RideService {
     }
     
     @Override
-    public RideResponseDTO orderRideFromFavorite(
-            String favoriteRouteId,
-            FavoriteRideOrderDTO dto
-    ) {
-        RideResponseDTO response = new RideResponseDTO();
+    public RideResponseDTO orderRideFromFavorite(String favoriteRouteId, FavoriteRideOrderDTO dto) {
 
-        response.setRideId(UUID.randomUUID().toString());
-        response.setStatus(RideStatus.REQUESTED);
-        response.setPrice(700.0); 
+        FavoriteRoute route = favoriteRouteRepository.findById(favoriteRouteId)
+                .orElseThrow(() -> new RuntimeException("Favorite route not found"));
 
-        return response;
+        User creator = userRepository.findById(dto.getClientId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Driver driver = driverRepository.findFirstAvailableDriver()
+                .orElseThrow(() -> new RuntimeException("No available drivers"));
+
+        Ride ride = new Ride();
+        ride.setId(UUID.randomUUID().toString());
+        ride.setPickupAddress(route.getPickupAddress());
+        ride.setDestinationAddress(route.getDestinationAddress());
+        ride.setStops(route.getStops());
+        ride.setPassengers(List.of(creator));
+        ride.setDriver(driver);
+        ride.setStatus(RideStatus.REQUESTED);
+        ride.setPrice(700);
+        ride.setTimestamps(List.of(LocalDateTime.now()));
+
+        rideRepository.save(ride);
+
+        return RideResponseDTO.fromRide(ride);
     }
 
     @Override
