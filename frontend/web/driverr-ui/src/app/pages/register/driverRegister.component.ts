@@ -1,38 +1,46 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { DriverService } from '../../services/driver.service';
 
 @Component({
-  selector: 'app-driver-register',
-  templateUrl: './driver-register.component.html',
-  styleUrls: ['./register.component.css'],
+  selector: 'app-admin-driver-register',
+  standalone: true,
+  templateUrl: './admin-driver-register.component.html',
+  styleUrls: ['../register/register.css']
 })
-export class DriverRegisterComponent {
+export class AdminDriverRegisterComponent {
 
   form: FormGroup;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private driverService: DriverService
+  ) {
     this.form = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      username: ['', Validators.required],
-      phoneNumber: ['', Validators.required],
-      vehicleModel: ['', Validators.required],
-      vehiclePlate: ['', Validators.required],
-      password: ['', Validators.required],
-      confirmPassword: ['', Validators.required]
+      firstName: [''],
+      lastName: [''],
+      gender: [''],
+      username: [''],
+      email: [''],
+      password: [''],
+      phoneNumber: [''],
+
+      vehicleModel: [''],
+      vehicleType: [''],
+      registrationPlate: [''],
+      seats: [4],
+      allowsPets: [false],
+      allowsBabies: [false]
     });
   }
 
   submit() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    console.log('Driver register payload:', this.form.value);
-
-    // TODO: driverService.register(this.form.value)
+    this.driverService.registerDriver(this.form.value)
+      .subscribe({
+        next: () => alert('Driver registered successfully'),
+        error: () => alert('Error registering driver')
+      });
   }
 }
+
 
