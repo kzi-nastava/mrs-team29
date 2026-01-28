@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DriverService } from '../../services/driver.service';
 
 @Component({
   selector: 'app-admin-driver-register',
   standalone: true,
+  imports: [ReactiveFormsModule],
   templateUrl: './driverRegister.component.html',
   styleUrls: ['./register.component.css']
 })
@@ -24,7 +25,6 @@ export class AdminDriverRegisterComponent {
       email: [''],
       password: [''],
       phoneNumber: [''],
-
       vehicleModel: [''],
       vehicleType: [''],
       registrationPlate: [''],
@@ -42,5 +42,3 @@ export class AdminDriverRegisterComponent {
       });
   }
 }
-
-

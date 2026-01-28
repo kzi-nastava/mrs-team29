@@ -1,18 +1,21 @@
 import { Component } from '@angular/core';
 import { RideService } from '../../services/ride.service';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FavoritePopupComponent } from './favorite-popup.component';
 
 @Component({
   selector: 'app-order-ride',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, FavoritePopupComponent],
   templateUrl: './ride-order.component.html',
   styleUrls: ['./ride-order.component.css']
 })
 export class OrderRideComponent {
 
   creatorId = 'USER_ID_123'; // privremeno
+  
+  showFavorites = false;
 
   pickup = '';
   destination = '';
@@ -22,7 +25,6 @@ export class OrderRideComponent {
   baby = false;
 
   passengerEmails = '';
-
   message = '';
 
   constructor(private rideService: RideService) {}
