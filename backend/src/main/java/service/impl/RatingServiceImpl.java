@@ -1,8 +1,11 @@
 package service.impl;
 
+import org.springframework.stereotype.Service;
+
 import dto.rating.*;
 import service.RatingService;
 
+@Service
 public class RatingServiceImpl implements RatingService {
 
     @Override

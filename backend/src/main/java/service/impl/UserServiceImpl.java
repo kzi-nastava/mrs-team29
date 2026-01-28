@@ -5,11 +5,14 @@ import dto.user.*;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+
 import domain.entities.*;
 import domain.enums.*;
 import service.UserService;
 import repository.*;
 
+@Service
 public class UserServiceImpl implements UserService {
 
 		private final UserRepository userRepository;

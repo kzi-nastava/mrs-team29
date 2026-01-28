@@ -8,11 +8,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+
 import domain.entities.*;
 import domain.enums.*;
 import service.RideService;
 import repository.*;
 
+@Service
 public class RideServiceImpl implements RideService {
 
 	private final RideRepository rideRepository;

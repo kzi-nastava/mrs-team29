@@ -8,11 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+
 import domain.entities.*;
 import domain.enums.*;
 import service.DriverService;
 import repository.*;
 
+@Service
 public class DriverServiceImpl implements DriverService {
 
 	private final DriverRepository driverRepository;
