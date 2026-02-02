@@ -1,47 +1,129 @@
 <div class="profile-page">
   <div class="profile-card">
-    <h1 class="title">My profile</h1>
+    <h1 class="title">My Profile</h1>
     <p class="subtitle">View and edit your personal information</p>
 
     <div class="avatar-section">
-      <div class="avatar">N</div>
-      <button class="secondary-btn">Change photo</button>
+      <div class="avatar">{{ profileForm.get('firstName')?.value?.charAt(0) || 'U' }}</div>
+      <button type="button" class="secondary-btn">Change photo</button>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="save()">
+    <!-- Working Hours Section (for drivers) -->
+    <div *ngIf="isDriver" class="working-hours-section">
+      <h3>Working Hours (Last 24h)</h3>
+      <div class="working-hours-display">
+        <span class="hours-value">{{ workingHours | number:'1.1-1' }}</span>
+        <span class="hours-label">hours</span>
+      </div>
+    </div>
+
+    <!-- Profile Information Form -->
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+      <h3>Basic Information</h3>
 
       <div class="form-row">
         <div class="form-group">
           <label for="firstName">First name</label>
-         <input id="firstName" type="text" formControlName="firstName" />
-       </div>
+          <input id="firstName" type="text" formControlName="firstName" />
+        </div>
 
         <div class="form-group">
           <label for="lastName">Last name</label>
           <input id="lastName" type="text" formControlName="lastName" />
-       </div>
+        </div>
       </div>
 
-     <div class="form-group">
+      <div class="form-group">
         <label for="email">Email</label>
-       <input id="email" type="email" formControlName="email" [disabled]="true"/>
-     </div>
+        <input id="email" type="email" formControlName="email" [disabled]="true"/>
+      </div>
 
-     <div class="form-group">
+      <div class="form-group">
         <label for="username">Username</label>
-       <input id="username" type="text" formControlName="username" [disabled]="true"/>
-     </div>
+        <input id="username" type="text" formControlName="username" [disabled]="true"/>
+      </div>
 
-     <div class="form-group">
+      <div class="form-group">
         <label for="phone">Phone number</label>
-       <input id="phone" type="text" formControlName="phoneNumber" />
-     </div>
+        <input id="phone" type="text" formControlName="phoneNumber" />
+      </div>
 
-      <button type="submit" class="primary-btn">
-       Save changes
+      <div class="form-group">
+        <label for="gender">Gender</label>
+        <select id="gender" formControlName="gender">
+          <option value="">Select gender</option>
+          <option value="MALE">Male</option>
+          <option value="FEMALE">Female</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+
+      <div *ngIf="profileMessage" class="alert alert-success">
+        {{ profileMessage }}
+      </div>
+
+      <button type="submit" class="primary-btn" [disabled]="loading">
+        {{ loading ? 'Saving...' : 'Save changes' }}
       </button>
     </form>
+
+    <!-- Password Change Section -->
+    <div class="password-section">
+      <button type="button" class="secondary-btn" (click)="togglePasswordChange()">
+        {{ showPasswordChange ? 'Cancel' : 'Change Password' }}
+      </button>
+
+      <form *ngIf="showPasswordChange" [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="password-form">
+        <h3>Change Password</h3>
+
+        <div class="form-group">
+          <label for="oldPassword">Current Password</label>
+          <input 
+            id="oldPassword" 
+            type="password" 
+            formControlName="oldPassword"
+            [class.error]="passwordForm.get('oldPassword')?.invalid && passwordForm.get('oldPassword')?.touched"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input 
+            id="newPassword" 
+            type="password" 
+            formControlName="newPassword"
+            [class.error]="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm New Password</label>
+          <input 
+            id="confirmPassword" 
+            type="password" 
+            formControlName="confirmPassword"
+            [class.error]="(passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched) || passwordForm.hasError('passwordMismatch')"
+          />
+          <small *ngIf="passwordForm.hasError('passwordMismatch')" class="error-text">
+            Passwords do not match
+          </small>
+        </div>
+
+        <div *ngIf="passwordError" class="alert alert-danger">
+          {{ passwordError }}
+        </div>
+
+        <div *ngIf="passwordMessage" class="alert alert-success">
+          {{ passwordMessage }}
+        </div>
+
+        <button type="submit" class="primary-btn" [disabled]="passwordForm.invalid || loading">
+          {{ loading ? 'Updating...' : 'Update Password' }}
+        </button>
+      </form>
+    </div>
   </div>
 </div>
+
 
 

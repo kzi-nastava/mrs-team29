@@ -1,37 +1,152 @@
-<h2>Order Ride</h2>
+<div class="order-ride-page">
+  <div class="order-container">
+    <h1 class="title">Order a Ride</h1>
+    <p class="subtitle">Enter your ride details and confirm your order</p>
 
-<div class="card">
-  <label>Pickup</label>
-  <input [(ngModel)]="pickup" />
+    <!-- Active Ride Warning -->
+    <div *ngIf="hasActiveRide" class="alert alert-warning">
+      <strong>You have an active ride.</strong> Please complete or cancel it before ordering another.
+    </div>
 
-  <label>Destination</label>
-  <input [(ngModel)]="destination" />
+    <!-- Error Messages -->
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
 
-  <div *ngFor="let stop of stops; let i = index">
-    <label>Stop {{ i + 1 }}</label>
-    <input [(ngModel)]="stops[i]" />
+    <!-- Success Message -->
+    <div *ngIf="message" class="alert alert-success">
+      {{ message }}
+    </div>
+
+    <!-- Order Form -->
+    <form [formGroup]="rideForm" (ngSubmit)="orderRide()" class="order-form">
+
+      <div class="form-section">
+        <h3>Ride Location</h3>
+        
+        <div class="form-group">
+          <label for="pickup">Pickup Location</label>
+          <input 
+            id="pickup" 
+            type="text" 
+            formControlName="pickupAddressId"
+            placeholder="Enter pickup address"
+            [class.error]="rideForm.get('pickupAddressId')?.invalid && rideForm.get('pickupAddressId')?.touched"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="destination">Destination</label>
+          <input 
+            id="destination" 
+            type="text" 
+            formControlName="destinationAddressId"
+            placeholder="Enter destination address"
+            [class.error]="rideForm.get('destinationAddressId')?.invalid && rideForm.get('destinationAddressId')?.touched"
+          />
+        </div>
+
+        <div class="stops-section">
+          <h4>Additional Stops (Optional)</h4>
+          <div *ngFor="let stop of stops; let i = index" class="stop-item">
+            <input 
+              type="text" 
+              [(ngModel)]="stops[i]"
+              [ngModelOptions]="{ standalone: true }"
+              placeholder="Stop {{ i + 1 }}"
+            />
+            <button type="button" class="remove-btn" (click)="removeStop(i)">Remove</button>
+          </div>
+          <button type="button" class="secondary-btn" (click)="addStop()">+ Add Stop</button>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Ride Details</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="vehicleType">Vehicle Type</label>
+            <select id="vehicleType" formControlName="vehicleType">
+              <option *ngFor="let type of vehicleTypes" [value]="type.value">
+                {{ type.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="scheduledTime">Schedule for Later (Optional)</label>
+            <input 
+              id="scheduledTime" 
+              type="datetime-local" 
+              formControlName="scheduledTime"
+            />
+            <small>Leave empty for immediate ride (max 5 hours in future)</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="passengers">Passengers (Optional)</label>
+          <input 
+            id="passengers" 
+            type="text" 
+            formControlName="passengerIds"
+            placeholder="Enter passenger emails separated by commas"
+          />
+          <small>Add other users' emails to invite them</small>
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Special Requirements</label>
+          <textarea 
+            id="notes" 
+            formControlName="notes"
+            placeholder="Any special requests? (e.g., gentle driving, quiet ride)"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div class="checkboxes">
+          <div class="checkbox-group">
+            <input id="pets" type="checkbox" formControlName="pets" />
+            <label for="pets">I have pets</label>
+          </div>
+
+          <div class="checkbox-group">
+            <input id="baby" type="checkbox" formControlName="baby" />
+            <label for="baby">I have a baby</label>
+          </div>
+        </div>
+      </div>
+
+      <button 
+        type="submit" 
+        class="primary-btn" 
+        [disabled]="rideForm.invalid || loading || hasActiveRide"
+      >
+        {{ loading ? 'Ordering...' : 'Order Ride' }}
+      </button>
+    </form>
+
+    <!-- Favorites Section -->
+    <div class="favorites-section" *ngIf="favoriteRoutes.length > 0">
+      <h3>Quick Order from Favorites</h3>
+      <div class="favorites-grid">
+        <div *ngFor="let route of favoriteRoutes" class="favorite-card">
+          <h4>{{ route.name }}</h4>
+          <p class="route-info">{{ route.pickupAddressId }} → {{ route.destinationAddressId }}</p>
+          <button 
+            type="button" 
+            class="secondary-btn"
+            (click)="orderFromFavorite(route.id)"
+            [disabled]="loading || hasActiveRide"
+          >
+            Order Now
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <button (click)="addStop()">+ Add stop</button>
-
-  <label>
-    <input type="checkbox" [(ngModel)]="pets" /> Pets
-  </label>
-
-  <label>
-    <input type="checkbox" [(ngModel)]="baby" /> Baby
-  </label>
-
-  <button class="primary" (click)="orderRide()">Order</button>
-
-  <p class="message">{{ message }}</p>
-
-  <button class="secondary" (click)="showFavorites = true">
-    Order from favorites
-  </button>
 </div>
 
-<app-favorite-popup *ngIf="showFavorites"
-  (close)="showFavorites=false">
-</app-favorite-popup>
 

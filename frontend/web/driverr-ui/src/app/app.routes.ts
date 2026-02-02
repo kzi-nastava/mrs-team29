@@ -5,16 +5,22 @@ import { AdminDriverRegisterComponent } from './pages/register/driverRegister.co
 import { ProfileComponent } from './pages/profile/profile.component';
 import { DriverHistoryComponent } from './pages/driver-history/driver-history.component';
 import { OrderRideComponent } from './pages/ride-order/ride-order.component';
+import { DriverActivationComponent } from './pages/driver-activation/driver-activation.component';
+import { AdminApprovalComponent } from './pages/admin-approval/admin-approval.component';
+import { FavoriteRoutesComponent } from './pages/favorite-routes/favorite-routes.component';
 import { authGuard } from './guards/auth.guard.js';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'driver-activate', component: DriverActivationComponent }, // 2.2.3
   { path: 'admin/driver-register', component: AdminDriverRegisterComponent, canActivate: [authGuard] },
-  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+  { path: 'admin/approvals', component: AdminApprovalComponent, canActivate: [authGuard] }, // 2.3 Admin dashboard
+  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] }, // 2.3 with password change
   { path: 'driver-history', component: DriverHistoryComponent, canActivate: [authGuard] },
-  { path: 'order-ride', component: OrderRideComponent, canActivate: [authGuard] },
+  { path: 'order-ride', component: OrderRideComponent, canActivate: [authGuard] }, // 2.4.1 Enhanced
+  { path: 'favorite-routes', component: FavoriteRoutesComponent, canActivate: [authGuard] }, // 2.4.3
   { path: 'driver/history', component: DriverHistoryComponent, canActivate: [authGuard] },
-  { path: 'favorites', redirectTo: 'order-ride' },
+  { path: 'favorites', redirectTo: 'favorite-routes' },
 ];

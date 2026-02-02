@@ -11,4 +11,18 @@ export class DriverService {
   registerDriver(data: any) {
     return this.http.post(`${this.api}/register`, data);
   }
+
+  // 2.2.3 – Activate driver account with token
+  activateDriver(activationDto: any) {
+    return this.http.post(`${this.api}/activate`, activationDto);
+  }
+
+  // 2.3 – Get driver working hours in last 24 hours
+  getWorkingHours(driverId: string) {
+    return this.http.get<any>(`${this.api}/${driverId}/working-hours`);
+  }
+
+  getDriver(driverId: string) {
+    return this.http.get<any>(`${this.api}/${driverId}`);
+  }
 }
