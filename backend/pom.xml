@@ -68,62 +68,6 @@
 
 	<build>
 		<plugins>
-			<!-- Frontend plugin: Build Angular and copy to backend static folder -->
-			<plugin>
-				<groupId>com.github.eirslett</groupId>
-				<artifactId>frontend-maven-plugin</artifactId>
-				<version>1.14.0</version>
-				<configuration>
-					<workingDirectory>../frontend/web/driverr-ui</workingDirectory>
-					<nodeVersion>v20.10.0</nodeVersion>
-					<npmVersion>10.5.0</npmVersion>
-				</configuration>
-				<executions>
-					<!-- Install npm dependencies -->
-					<execution>
-						<id>install node and npm</id>
-						<goals>
-							<goal>install-node-and-npm</goal>
-						</goals>
-						<phase>generate-resources</phase>
-					</execution>
-					<!-- Build Angular app -->
-					<execution>
-						<id>npm build</id>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<configuration>
-							<arguments>run build</arguments>
-						</configuration>
-						<phase>generate-resources</phase>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- Copy built frontend to backend static folder -->
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy frontend files to backend</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/src/main/resources/static</outputDirectory>
-							<resources>
-								<resource>
-									<directory>../frontend/web/driverr-ui/dist/driverr-ui</directory>
-									<filtering>false</filtering>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
