@@ -1,8 +1,8 @@
 package domain.entities;
 
 import domain.enums.*;
-
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,18 +17,21 @@ public class ProfileChangeRequest {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
+    @NotBlank(message = "Field name cannot be blank")
+    @Column(name = "field_name", nullable = false)
     private String fieldName;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name = "old_value")
     private String oldValue;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name = "new_value")
     private String newValue;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ChangeRequestStatus status;
 
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     public ProfileChangeRequest() {}
@@ -44,7 +47,7 @@ public class ProfileChangeRequest {
     }
     
     public String getId() { return id; }
-    public User getUserId() { return user; }
+    public User getUser() { return user; }
     public String getFieldName() { return fieldName; }
     public String getOldValue() { return oldValue; }
     public String getNewValue() { return newValue; }
@@ -52,7 +55,7 @@ public class ProfileChangeRequest {
     public LocalDateTime getCreatedAt() { return createdAt; }
     
     public void setId(String id) { this.id = id; }
-    public void setUserId(User user) { this.user = user; }
+    public void setUser(User user) { this.user = user; }
     public void setFieldName(String fieldName) { this.fieldName = fieldName; }
     public void setOldValue(String oldValue) { this.oldValue = oldValue; }
     public void setNewValue(String newValue) { this.newValue = newValue; }

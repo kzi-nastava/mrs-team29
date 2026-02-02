@@ -100,7 +100,7 @@ public class DriverServiceImpl implements DriverService {
             throw new RuntimeException("Token expired");
         }
 
-        Driver driver = driverRepository.findById(token.getUserId())
+        Driver driver = driverRepository.findById(token.getUser().getId())
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
 
         driver.setPassword(newPassword);

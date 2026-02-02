@@ -2,7 +2,6 @@ package dto.user;
 
 import domain.entities.Address;
 import domain.enums.Gender;
-import domain.enums.UserType;
 
 public class UpdateUserProfileDTO {
     private String firstName;

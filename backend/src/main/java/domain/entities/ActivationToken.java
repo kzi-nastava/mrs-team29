@@ -2,8 +2,7 @@ package domain.entities;
 
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
-
-import domain.entities.*;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "activation_token")
@@ -17,9 +16,10 @@ public class ActivationToken {
     private User user;
 	
 	@Column(nullable = false, unique = true)
+    @NotBlank(message = "Token cannot be blank")
     private String token;
 	
-	@Column(nullable = false)
+	@Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
 	
     private boolean used;
@@ -34,7 +34,7 @@ public class ActivationToken {
     }
     
     public String getId() { return id; }
-    public User getUserId() { return user; }
+    public User getUser() { return user; }
     public String getToken() { return token; }
     public LocalDateTime getExpiresAt() {return expiresAt; }
     public boolean isUsed() { return used; }

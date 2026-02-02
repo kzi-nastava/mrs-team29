@@ -3,6 +3,8 @@ package domain.entities;
 import domain.enums.Gender;
 import domain.enums.UserType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Email;
 
 @Entity
 @Table(name = "users")
@@ -13,30 +15,45 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private String id;
 	
+	@NotBlank(message = "First name cannot be blank")
+	@Column(name = "first_name")
 	private String firstName;
+	
+	@NotBlank(message = "Last name cannot be blank")
+	@Column(name = "last_name")
 	private String lastName;
 	
 	@Enumerated(EnumType.STRING)
 	private Gender gender;
 	
+	@NotBlank(message = "Username cannot be blank")
 	private String userName;
 	
 	@Column(unique = true, nullable = false)
+	@Email(message = "Email must be valid")
 	private String email;
 	
+	@NotBlank(message = "Password cannot be blank")
 	private String password;
 	
 	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	private UserType type;
 	
+	@Column(name = "phone_number")
 	private String phoneNumber;
 	
 	@ManyToOne
 	@JoinColumn(name = "address_id")
 	private Address address;
 	
+	@Column(name = "profile_picture_url")
 	private String profilePictureUrl;
+	
+	@Column(name = "is_blocked")
 	private boolean isBlocked;
+	
+	@Column(name = "is_active")
 	private boolean isActive;
 	
 	public User() {}
