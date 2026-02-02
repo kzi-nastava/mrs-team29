@@ -1,7 +1,12 @@
 package dto.user;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class ChangePasswordDTO {
-	private String oldPassword;
+    @NotBlank(message = "Old password is required")
+    private String oldPassword;
+    
+    @NotBlank(message = "New password is required")
     private String newPassword;
 
     public String getOldPassword() { return oldPassword; }

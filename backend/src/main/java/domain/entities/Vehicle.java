@@ -2,25 +2,37 @@ package domain.entities;
 
 import domain.enums.VehicleType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 
 @Entity
-@Table(name = "vehicles")
+@Table(name = "vehicle")
 public class Vehicle {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.UUID)
 	private String id;
 	
+	@NotBlank(message = "Vehicle model cannot be blank")
+	@Column(name = "vehicle_model")
 	private String vehicleModel;
 	
 	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	private VehicleType type;
 	
-	@Column(unique = true)
+	@NotBlank(message = "Registration plate cannot be blank")
+	@Column(name = "registration_plate", unique = true, nullable = false)
 	private String registrationPlate;
 	
+	@Positive(message = "Seats must be greater than 0")
+	@Column(nullable = false)
 	private int seats;
+	
+	@Column(name = "pets_allowed", nullable = false)
 	private boolean petsAllowed;
+	
+	@Column(name = "babies_allowed", nullable = false)
 	private boolean babiesAllowed;
 	
 	public Vehicle() {}

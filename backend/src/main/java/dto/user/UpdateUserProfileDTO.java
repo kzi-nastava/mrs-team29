@@ -2,11 +2,15 @@ package dto.user;
 
 import domain.entities.Address;
 import domain.enums.Gender;
-import domain.enums.UserType;
+import jakarta.validation.constraints.NotBlank;
 
 public class UpdateUserProfileDTO {
+    @NotBlank(message = "First name is required")
     private String firstName;
+    
+    @NotBlank(message = "Last name is required")
     private String lastName;
+    
     private Gender gender;
     private String username;
     private String phoneNumber;

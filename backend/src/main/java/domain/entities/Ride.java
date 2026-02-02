@@ -1,11 +1,11 @@
 package domain.entities;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
 import domain.enums.RideStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "ride")
@@ -14,12 +14,14 @@ public class Ride {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private String id;
 	
+	@NotNull(message = "Pickup address cannot be null")
 	@ManyToOne
-    @JoinColumn(name = "pickup_address_id")
+    @JoinColumn(name = "pickup_address_id", nullable = false)
 	private Address pickupAddress;
 	
+	@NotNull(message = "Destination address cannot be null")
 	@ManyToOne
-    @JoinColumn(name = "destination_address_id")
+    @JoinColumn(name = "destination_address_id", nullable = false)
 	private Address destinationAddress;
 	
 	@ManyToMany
@@ -42,14 +44,22 @@ public class Ride {
     @JoinColumn(name = "driver_id")
 	private Driver driver;
 	
+	@NotNull(message = "Ride status cannot be null")
 	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	private RideStatus status;
 	
+	@Positive(message = "Price must be greater than 0")
+	@Column(nullable = false)
 	private double price;
 	
 	@ElementCollection
     @CollectionTable(name = "ride_timestamps", joinColumns = @JoinColumn(name = "ride_id"))
+    @Column(name = "timestamp")
 	private List<LocalDateTime> timestamps;
+	
+	@Column(name = "scheduled_time")
+	private LocalDateTime scheduledTime;
 	
 	public Ride() {}
 	public Ride(Address pickupAddress, Address destinationAddress, List<Address> stops, List<User> passengers,
@@ -72,7 +82,8 @@ public class Ride {
 	public Driver getDriver() {return driver;}
 	public RideStatus getStatus() {return status;}
 	public double getPrice() {return price;}
-	public List<LocalDateTime> getTimestamps() {return timestamps;} 
+	public List<LocalDateTime> getTimestamps() {return timestamps;}
+	public LocalDateTime getScheduledTime() {return scheduledTime;}
 	
 	public void setId(String id) {this.id = id;}
 	public void setPickupAddress(Address pickupAddress) {this.pickupAddress = pickupAddress;}
@@ -83,24 +94,5 @@ public class Ride {
 	public void setStatus(RideStatus status) {this.status = status;}
 	public void setPrice(double price) {this.price = price;}
 	public void setTimestamps(List<LocalDateTime> list) {this.timestamps = list;}
-	
-	//These classes will be moved into RideService when made
-	
-	/*public void addPassenger(User passenger) {
-		List<User> passengers = ride.getPassengers();
-		passengers.add(passenger);
-		setPassenger(passengers);
-	}
-	
-	public void addTimestamp(LocalDate timestamp) {
-		List<LocalDate> timestamps = ride.getTimestamps();
-		timestamps.add(timestamp);
-		setTimestamps(timestamps);
-	}
-	
-	public void addStops(Address stop) {
-		List<Address> stops = ride.getStops();
-		stops.add(stop);
-		setStops(stops);
-	}*/
+	public void setScheduledTime(LocalDateTime scheduledTime) {this.scheduledTime = scheduledTime;}
 }

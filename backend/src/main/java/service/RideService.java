@@ -18,5 +18,9 @@ public interface RideService {
 	RideFinishResponseDTO finishRideResponse(RideFinishDTO dto);
 	RideResponseDTO startRide(String rideId, String driverId);
 	RideResponseDTO finishRide(String rideId, String driverId);
-
+	List<FavoriteRouteDTO> getUserFavoriteRoutes(String userId);
+	FavoriteRouteDTO createFavoriteRoute(FavoriteRouteDTO dto);
+	FavoriteRouteDTO updateFavoriteRoute(String routeId, FavoriteRouteDTO dto);
+	void deleteFavoriteRoute(String routeId);
+	boolean hasActiveRide(String userId);
 }

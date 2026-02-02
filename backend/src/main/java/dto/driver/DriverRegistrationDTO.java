@@ -2,15 +2,29 @@ package dto.driver;
 
 import domain.entities.*;
 import domain.enums.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 
 public class DriverRegistrationDTO {
 
     // === USER DATA ===
+    @NotBlank(message = "First name is required")
     private String firstName;
+    
+    @NotBlank(message = "Last name is required")
     private String lastName;
+    
     private Gender gender;
+    
+    @NotBlank(message = "Username is required")
     private String username;
+    
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be valid")
     private String email;
+    
+    @NotBlank(message = "Password is required")
     private String password;
     private UserType userType;
     private String phoneNumber;
@@ -18,9 +32,15 @@ public class DriverRegistrationDTO {
     private String profilePictureUrl;
 
     // === VEHICLE DATA ===
+    @NotBlank(message = "Vehicle model is required")
     private String vehicleModel;
+    
     private VehicleType vehicleType;
+    
+    @NotBlank(message = "Registration plate is required")
     private String registrationPlate;
+    
+    @Positive(message = "Seats must be greater than 0")
     private int seats;
     private boolean allowsPets;
     private boolean allowsBabies;

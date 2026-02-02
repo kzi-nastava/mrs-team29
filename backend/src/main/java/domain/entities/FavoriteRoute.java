@@ -1,8 +1,8 @@
 package domain.entities;
 
 import java.util.List;
-
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "favorite_route")
@@ -14,7 +14,6 @@ public class FavoriteRoute {
 	@ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-	
 	
 	@ManyToOne
     @JoinColumn(name = "pickup_address_id", nullable = false)
@@ -32,6 +31,8 @@ public class FavoriteRoute {
     )
     private List<Address> stops;
     
+    @NotBlank(message = "Route name cannot be blank")
+    @Column(nullable = false)
     private String name;
 
 	public FavoriteRoute() {}
@@ -57,6 +58,11 @@ public class FavoriteRoute {
 	public void setPickupAddress(Address pickupAddress) { this.pickupAddress = pickupAddress; }
 	public void setDestinationAddress(Address destinationAddress) { this.destinationAddress = destinationAddress; }
 	public void setStops(List<Address> stops) { this.stops = stops; }
-	public void addStop(Address stop) { stops.add(stop); }
+	public void addStop(Address stop) { 
+		if (this.stops == null) {
+			this.stops = new java.util.ArrayList<>();
+		}
+		this.stops.add(stop); 
+	}
 	public void setName(String name) { this.name = name; }
 }	

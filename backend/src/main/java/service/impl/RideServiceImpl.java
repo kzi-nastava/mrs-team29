@@ -52,6 +52,19 @@ public class RideServiceImpl implements RideService {
         if (hasActiveRide) {
             throw new RuntimeException("User already has active ride");
         }
+        
+        // Validate scheduled time (max 5 hours in future)
+        if (dto.getScheduledTime() != null) {
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime maxScheduleTime = now.plusHours(5);
+            
+            if (dto.getScheduledTime().isBefore(now)) {
+                throw new RuntimeException("Cannot schedule rides in the past");
+            }
+            if (dto.getScheduledTime().isAfter(maxScheduleTime)) {
+                throw new RuntimeException("Cannot schedule rides more than 5 hours in advance");
+            }
+        }
 
         Address pickup = addressRepository.findById(dto.getPickupAddressId())
                 .orElseThrow(() -> new RuntimeException("Pickup address not found"));
@@ -63,6 +76,18 @@ public class RideServiceImpl implements RideService {
                 dto.getStopAddressIds().stream()
                         .map(id -> addressRepository.findById(id).orElseThrow())
                         .collect(Collectors.toList());
+        
+        // Collect passengers (creator + linked passengers)
+        List<User> passengers = new ArrayList<>();
+        passengers.add(creator);
+        
+        if (dto.getPassengerIds() != null && !dto.getPassengerIds().isEmpty()) {
+            List<User> linkedPassengers = dto.getPassengerIds().stream()
+                .map(id -> userRepository.findById(id).orElseThrow(() -> 
+                    new RuntimeException("Passenger not found: " + id)))
+                .collect(Collectors.toList());
+            passengers.addAll(linkedPassengers);
+        }
 
         Driver driver = driverRepository.findFirstAvailableDriver()
                 .orElseThrow(() -> new RuntimeException("No available drivers"));
@@ -72,15 +97,31 @@ public class RideServiceImpl implements RideService {
         ride.setPickupAddress(pickup);
         ride.setDestinationAddress(destination);
         ride.setStops(stops);
-        ride.setPassengers(List.of(creator));
+        ride.setPassengers(passengers);
         ride.setDriver(driver);
         ride.setStatus(RideStatus.REQUESTED);
-        ride.setPrice(1000);
+        ride.setScheduledTime(dto.getScheduledTime());
+        
+        // Calculate price: base price by vehicle type + 120 per km
+        // TODO: Calculate actual distance - using mock value for now
+        double basePrice = calculateBasePriceByVehicleType(dto.getVehicleType());
+        double distanceKm = 10; // Mock distance
+        ride.setPrice(basePrice + (distanceKm * 120));
+        
         ride.setTimestamps(List.of(LocalDateTime.now()));
 
         rideRepository.save(ride);
 
         return RideResponseDTO.fromRide(ride);
+    }
+    
+    private double calculateBasePriceByVehicleType(VehicleType type) {
+        if (type == null) return 300; // Standard
+        switch (type) {
+            case LUXURY: return 500;
+            case VAN: return 400;
+            default: return 300; // STANDARD
+        }
     }
     
     @Override
@@ -224,6 +265,104 @@ public class RideServiceImpl implements RideService {
 	public List<Ride> getActiveRides() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public List<FavoriteRouteDTO> getUserFavoriteRoutes(String userId) {
+	    List<FavoriteRoute> routes = favoriteRouteRepository.findByUserId(userId);
+	    return routes.stream()
+	        .map(this::mapFavoriteRouteToDTO)
+	        .collect(java.util.stream.Collectors.toList());
+	}
+	
+	@Override
+	public FavoriteRouteDTO createFavoriteRoute(FavoriteRouteDTO dto) {
+	    User user = userRepository.findById(dto.getUserId())
+	        .orElseThrow(() -> new RuntimeException("User not found"));
+	    
+	    Address pickup = addressRepository.findById(dto.getPickupAddressId())
+	        .orElseThrow(() -> new RuntimeException("Pickup address not found"));
+	    
+	    Address destination = addressRepository.findById(dto.getDestinationAddressId())
+	        .orElseThrow(() -> new RuntimeException("Destination address not found"));
+	    
+	    List<Address> stops = new ArrayList<>();
+	    if (dto.getStopAddressIds() != null && !dto.getStopAddressIds().isEmpty()) {
+	        stops = dto.getStopAddressIds().stream()
+	            .map(id -> addressRepository.findById(id).orElseThrow())
+	            .collect(java.util.stream.Collectors.toList());
+	    }
+	    
+	    FavoriteRoute route = new FavoriteRoute();
+	    route.setUser(user);
+	    route.setName(dto.getName());
+	    route.setPickupAddress(pickup);
+	    route.setDestinationAddress(destination);
+	    route.setStops(stops);
+	    
+	    FavoriteRoute saved = favoriteRouteRepository.save(route);
+	    return mapFavoriteRouteToDTO(saved);
+	}
+	
+	@Override
+	public FavoriteRouteDTO updateFavoriteRoute(String routeId, FavoriteRouteDTO dto) {
+	    FavoriteRoute route = favoriteRouteRepository.findById(routeId)
+	        .orElseThrow(() -> new RuntimeException("Favorite route not found"));
+	    
+	    route.setName(dto.getName());
+	    
+	    if (dto.getPickupAddressId() != null) {
+	        Address pickup = addressRepository.findById(dto.getPickupAddressId())
+	            .orElseThrow(() -> new RuntimeException("Pickup address not found"));
+	        route.setPickupAddress(pickup);
+	    }
+	    
+	    if (dto.getDestinationAddressId() != null) {
+	        Address destination = addressRepository.findById(dto.getDestinationAddressId())
+	            .orElseThrow(() -> new RuntimeException("Destination address not found"));
+	        route.setDestinationAddress(destination);
+	    }
+	    
+	    if (dto.getStopAddressIds() != null) {
+	        List<Address> stops = dto.getStopAddressIds().stream()
+	            .map(id -> addressRepository.findById(id).orElseThrow())
+	            .collect(java.util.stream.Collectors.toList());
+	        route.setStops(stops);
+	    }
+	    
+	    FavoriteRoute updated = favoriteRouteRepository.save(route);
+	    return mapFavoriteRouteToDTO(updated);
+	}
+	
+	@Override
+	public void deleteFavoriteRoute(String routeId) {
+	    favoriteRouteRepository.deleteById(routeId);
+	}
+	
+	@Override
+	public boolean hasActiveRide(String userId) {
+	    return rideRepository.existsByPassengerIdAndStatusIn(
+	        userId,
+	        List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.ACTIVE)
+	    );
+	}
+	
+	private FavoriteRouteDTO mapFavoriteRouteToDTO(FavoriteRoute route) {
+	    FavoriteRouteDTO dto = new FavoriteRouteDTO();
+	    dto.setId(route.getId());
+	    dto.setName(route.getName());
+	    dto.setUserId(route.getUser().getId());
+	    dto.setPickupAddressId(route.getPickupAddress().getId());
+	    dto.setDestinationAddressId(route.getDestinationAddress().getId());
+	    
+	    if (route.getStops() != null && !route.getStops().isEmpty()) {
+	        List<String> stopIds = route.getStops().stream()
+	            .map(Address::getId)
+	            .collect(java.util.stream.Collectors.toList());
+	        dto.setStopAddressIds(stopIds);
+	    }
+	    
+	    return dto;
 	}
 
 }

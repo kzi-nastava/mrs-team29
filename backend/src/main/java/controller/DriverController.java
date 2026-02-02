@@ -1,9 +1,7 @@
 package controller;
 
 import dto.driver.*;
-import service.*;
-
-import domain.entities.Driver;
+import jakarta.validation.Valid;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,6 +13,7 @@ import service.DriverService;
 
 @RestController
 @RequestMapping("/api/drivers")
+@CrossOrigin(origins = "*")
 public class DriverController {
 
     private final DriverService driverService;
@@ -24,7 +23,7 @@ public class DriverController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerDriver(@RequestBody DriverRegistrationDTO dto) {
+    public ResponseEntity<?> registerDriver(@Valid @RequestBody DriverRegistrationDTO dto) {
         driverService.registerDriver(dto);
         return ResponseEntity.ok("Driver successfully registered");
     }
@@ -48,5 +47,19 @@ public class DriverController {
 
         return driverService.getDriverRideHistory(driverId, from, to);
     }
+    
+    @PostMapping("/activate")
+    public ResponseEntity<?> activateDriver(@Valid @RequestBody DriverActivationDTO dto) {
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body("Passwords do not match");
+        }
+        driverService.activateDriver(dto.getToken(), dto.getPassword());
+        return ResponseEntity.ok("Driver activated successfully");
+    }
+    
+    @GetMapping("/{driverId}/working-hours")
+    public ResponseEntity<Double> getWorkingHours(@PathVariable String driverId) {
+        double hours = driverService.getWorkingHoursLast24h(driverId);
+        return ResponseEntity.ok(hours);
+    }
 }
-

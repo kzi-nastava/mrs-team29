@@ -1,0 +1,157 @@
+<div class="favorite-routes-page">
+  <div class="routes-container">
+    <h1 class="title">My Favorite Routes</h1>
+    <p class="subtitle">Save and quick-order your frequent routes</p>
+
+    <div *ngIf="message" class="alert alert-success">
+      {{ message }}
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Form Toggle Button -->
+    <div class="form-toggle">
+      <button 
+        type="button" 
+        class="primary-btn"
+        (click)="toggleForm()"
+      >
+        {{ showForm ? 'Cancel' : '+ Add New Route' }}
+      </button>
+    </div>
+
+    <!-- Add/Edit Form -->
+    <div *ngIf="showForm" class="form-card">
+      <h3>{{ editingId ? 'Edit Route' : 'Create Favorite Route' }}</h3>
+      
+      <form [formGroup]="form" (ngSubmit)="saveFavoriteRoute()">
+        
+        <div class="form-group">
+          <label for="name">Route Name</label>
+          <input 
+            id="name" 
+            type="text" 
+            formControlName="name"
+            placeholder="e.g., Home to Office"
+            [class.error]="form.get('name')?.invalid && form.get('name')?.touched"
+          />
+          <small *ngIf="form.get('name')?.hasError('required') && form.get('name')?.touched" class="error-text">
+            Route name is required
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="pickup">Pickup Address</label>
+          <input 
+            id="pickup" 
+            type="text" 
+            formControlName="pickupAddressId"
+            placeholder="Enter pickup address"
+            [class.error]="form.get('pickupAddressId')?.invalid && form.get('pickupAddressId')?.touched"
+          />
+          <small *ngIf="form.get('pickupAddressId')?.hasError('required') && form.get('pickupAddressId')?.touched" class="error-text">
+            Pickup address is required
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="destination">Destination Address</label>
+          <input 
+            id="destination" 
+            type="text" 
+            formControlName="destinationAddressId"
+            placeholder="Enter destination address"
+            [class.error]="form.get('destinationAddressId')?.invalid && form.get('destinationAddressId')?.touched"
+          />
+          <small *ngIf="form.get('destinationAddressId')?.hasError('required') && form.get('destinationAddressId')?.touched" class="error-text">
+            Destination is required
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="stops">Additional Stops (Optional)</label>
+          <textarea 
+            id="stops" 
+            formControlName="stops"
+            placeholder="Enter stops separated by commas"
+            rows="3"
+          ></textarea>
+          <small>Example: Park Street, Shopping Mall, Train Station</small>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="primary-btn" [disabled]="form.invalid || loading">
+            {{ loading ? 'Saving...' : editingId ? 'Update Route' : 'Create Route' }}
+          </button>
+          <button 
+            type="button" 
+            class="secondary-btn" 
+            (click)="cancelEdit()"
+            [disabled]="loading"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Routes List -->
+    <div *ngIf="!loading && favoriteRoutes.length === 0 && !showForm" class="empty-state">
+      <p>No favorite routes yet. Create one to save time on future bookings!</p>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      <p>Loading routes...</p>
+    </div>
+
+    <div *ngIf="!loading && favoriteRoutes.length > 0" class="routes-grid">
+      <div *ngFor="let route of favoriteRoutes" class="route-card">
+        <div class="route-header">
+          <h3>{{ route.name }}</h3>
+        </div>
+
+        <div class="route-body">
+          <div class="route-info">
+            <div class="info-row">
+              <span class="label">From:</span>
+              <span class="value">{{ route.pickupAddressId }}</span>
+            </div>
+            <div class="arrow">→</div>
+            <div class="info-row">
+              <span class="label">To:</span>
+              <span class="value">{{ route.destinationAddressId }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="route.stops && route.stops.length > 0" class="stops-info">
+            <p class="label">Stops:</p>
+            <ul class="stops-list">
+              <li *ngFor="let stop of route.stops">{{ stop }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="route-actions">
+          <button 
+            type="button"
+            class="edit-btn" 
+            (click)="editRoute(route)"
+            [disabled]="loading"
+          >
+            Edit
+          </button>
+          <button 
+            type="button"
+            class="delete-btn" 
+            (click)="deleteRoute(route.id)"
+            [disabled]="loading"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

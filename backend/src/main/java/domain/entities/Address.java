@@ -1,6 +1,7 @@
 package domain.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "address")
@@ -8,13 +9,27 @@ public class Address {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private String id;
+	
+	@NotBlank(message = "Street cannot be blank")
 	private String street;
+	
+	@NotBlank(message = "Street number cannot be blank")
+	@Column(name = "street_number")
 	private String streetNumber;
+	
+	@NotBlank(message = "City cannot be blank")
 	private String city;
+	
+	@Column(name = "postal_code")
 	private String postalCode;
+	
+	@NotBlank(message = "Country cannot be blank")
 	private String country;
 
+	@Column(nullable = false)
 	private double latitude;
+	
+	@Column(nullable = false)
 	private double longitude;
 	 
 	public Address() {}
