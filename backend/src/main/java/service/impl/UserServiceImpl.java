@@ -104,6 +104,81 @@ public class UserServiceImpl implements UserService {
 	        userRepository.save(user);
 	    }
 	    
+	    @Override
+	    public void changePassword(String userId, PasswordResetDTO dto) {
+	        User user = userRepository.findById(userId)
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+
+	        if (!user.getPassword().equals(dto.getOldPassword())) {
+	            throw new RuntimeException("Invalid old password");
+	        }
+
+	        user.setPassword(dto.getNewPassword());
+	        userRepository.save(user);
+	    }
+	    
+	    @Override
+	    public List<ProfileChangeRequestDTO> getProfileChangeRequests(String userId) {
+	        List<ProfileChangeRequest> requests = profileChangeRequestRepository.findByUserId(userId);
+	        return requests.stream()
+	            .map(this::mapToDTO)
+	            .collect(java.util.stream.Collectors.toList());
+	    }
+	    
+	    @Override
+	    public List<ProfileChangeRequestDTO> getAllPendingProfileChangeRequests() {
+	        List<ProfileChangeRequest> requests = profileChangeRequestRepository
+	            .findByStatus(ChangeRequestStatus.PENDING);
+	        return requests.stream()
+	            .map(this::mapToDTO)
+	            .collect(java.util.stream.Collectors.toList());
+	    }
+	    
+	    @Override
+	    public void approveProfileChangeRequest(String requestId) {
+	        ProfileChangeRequest request = profileChangeRequestRepository.findById(requestId)
+	                .orElseThrow(() -> new RuntimeException("Request not found"));
+	        
+	        request.setStatus(ChangeRequestStatus.APPROVED);
+	        profileChangeRequestRepository.save(request);
+	        
+	        // Apply the changes to user profile
+	        User user = request.getUser();
+	        applyProfileChange(user, request.getFieldName(), request.getNewValue());
+	        userRepository.save(user);
+	    }
+	    
+	    @Override
+	    public void rejectProfileChangeRequest(String requestId) {
+	        ProfileChangeRequest request = profileChangeRequestRepository.findById(requestId)
+	                .orElseThrow(() -> new RuntimeException("Request not found"));
+	        
+	        request.setStatus(ChangeRequestStatus.REJECTED);
+	        profileChangeRequestRepository.save(request);
+	    }
+	    
+	    private ProfileChangeRequestDTO mapToDTO(ProfileChangeRequest request) {
+	        ProfileChangeRequestDTO dto = new ProfileChangeRequestDTO();
+	        dto.setId(request.getId());
+	        dto.setUserId(request.getUser().getId());
+	        dto.setFieldName(request.getFieldName());
+	        dto.setOldValue(request.getOldValue());
+	        dto.setNewValue(request.getNewValue());
+	        dto.setStatus(request.getStatus());
+	        dto.setCreatedAt(request.getCreatedAt());
+	        return dto;
+	    }
+	    
+	    private void applyProfileChange(User user, String fieldName, String newValue) {
+	        switch (fieldName) {
+	            case "firstName": user.setFirstName(newValue); break;
+	            case "lastName": user.setLastName(newValue); break;
+	            case "phoneNumber": user.setPhoneNumber(newValue); break;
+	            case "profilePictureUrl": user.setProfilePictureUrl(newValue); break;
+	            default: throw new RuntimeException("Unknown field: " + fieldName);
+	        }
+	    }
+	    
 	@Override
 	public User register(User user) {
 		// TODO Auto-generated method stub

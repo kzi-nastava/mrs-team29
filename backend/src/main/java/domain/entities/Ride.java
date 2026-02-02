@@ -58,6 +58,9 @@ public class Ride {
     @Column(name = "timestamp")
 	private List<LocalDateTime> timestamps;
 	
+	@Column(name = "scheduled_time")
+	private LocalDateTime scheduledTime;
+	
 	public Ride() {}
 	public Ride(Address pickupAddress, Address destinationAddress, List<Address> stops, List<User> passengers,
 				Driver driver, RideStatus status, double price, List<LocalDateTime> timestamps) {
@@ -79,7 +82,8 @@ public class Ride {
 	public Driver getDriver() {return driver;}
 	public RideStatus getStatus() {return status;}
 	public double getPrice() {return price;}
-	public List<LocalDateTime> getTimestamps() {return timestamps;} 
+	public List<LocalDateTime> getTimestamps() {return timestamps;}
+	public LocalDateTime getScheduledTime() {return scheduledTime;}
 	
 	public void setId(String id) {this.id = id;}
 	public void setPickupAddress(Address pickupAddress) {this.pickupAddress = pickupAddress;}
@@ -90,4 +94,5 @@ public class Ride {
 	public void setStatus(RideStatus status) {this.status = status;}
 	public void setPrice(double price) {this.price = price;}
 	public void setTimestamps(List<LocalDateTime> list) {this.timestamps = list;}
+	public void setScheduledTime(LocalDateTime scheduledTime) {this.scheduledTime = scheduledTime;}
 }

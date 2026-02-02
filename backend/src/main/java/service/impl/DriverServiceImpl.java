@@ -125,7 +125,14 @@ public class DriverServiceImpl implements DriverService {
 
 	@Override
 	public List<DriverRideHistoryDTO> getDriverRideHistory(String driverId, LocalDate from, LocalDate to) {
-		// TODO Auto-generated method stub
+		// TODO: Implement when ride history is fully integrated
 		return List.of();
+	}
+	
+	@Override
+	public double getWorkingHoursLast24h(String driverId) {
+		// TODO: Calculate from actual ride data when integrated
+		// For now return mock data
+		return 6.5;
 	}
 }

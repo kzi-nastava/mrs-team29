@@ -19,7 +19,13 @@ public class RideController {
     }
 
     @PostMapping
-    public ResponseEntity<RideResponseDTO> orderRide(@Valid @RequestBody RideOrderDTO dto) {
+    public ResponseEntity<?> orderRide(@Valid @RequestBody RideOrderDTO dto) {
+        // Check if user already has an active ride
+        if (rideService.hasActiveRide(dto.getCreatorId())) {
+            return ResponseEntity.badRequest()
+                .body("You already have an active ride. Please finish it before ordering a new one.");
+        }
+        
         RideResponseDTO response = rideService.orderRide(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

@@ -47,5 +47,19 @@ public class DriverController {
 
         return driverService.getDriverRideHistory(driverId, from, to);
     }
+    
+    @PostMapping("/activate")
+    public ResponseEntity<?> activateDriver(@Valid @RequestBody DriverActivationDTO dto) {
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body("Passwords do not match");
+        }
+        driverService.activateDriver(dto.getToken(), dto.getPassword());
+        return ResponseEntity.ok("Driver activated successfully");
+    }
+    
+    @GetMapping("/{driverId}/working-hours")
+    public ResponseEntity<Double> getWorkingHours(@PathVariable String driverId) {
+        double hours = driverService.getWorkingHoursLast24h(driverId);
+        return ResponseEntity.ok(hours);
+    }
 }
-
