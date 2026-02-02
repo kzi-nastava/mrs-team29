@@ -1,11 +1,23 @@
 package dto.rating;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+
 public class RatingRequestDTO {
 
+    @NotBlank(message = "Ride ID is required")
     private String rideId;
+    
+    @NotBlank(message = "Passenger ID is required")
     private String passengerId;
 
+    @Min(value = 1, message = "Driver rating must be at least 1")
+    @Max(value = 5, message = "Driver rating must not exceed 5")
     private int driverRating;   // 1–5
+    
+    @Min(value = 1, message = "Vehicle rating must be at least 1")
+    @Max(value = 5, message = "Vehicle rating must not exceed 5")
     private int vehicleRating;  // 1–5
     private String comment;
 

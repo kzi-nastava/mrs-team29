@@ -1,6 +1,7 @@
 package controller;
 
 import dto.driver.*;
+import jakarta.validation.Valid;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -12,6 +13,7 @@ import service.DriverService;
 
 @RestController
 @RequestMapping("/api/drivers")
+@CrossOrigin(origins = "*")
 public class DriverController {
 
     private final DriverService driverService;
@@ -21,7 +23,7 @@ public class DriverController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerDriver(@RequestBody DriverRegistrationDTO dto) {
+    public ResponseEntity<?> registerDriver(@Valid @RequestBody DriverRegistrationDTO dto) {
         driverService.registerDriver(dto);
         return ResponseEntity.ok("Driver successfully registered");
     }

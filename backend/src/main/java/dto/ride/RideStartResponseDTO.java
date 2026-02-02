@@ -10,6 +10,8 @@ public class RideStartResponseDTO {
     private RideStatus status;
     private LocalDateTime startTime;
 
+    public RideStartResponseDTO() {}
+
     public RideStartResponseDTO(String rideId, RideStatus status, LocalDateTime startTime) {
         this.rideId = rideId;
         this.status = status;
@@ -26,6 +28,18 @@ public class RideStartResponseDTO {
 
     public LocalDateTime getStartTime() {
         return startTime;
+    }
+
+    public void setRideId(String rideId) {
+        this.rideId = rideId;
+    }
+
+    public void setStatus(RideStatus status) {
+        this.status = status;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
     }
 }
 

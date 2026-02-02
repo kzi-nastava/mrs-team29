@@ -1,12 +1,17 @@
 package dto.ride;
 
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
 public class RideOrderDTO {
 
+    @NotBlank(message = "Creator ID is required")
     private String creatorId;
 
+    @NotBlank(message = "Pickup address ID is required")
     private String pickupAddressId;
+    
+    @NotBlank(message = "Destination address ID is required")
     private String destinationAddressId;
     private List<String> stopAddressIds;
 

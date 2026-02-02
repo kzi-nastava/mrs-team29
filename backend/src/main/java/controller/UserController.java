@@ -1,11 +1,13 @@
 package controller;
 
 import dto.user.*;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import service.UserService;
 
 @RestController
 @RequestMapping("/api/users")
+@CrossOrigin(origins = "*")
 public class UserController {
 
     private final UserService userService;
@@ -22,7 +24,7 @@ public class UserController {
     @PutMapping("/{id}")
     public UserProfileDTO updateProfile(
             @PathVariable String id,
-            @RequestBody UpdateUserProfileDTO dto
+            @Valid @RequestBody UpdateUserProfileDTO dto
     ) {
         return userService.updateProfile(id, dto);
     }
