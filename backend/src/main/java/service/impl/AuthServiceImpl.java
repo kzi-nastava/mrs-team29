@@ -1,43 +1,37 @@
 package service.impl;
 
-import dto.user.*;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import dto.auth.*;
+import domain.entities.*;
+import domain.enums.*;
+import repository.*;
+import service.AuthService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import domain.entities.*;
-import domain.enums.*;
-import service.UserService;
-import repository.*;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class AuthServiceImpl implements AuthService {
 
-	private final UserRepository userRepository;
-    private final ProfileChangeRequestRepository profileChangeRequestRepository;
+    private final UserRepository userRepository;
     private final DriverRepository driverRepository;
     private final ActivationTokenRepository activationTokenRepository;
     private final RideRepository rideRepository;
     
     private static final String DEFAULT_PROFILE_PICTURE = "https://via.placeholder.com/150";
-
-    public UserServiceImpl(UserRepository userRepository,
-                           ProfileChangeRequestRepository profileChangeRequestRepository,
-                           DriverRepository driverRepository,
-                           ActivationTokenRepository activationTokenRepository,
-                           RideRepository rideRepository) {
+    
+    public AuthServiceImpl(
+            UserRepository userRepository,
+            DriverRepository driverRepository,
+            ActivationTokenRepository activationTokenRepository,
+            RideRepository rideRepository) {
         this.userRepository = userRepository;
-        this.profileChangeRequestRepository = profileChangeRequestRepository;
         this.driverRepository = driverRepository;
         this.activationTokenRepository = activationTokenRepository;
         this.rideRepository = rideRepository;
     }
-    
-    // ==================== Authentication Methods ====================
     
     @Override
     @Transactional
@@ -63,6 +57,7 @@ public class UserServiceImpl implements UserService {
             driver.setStatus(DriverStatus.ACTIVE);
             driverRepository.save(driver);
         } else {
+            // Try to find driver by user ID
             driver = driverRepository.findById(user.getId()).orElse(null);
             if (driver != null) {
                 driver.setStatus(DriverStatus.ACTIVE);
@@ -77,7 +72,7 @@ public class UserServiceImpl implements UserService {
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
         response.setRole(user.getUserType() != null ? user.getUserType().name() : "USER");
-        response.setToken("mock-jwt-token-" + UUID.randomUUID());
+        response.setToken("mock-jwt-token-" + UUID.randomUUID()); // Mock token for now
         
         if (driver != null) {
             response.setDriver(true);
@@ -115,6 +110,27 @@ public class UserServiceImpl implements UserService {
     
     @Override
     @Transactional
+    public void setDriverStatus(String driverId, boolean active) {
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+        
+        DriverStatus newStatus = active ? DriverStatus.ACTIVE : DriverStatus.INACTIVE;
+        driver.setStatus(newStatus);
+        driverRepository.save(driver);
+    }
+    
+    @Override
+    public boolean canDriverLogout(String driverId) {
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+        
+        // Check if driver has any active rides (ACTIVE status)
+        long activeRides = rideRepository.findByDriverIdAndStatus(driverId, RideStatus.ACTIVE).size();
+        return activeRides == 0;
+    }
+    
+    @Override
+    @Transactional
     public void registerUser(RegisterRequestDTO dto) {
         // Validate passwords match
         if (!dto.getPassword().equals(dto.getConfirmPassword())) {
@@ -134,10 +150,10 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
         user.setPhoneNumber(dto.getPhoneNumber());
-        user.setUserType(UserType.CLIENT); // Default to client
+        user.setUserType(UserType.CLIENT); // Default to client (passenger), can upgrade to driver later
         user.setActivated(false); // Not activated until email confirmation
-        user.setUserName(dto.getEmail()); // Use email as username
-        user.setIsActive(false);
+        user.setUserName(dto.getEmail()); // Use email as username for now
+        user.setIsActive(false); // User account not yet activated
         user.setIsBlocked(false);
         
         // Set default profile picture if not provided
@@ -159,6 +175,8 @@ public class UserServiceImpl implements UserService {
         
         activationTokenRepository.save(token);
         
+        // TODO: Send activation email
+        // emailService.sendActivationEmail(user.getEmail(), token.getToken());
         System.out.println("Activation link: http://localhost:4200/activate?token=" + token.getToken());
     }
     
@@ -205,12 +223,14 @@ public class UserServiceImpl implements UserService {
         
         activationTokenRepository.save(token);
         
+        // TODO: Send password reset email
+        // emailService.sendPasswordResetEmail(user.getEmail(), token.getToken());
         System.out.println("Password reset link: http://localhost:4200/reset-password?token=" + token.getToken());
     }
     
     @Override
     @Transactional
-    public void resetPasswordWithToken(PasswordResetTokenDTO dto) {
+    public void resetPassword(PasswordResetDTO dto) {
         // Validate passwords match
         if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
             throw new RuntimeException("Passwords do not match");
@@ -237,166 +257,5 @@ public class UserServiceImpl implements UserService {
         // Mark token as used
         token.setUsed(true);
         activationTokenRepository.save(token);
-    }
-    
-    @Override
-    @Transactional
-    public void setDriverStatus(String driverId, boolean active) {
-        Driver driver = driverRepository.findById(driverId)
-                .orElseThrow(() -> new RuntimeException("Driver not found"));
-        
-        DriverStatus newStatus = active ? DriverStatus.ACTIVE : DriverStatus.INACTIVE;
-        driver.setStatus(newStatus);
-        driverRepository.save(driver);
-    }
-    
-    @Override
-    public boolean canDriverLogout(String driverId) {
-        Driver driver = driverRepository.findById(driverId)
-                .orElseThrow(() -> new RuntimeException("Driver not found"));
-        
-        // Check if driver has any active rides
-        long activeRides = rideRepository.findByDriverIdAndStatus(driverId, RideStatus.ACTIVE).size();
-        return activeRides == 0;
-    }
-    
-    // ==================== User Profile Methods ====================
-	
-    @Override
-    public UserProfileDTO getUserProfile(String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return UserProfileDTO.fromUser(user);
-    }
-
-    @Override
-    public UserProfileDTO updateProfile(String userId, UpdateUserProfileDTO dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (user.getUserType() == UserType.DRIVER) {
-            ProfileChangeRequest request = new ProfileChangeRequest(
-                    user,
-                    "PROFILE_UPDATE",
-                    user.toString(),
-                    dto.toString()
-            );
-
-            profileChangeRequestRepository.save(request);
-            return UserProfileDTO.fromUser(user);
-        }
-
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setGender(dto.getGender());
-        user.setPhoneNumber(dto.getPhoneNumber());
-        user.setAddress(dto.getAddress());
-        user.setProfilePictureUrl(dto.getProfilePictureUrl());
-
-        userRepository.save(user);
-        return UserProfileDTO.fromUser(user);
-    }
-    
-    @Override
-    public void changePassword(String userId, ChangePasswordDTO dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (!user.getPassword().equals(dto.getOldPassword())) {
-            throw new RuntimeException("Invalid old password");
-        }
-
-        user.setPassword(dto.getNewPassword());
-        userRepository.save(user);
-    }
-    
-    @Override
-    public void changePassword(String userId, PasswordResetDTO dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (!user.getPassword().equals(dto.getOldPassword())) {
-            throw new RuntimeException("Invalid old password");
-        }
-
-        user.setPassword(dto.getNewPassword());
-        userRepository.save(user);
-    }
-    
-    @Override
-    public List<ProfileChangeRequestDTO> getProfileChangeRequests(String userId) {
-        List<ProfileChangeRequest> requests = profileChangeRequestRepository.findByUserId(userId);
-        return requests.stream()
-            .map(this::mapToDTO)
-            .collect(java.util.stream.Collectors.toList());
-    }
-    
-    @Override
-    public List<ProfileChangeRequestDTO> getAllPendingProfileChangeRequests() {
-        List<ProfileChangeRequest> requests = profileChangeRequestRepository
-            .findByStatus(ChangeRequestStatus.PENDING);
-        return requests.stream()
-            .map(this::mapToDTO)
-            .collect(java.util.stream.Collectors.toList());
-    }
-    
-    @Override
-    public void approveProfileChangeRequest(String requestId) {
-        ProfileChangeRequest request = profileChangeRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
-        
-        request.setStatus(ChangeRequestStatus.APPROVED);
-        profileChangeRequestRepository.save(request);
-        
-        User user = request.getUser();
-        applyProfileChange(user, request.getFieldName(), request.getNewValue());
-        userRepository.save(user);
-    }
-    
-    @Override
-    public void rejectProfileChangeRequest(String requestId) {
-        ProfileChangeRequest request = profileChangeRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
-        
-        request.setStatus(ChangeRequestStatus.REJECTED);
-        profileChangeRequestRepository.save(request);
-    }
-    
-    private ProfileChangeRequestDTO mapToDTO(ProfileChangeRequest request) {
-        ProfileChangeRequestDTO dto = new ProfileChangeRequestDTO();
-        dto.setId(request.getId());
-        dto.setUserId(request.getUser().getId());
-        dto.setFieldName(request.getFieldName());
-        dto.setOldValue(request.getOldValue());
-        dto.setNewValue(request.getNewValue());
-        dto.setStatus(request.getStatus());
-        dto.setCreatedAt(request.getCreatedAt());
-        return dto;
-    }
-    
-    private void applyProfileChange(User user, String fieldName, String newValue) {
-        switch (fieldName) {
-            case "firstName": user.setFirstName(newValue); break;
-            case "lastName": user.setLastName(newValue); break;
-            case "phoneNumber": user.setPhoneNumber(newValue); break;
-            case "profilePictureUrl": user.setProfilePictureUrl(newValue); break;
-            default: throw new RuntimeException("Unknown field: " + fieldName);
-        }
-    }
-    
-    @Override
-    public User register(User user) {
-        return null;
-    }
-
-    @Override
-    public User getByUsername(String username) {
-        return null;
-    }
-
-    @Override
-    public List<User> getAll() {
-        return null;
     }
 }
