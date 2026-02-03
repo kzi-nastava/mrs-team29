@@ -3,13 +3,16 @@
     <h1 class="title">Welcome back</h1>
     <p class="subtitle">Log in to continue</p>
 
-    <form>
+    <form (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label for="email">Email</label>
         <input
           type="email"
           id="email"
           placeholder="you@example.com"
+          [(ngModel)]="email"
+          name="email"
+          required
         />
       </div>
 
@@ -19,18 +22,30 @@
           type="password"
           id="password"
           placeholder="••••••••"
+          [(ngModel)]="password"
+          name="password"
+          required
         />
       </div>
 
-      <button type="submit" class="primary-btn">
-        Login
+      <button type="submit" class="primary-btn" [disabled]="loading">
+        {{ loading ? 'Logging in...' : 'Login' }}
       </button>
     </form>
 
-    <p class="footer-text">
-      Don’t have an account?
-      <a routerLink="/register">Sign up</a>
-    </p>
+    <div *ngIf="error" class="error-message">
+      {{ error }}
+    </div>
+
+    <div class="footer-actions">
+      <p class="footer-text">
+        Don't have an account?
+        <a routerLink="/register">Sign up</a>
+      </p>
+      <p class="footer-text">
+        <a routerLink="/reset-password">Forgot password?</a>
+      </p>
+    </div>
   </div>
 </div>
 
