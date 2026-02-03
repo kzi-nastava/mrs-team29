@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import domain.entities.*;
 import domain.enums.*;
 import service.UserService;
+import service.EmailService;
 import repository.*;
 
 @Service
@@ -22,6 +23,7 @@ public class UserServiceImpl implements UserService {
     private final DriverRepository driverRepository;
     private final ActivationTokenRepository activationTokenRepository;
     private final RideRepository rideRepository;
+    private final EmailService emailService;
     
     private static final String DEFAULT_PROFILE_PICTURE = "https://via.placeholder.com/150";
 
@@ -29,12 +31,14 @@ public class UserServiceImpl implements UserService {
                            ProfileChangeRequestRepository profileChangeRequestRepository,
                            DriverRepository driverRepository,
                            ActivationTokenRepository activationTokenRepository,
-                           RideRepository rideRepository) {
+                           RideRepository rideRepository,
+                           EmailService emailService) {
         this.userRepository = userRepository;
         this.profileChangeRequestRepository = profileChangeRequestRepository;
         this.driverRepository = driverRepository;
         this.activationTokenRepository = activationTokenRepository;
         this.rideRepository = rideRepository;
+        this.emailService = emailService;
     }
     
     // ==================== Authentication Methods ====================
@@ -159,7 +163,11 @@ public class UserServiceImpl implements UserService {
         
         activationTokenRepository.save(token);
         
-        System.out.println("Activation link: http://localhost:4200/activate?token=" + token.getToken());
+        // Send activation email
+        String fullName = user.getFirstName() + " " + user.getLastName();
+        emailService.sendActivationEmail(user.getEmail(), fullName, token.getToken());
+        
+        System.out.println("Activation email sent to " + user.getEmail());
     }
     
     @Override
@@ -205,7 +213,11 @@ public class UserServiceImpl implements UserService {
         
         activationTokenRepository.save(token);
         
-        System.out.println("Password reset link: http://localhost:4200/reset-password?token=" + token.getToken());
+        // Send password reset email
+        String fullName = user.getFirstName() + " " + user.getLastName();
+        emailService.sendPasswordResetEmail(user.getEmail(), fullName, token.getToken());
+        
+        System.out.println("Password reset email sent to " + user.getEmail());
     }
     
     @Override
