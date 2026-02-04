@@ -14,7 +14,7 @@ import service.DriverService;
 
 @RestController
 @RequestMapping("/api/drivers")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:4200")
 public class DriverController {
 
     private final DriverService driverService;

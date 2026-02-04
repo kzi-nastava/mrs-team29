@@ -144,7 +144,6 @@ public class AuthServiceImpl implements AuthService {
         
         // Create new user
         User user = new User();
-        user.setId(UUID.randomUUID().toString());
         user.setEmail(dto.getEmail());
         user.setPassword(dto.getPassword()); // In production, hash with BCrypt
         user.setFirstName(dto.getFirstName());

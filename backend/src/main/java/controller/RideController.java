@@ -9,7 +9,7 @@ import service.RideService;
 
 @RestController
 @RequestMapping("/api/rides")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:4200")
 public class RideController {
 
     private final RideService rideService;

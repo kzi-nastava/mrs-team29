@@ -51,13 +51,13 @@ public class User {
 	private String profilePictureUrl;
 	
 	@Column(name = "is_blocked")
-	private boolean isBlocked;
+	private Boolean isBlocked;
 	
 	@Column(name = "is_active")
-	private boolean isActive;
+	private Boolean isActive;
 	
 	@Column(name = "is_activated")
-	private boolean isActivated;
+	private Boolean isActivated;
 	
 	public User() {}
 	public User(String firstName, String lastName, Gender gender,
@@ -89,9 +89,9 @@ public class User {
 	public String getPhoneNumber() {return phoneNumber;}
 	public Address getAddress() {return address;}
 	public String getProfilePictureUrl() {return profilePictureUrl;}
-	public boolean getIsBlocked() {return isBlocked;}
-	public boolean getIsActive() { return isActive;}
-	public boolean isActivated() { return isActivated;}
+	public boolean getIsBlocked() {return Boolean.TRUE.equals(isBlocked);}
+	public boolean getIsActive() { return Boolean.TRUE.equals(isActive);}
+	public boolean isActivated() { return Boolean.TRUE.equals(isActivated);}
 	
 	public void setId(String id) {this.id = id;}
 	public void setFirstName(String firstName) {this.firstName = firstName;}
