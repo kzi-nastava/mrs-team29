@@ -1,5 +1,5 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FavoriteRouteService } from '../../services/favorite-route.service';
 import { MapService, AddressResponse } from '../../services/map.service';
@@ -8,7 +8,7 @@ import * as L from 'leaflet';
 @Component({
   selector: 'app-favorite-routes',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './favorite-routes.component.html',
   styleUrls: ['./favorite-routes.component.css']
 })
