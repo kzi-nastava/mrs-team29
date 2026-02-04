@@ -74,7 +74,7 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
 
     // Click on map to select location
     this.map.on('click', (e: L.LeafletMouseEvent) => {
-      if (this.selectingFor) {
+      if (this.selectingFor || !this.pickupAddress || !this.destinationAddress) {
         this.selectLocationFromMap(e.latlng.lat, e.latlng.lng);
       }
     });
@@ -215,13 +215,14 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
     }
 
     this.loading = true;
+    const target = this.resolveSelectionTarget();
     this.mapService.geocodeAndSave(this.searchQuery).subscribe({
       next: (address) => {
         this.loading = false;
-        
-        if (this.selectingFor === 'pickup') {
+
+        if (target === 'pickup') {
           this.setPickupAddress(address);
-        } else if (this.selectingFor === 'destination') {
+        } else {
           this.setDestinationAddress(address);
         }
 
@@ -240,13 +241,14 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
 
   selectLocationFromMap(lat: number, lng: number) {
     this.loading = true;
+    const target = this.resolveSelectionTarget();
     this.mapService.reverseGeocodeAndSave(lat, lng).subscribe({
       next: (address) => {
         this.loading = false;
-        
-        if (this.selectingFor === 'pickup') {
+
+        if (target === 'pickup') {
           this.setPickupAddress(address);
-        } else if (this.selectingFor === 'destination') {
+        } else {
           this.setDestinationAddress(address);
         }
 
@@ -258,6 +260,19 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
         this.errorMessage = 'Could not get address for this location';
       }
     });
+  }
+
+  private resolveSelectionTarget(): 'pickup' | 'destination' {
+    if (this.selectingFor) {
+      return this.selectingFor;
+    }
+    if (!this.pickupAddress) {
+      return 'pickup';
+    }
+    if (!this.destinationAddress) {
+      return 'destination';
+    }
+    return 'pickup';
   }
 
   setPickupAddress(address: AddressResponse) {

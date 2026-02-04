@@ -47,10 +47,4 @@ export class LoginComponent {
       }
     });
   }
-
-  quickLogin(): void {
-    this.email = 'test@example.com';
-    this.password = 'password123';
-    setTimeout(() => this.onSubmit(), 0);
-  }
 }

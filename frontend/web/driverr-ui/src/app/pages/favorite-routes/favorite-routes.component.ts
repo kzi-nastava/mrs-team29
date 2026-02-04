@@ -33,6 +33,10 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
   searchQuery = '';
   selectingFor: 'pickup' | 'destination' | null = null;
   previewingRoute: any = null;
+  previewMap?: L.Map;
+  previewPickupMarker?: L.Marker;
+  previewDestinationMarker?: L.Marker;
+  previewRouteLine?: L.Polyline;
 
   constructor(
     private fb: FormBuilder,
@@ -46,10 +50,15 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.initializeMap();
+    if (this.showForm) {
+      this.ensureMapReady();
+    }
   }
 
   initializeMap() {
+    if (this.map) {
+      return;
+    }
     this.map = L.map('favorites-map').setView([45.2671, 19.8335], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -58,7 +67,7 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
     }).addTo(this.map);
 
     this.map.on('click', (e: L.LeafletMouseEvent) => {
-      if (this.selectingFor) {
+      if (this.selectingFor || !this.pickupAddress || !this.destinationAddress) {
         this.selectLocationFromMap(e.latlng.lat, e.latlng.lng);
       }
     });
@@ -92,6 +101,9 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
     if (!this.showForm) {
       this.form.reset();
       this.editingId = null;
+      this.destroyMap();
+    } else {
+      this.ensureMapReady();
     }
   }
 
@@ -206,13 +218,14 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
     }
 
     this.loading = true;
+    const target = this.resolveSelectionTarget();
     this.mapService.geocodeAndSave(this.searchQuery).subscribe({
       next: (address) => {
         this.loading = false;
-        
-        if (this.selectingFor === 'pickup') {
+
+        if (target === 'pickup') {
           this.setPickupAddress(address);
-        } else if (this.selectingFor === 'destination') {
+        } else {
           this.setDestinationAddress(address);
         }
 
@@ -230,13 +243,14 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
 
   selectLocationFromMap(lat: number, lng: number) {
     this.loading = true;
+    const target = this.resolveSelectionTarget();
     this.mapService.reverseGeocodeAndSave(lat, lng).subscribe({
       next: (address) => {
         this.loading = false;
-        
-        if (this.selectingFor === 'pickup') {
+
+        if (target === 'pickup') {
           this.setPickupAddress(address);
-        } else if (this.selectingFor === 'destination') {
+        } else {
           this.setDestinationAddress(address);
         }
 
@@ -248,6 +262,19 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
         this.errorMessage = 'Could not get address for this location';
       }
     });
+  }
+
+  private resolveSelectionTarget(): 'pickup' | 'destination' {
+    if (this.selectingFor) {
+      return this.selectingFor;
+    }
+    if (!this.pickupAddress) {
+      return 'pickup';
+    }
+    if (!this.destinationAddress) {
+      return 'destination';
+    }
+    return 'pickup';
   }
 
   setPickupAddress(address: AddressResponse) {
@@ -351,73 +378,117 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
     this.clearDestination();
     this.pickupAddress = undefined;
     this.destinationAddress = undefined;
-    this.previewingRoute = null;
+  }
+
+  private ensureMapReady() {
+    if (!this.showForm) {
+      return;
+    }
+    setTimeout(() => {
+      if (!this.map) {
+        this.initializeMap();
+      } else {
+        this.map.invalidateSize();
+      }
+    }, 0);
+  }
+
+  private destroyMap() {
+    if (this.map) {
+      this.map.remove();
+      this.map = undefined as unknown as L.Map;
+    }
+    this.pickupMarker = undefined;
+    this.destinationMarker = undefined;
+    this.routeLine = undefined;
   }
 
   previewRoute(route: any) {
     this.previewingRoute = route;
-    this.clearMap();
-    
-    // Load pickup and destination addresses and display on map
-    if (route.pickupAddress && route.destinationAddress) {
-      const pickupAddr = route.pickupAddress;
-      const destAddr = route.destinationAddress;
+    setTimeout(() => {
+      this.ensurePreviewMapReady();
+      this.clearPreviewMap();
 
-      // Set markers
-      if (this.pickupMarker) {
-        this.map.removeLayer(this.pickupMarker);
-      }
-      if (this.destinationMarker) {
-        this.map.removeLayer(this.destinationMarker);
+      if (!this.previewMap) {
+        return;
       }
 
-      const pickupIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      });
+      // Load pickup and destination addresses and display on map
+      if (route.pickupAddress && route.destinationAddress) {
+        const pickupAddr = route.pickupAddress;
+        const destAddr = route.destinationAddress;
 
-      const destIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      });
+        const pickupIcon = L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
 
-      this.pickupMarker = L.marker([pickupAddr.latitude, pickupAddr.longitude], { icon: pickupIcon })
-        .addTo(this.map)
-        .bindPopup(`<b>Pickup:</b><br>${pickupAddr.street || 'Unknown'}`);
+        const destIcon = L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
 
-      this.destinationMarker = L.marker([destAddr.latitude, destAddr.longitude], { icon: destIcon })
-        .addTo(this.map)
-        .bindPopup(`<b>Destination:</b><br>${destAddr.street || 'Unknown'}`);
+        this.previewPickupMarker = L.marker([pickupAddr.latitude, pickupAddr.longitude], { icon: pickupIcon })
+          .addTo(this.previewMap)
+          .bindPopup(`<b>Pickup:</b><br>${pickupAddr.street || 'Unknown'}`);
 
-      // Draw route line
-      if (this.routeLine) {
-        this.map.removeLayer(this.routeLine);
+        this.previewDestinationMarker = L.marker([destAddr.latitude, destAddr.longitude], { icon: destIcon })
+          .addTo(this.previewMap)
+          .bindPopup(`<b>Destination:</b><br>${destAddr.street || 'Unknown'}`);
+
+        // Draw route line
+        this.previewRouteLine = L.polyline([
+          [pickupAddr.latitude, pickupAddr.longitude],
+          [destAddr.latitude, destAddr.longitude]
+        ], { color: '#2ec4b6', weight: 4 }).addTo(this.previewMap);
+
+        // Fit bounds
+        const bounds = L.latLngBounds([
+          [pickupAddr.latitude, pickupAddr.longitude],
+          [destAddr.latitude, destAddr.longitude]
+        ]);
+        this.previewMap.fitBounds(bounds, { padding: [50, 50] });
       }
-
-      this.routeLine = L.polyline([
-        [pickupAddr.latitude, pickupAddr.longitude],
-        [destAddr.latitude, destAddr.longitude]
-      ], { color: '#2ec4b6', weight: 4 }).addTo(this.map);
-
-      // Fit bounds
-      const bounds = L.latLngBounds([
-        [pickupAddr.latitude, pickupAddr.longitude],
-        [destAddr.latitude, destAddr.longitude]
-      ]);
-      this.map.fitBounds(bounds, { padding: [50, 50] });
-    }
+    }, 0);
   }
 
   closePreview() {
     this.previewingRoute = null;
-    this.clearMap();
+    this.clearPreviewMap();
+  }
+
+  private ensurePreviewMapReady() {
+    if (!this.previewMap) {
+      this.previewMap = L.map('favorites-preview-map').setView([45.2671, 19.8335], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(this.previewMap);
+    } else {
+      this.previewMap.invalidateSize();
+    }
+  }
+
+  private clearPreviewMap() {
+    if (this.previewPickupMarker && this.previewMap) {
+      this.previewMap.removeLayer(this.previewPickupMarker);
+      this.previewPickupMarker = undefined;
+    }
+    if (this.previewDestinationMarker && this.previewMap) {
+      this.previewMap.removeLayer(this.previewDestinationMarker);
+      this.previewDestinationMarker = undefined;
+    }
+    if (this.previewRouteLine && this.previewMap) {
+      this.previewMap.removeLayer(this.previewRouteLine);
+      this.previewRouteLine = undefined;
+    }
   }
 }

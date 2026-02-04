@@ -178,6 +178,11 @@
   margin-right: 10px;
 }
 
+.address-text.placeholder {
+  color: #999;
+  font-style: italic;
+}
+
 .clear-btn {
   padding: 5px 10px;
   background: #dc3545;

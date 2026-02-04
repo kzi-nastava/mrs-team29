@@ -187,7 +187,14 @@ small {
 .checkbox-group label {
   margin: 0;
   cursor: pointer;
-  font-weight: normal;
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+}
+
+.address-text.placeholder {
+  color: #999;
+  font-style: italic;
 }
 
 /* Buttons */

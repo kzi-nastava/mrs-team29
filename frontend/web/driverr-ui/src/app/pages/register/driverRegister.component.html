@@ -13,16 +13,14 @@
 
     <form [formGroup]="form" (ngSubmit)="submit()" *ngIf="!successMessage">
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>First name</label>
-          <input formControlName="firstName" />
-        </div>
+      <div class="form-group">
+        <label>First name</label>
+        <input formControlName="firstName" />
+      </div>
 
-        <div class="form-group">
-          <label>Last name</label>
-          <input formControlName="lastName" />
-        </div>
+      <div class="form-group">
+        <label>Last name</label>
+        <input formControlName="lastName" />
       </div>
 
       <div class="form-group">

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DriverService } from '../../services/driver.service';
 
@@ -22,25 +22,25 @@ export class AdminDriverRegisterComponent {
     private driverService: DriverService
   ) {
     this.form = this.fb.group({
-      firstName: [''],
-      lastName: [''],
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
       gender: [''],
-      username: [''],
-      email: [''],
-      password: [''],
+      username: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required],
       phoneNumber: [''],
-      vehicleModel: [''],
-      vehicleType: [''],
-      registrationPlate: [''],
-      seats: [4],
+      vehicleModel: ['', Validators.required],
+      vehicleType: ['STANDARD', Validators.required],
+      registrationPlate: ['', Validators.required],
+      seats: [4, [Validators.required, Validators.min(1)]],
       allowsPets: [false],
       allowsBabies: [false]
     });
   }
 
   submit() {
-    if (!this.form.value.email || !this.form.value.password) {
-      this.errorMessage = 'Email and password are required';
+    if (this.form.invalid) {
+      this.errorMessage = 'Please fill in all required fields';
       return;
     }
 
