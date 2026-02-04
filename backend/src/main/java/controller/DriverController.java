@@ -1,6 +1,7 @@
 package controller;
 
 import dto.driver.*;
+import dto.ApiResponse;
 import jakarta.validation.Valid;
 
 import java.time.LocalDate;
@@ -24,8 +25,12 @@ public class DriverController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerDriver(@Valid @RequestBody DriverRegistrationDTO dto) {
-        driverService.registerDriver(dto);
-        return ResponseEntity.ok("Driver successfully registered");
+        try {
+            driverService.registerDriver(dto);
+            return ResponseEntity.ok(ApiResponse.success("Driver successfully registered. Activation email sent.", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
 

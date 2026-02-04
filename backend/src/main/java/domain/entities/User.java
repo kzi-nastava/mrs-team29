@@ -56,6 +56,9 @@ public class User {
 	@Column(name = "is_active")
 	private boolean isActive;
 	
+	@Column(name = "is_activated")
+	private boolean isActivated;
+	
 	public User() {}
 	public User(String firstName, String lastName, Gender gender,
 				String userName, String email, String password, UserType type, 
@@ -72,6 +75,7 @@ public class User {
 		this.profilePictureUrl = profilePictureUrl;
 		this.isActive = isActive;
 		this.isBlocked = isBlocked;
+		this.isActivated = false; // New users need activation
 	}
 	
 	public String getId() {return id;}
@@ -87,6 +91,7 @@ public class User {
 	public String getProfilePictureUrl() {return profilePictureUrl;}
 	public boolean getIsBlocked() {return isBlocked;}
 	public boolean getIsActive() { return isActive;}
+	public boolean isActivated() { return isActivated;}
 	
 	public void setId(String id) {this.id = id;}
 	public void setFirstName(String firstName) {this.firstName = firstName;}
@@ -101,4 +106,5 @@ public class User {
 	public void setProfilePictureUrl(String profilePictureUrl) {this.profilePictureUrl = profilePictureUrl;}
 	public void setIsActive(boolean isActive) {this.isActive = isActive;}
 	public void setIsBlocked(boolean isBlocked) {this.isBlocked = isBlocked;}
+	public void setActivated(boolean isActivated) {this.isActivated = isActivated;}
 }
