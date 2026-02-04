@@ -26,6 +26,57 @@
     <div *ngIf="showForm" class="form-card">
       <h3>{{ editingId ? 'Edit Route' : 'Create Favorite Route' }}</h3>
       
+      <!-- Map Section -->
+      <div class="map-section">
+        <div class="map-controls">
+          <div class="search-bar">
+            <input 
+              type="text" 
+              [(ngModel)]="searchQuery"
+              [ngModelOptions]="{ standalone: true }"
+              placeholder="Search for an address..."
+              (keyup.enter)="searchAddress()"
+            />
+            <button type="button" class="search-btn" (click)="searchAddress()">Search</button>
+          </div>
+          
+          <div class="location-buttons">
+            <button 
+              type="button" 
+              class="map-btn pickup-btn" 
+              [class.active]="selectingFor === 'pickup'"
+              (click)="startSelectingPickup()"
+            >
+              📍 Set Pickup
+            </button>
+            <button 
+              type="button" 
+              class="map-btn destination-btn"
+              [class.active]="selectingFor === 'destination'"
+              (click)="startSelectingDestination()"
+            >
+              🎯 Set Destination
+            </button>
+          </div>
+        </div>
+
+        <div id="favorites-map" class="map-container"></div>
+
+        <!-- Selected Addresses Display -->
+        <div class="selected-addresses" *ngIf="pickupAddress || destinationAddress">
+          <div class="address-item" *ngIf="pickupAddress">
+            <span class="address-label">Pickup:</span>
+            <span class="address-text">{{ pickupAddress.displayName || pickupAddress.street }}</span>
+            <button type="button" class="clear-btn" (click)="clearPickup()">✕</button>
+          </div>
+          <div class="address-item" *ngIf="destinationAddress">
+            <span class="address-label">Destination:</span>
+            <span class="address-text">{{ destinationAddress.displayName || destinationAddress.street }}</span>
+            <button type="button" class="clear-btn" (click)="clearDestination()">✕</button>
+          </div>
+        </div>
+      </div>
+
       <form [formGroup]="form" (ngSubmit)="saveFavoriteRoute()">
         
         <div class="form-group">
@@ -39,34 +90,6 @@
           />
           <small *ngIf="form.get('name')?.hasError('required') && form.get('name')?.touched" class="error-text">
             Route name is required
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label for="pickup">Pickup Address</label>
-          <input 
-            id="pickup" 
-            type="text" 
-            formControlName="pickupAddressId"
-            placeholder="Enter pickup address"
-            [class.error]="form.get('pickupAddressId')?.invalid && form.get('pickupAddressId')?.touched"
-          />
-          <small *ngIf="form.get('pickupAddressId')?.hasError('required') && form.get('pickupAddressId')?.touched" class="error-text">
-            Pickup address is required
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label for="destination">Destination Address</label>
-          <input 
-            id="destination" 
-            type="text" 
-            formControlName="destinationAddressId"
-            placeholder="Enter destination address"
-            [class.error]="form.get('destinationAddressId')?.invalid && form.get('destinationAddressId')?.touched"
-          />
-          <small *ngIf="form.get('destinationAddressId')?.hasError('required') && form.get('destinationAddressId')?.touched" class="error-text">
-            Destination is required
           </small>
         </div>
 
@@ -110,18 +133,21 @@
       <div *ngFor="let route of favoriteRoutes" class="route-card">
         <div class="route-header">
           <h3>{{ route.name }}</h3>
+          <button type="button" class="preview-btn" (click)="previewRoute(route)">
+            🗺️ View on Map
+          </button>
         </div>
 
         <div class="route-body">
           <div class="route-info">
             <div class="info-row">
               <span class="label">From:</span>
-              <span class="value">{{ route.pickupAddressId }}</span>
+              <span class="value">{{ route.pickupAddress?.street || route.pickupAddressId }}</span>
             </div>
             <div class="arrow">→</div>
             <div class="info-row">
               <span class="label">To:</span>
-              <span class="value">{{ route.destinationAddressId }}</span>
+              <span class="value">{{ route.destinationAddress?.street || route.destinationAddressId }}</span>
             </div>
           </div>
 
@@ -150,6 +176,27 @@
           >
             Delete
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Route Preview Modal -->
+    <div *ngIf="previewingRoute" class="preview-modal">
+      <div class="preview-content">
+        <div class="preview-header">
+          <h2>{{ previewingRoute.name }}</h2>
+          <button type="button" class="close-btn" (click)="closePreview()">✕</button>
+        </div>
+        <div id="favorites-map" class="map-container-modal"></div>
+        <div class="preview-info">
+          <div class="info-row">
+            <span class="label">From:</span>
+            <span>{{ previewingRoute.pickupAddress?.street || 'Unknown' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">To:</span>
+            <span>{{ previewingRoute.destinationAddress?.street || 'Unknown' }}</span>
+          </div>
         </div>
       </div>
     </div>
