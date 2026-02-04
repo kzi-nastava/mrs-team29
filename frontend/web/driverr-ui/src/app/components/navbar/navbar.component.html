@@ -4,12 +4,19 @@
   </div>
 
   <ul class="nav-links">
-    <li><a routerLink="/order-ride">Order Ride</a></li>
-    <li><a routerLink="/favorites">Favorites</a></li>
-    <li><a routerLink="/profile">Profile</a></li>
-    <li><a routerLink="/admin/driver-register">Register Driver</a></li>
-    <li><a routerLink="/driver/history">My Rides</a></li>
-    <li><a routerLink="/login">Login</a></li>
+    <ng-container *ngIf="isAuthenticated; else guestLinks">
+      <li *ngIf="isClient"><a routerLink="/order-ride">Order Ride</a></li>
+      <li *ngIf="isClient"><a routerLink="/favorite-routes">Favorites</a></li>
+      <li *ngIf="isDriver"><a routerLink="/driver/history">My Rides</a></li>
+      <li *ngIf="isAdmin"><a routerLink="/admin/driver-register">Register Driver</a></li>
+      <li *ngIf="isAdmin"><a routerLink="/admin/approvals">Approvals</a></li>
+      <li><a routerLink="/profile">Profile</a></li>
+      <li><button class="logout-btn" type="button" (click)="logout()">Logout</button></li>
+    </ng-container>
+    <ng-template #guestLinks>
+      <li><a routerLink="/login">Login</a></li>
+      <li><a routerLink="/register">Register</a></li>
+    </ng-template>
   </ul>
 </nav>
 
