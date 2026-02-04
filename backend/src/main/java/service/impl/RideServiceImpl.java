@@ -89,7 +89,7 @@ public class RideServiceImpl implements RideService {
             passengers.addAll(linkedPassengers);
         }
 
-        Driver driver = driverRepository.findFirstAvailableDriver()
+        Driver driver = driverRepository.findFirstByStatusAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(DriverStatus.AVAILABLE)
                 .orElseThrow(() -> new RuntimeException("No available drivers"));
 
         Ride ride = new Ride();
@@ -181,7 +181,7 @@ public class RideServiceImpl implements RideService {
         User creator = userRepository.findById(dto.getClientId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Driver driver = driverRepository.findFirstAvailableDriver()
+        Driver driver = driverRepository.findFirstByStatusAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(DriverStatus.AVAILABLE)
                 .orElseThrow(() -> new RuntimeException("No available drivers"));
 
         Ride ride = new Ride();
