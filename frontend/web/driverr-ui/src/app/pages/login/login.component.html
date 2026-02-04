@@ -9,9 +9,9 @@
         <input
           type="email"
           id="email"
+          name="email"
           placeholder="you@example.com"
           [(ngModel)]="email"
-          name="email"
           required
         />
       </div>
@@ -21,9 +21,9 @@
         <input
           type="password"
           id="password"
+          name="password"
           placeholder="••••••••"
           [(ngModel)]="password"
-          name="password"
           required
         />
       </div>
@@ -39,11 +39,11 @@
 
     <div class="footer-actions">
       <p class="footer-text">
-        Don't have an account?
-        <a routerLink="/register">Sign up</a>
+        Don’t have an account?
+        <a routerLink="/register">Register</a>
       </p>
       <p class="footer-text">
-        <a routerLink="/reset-password">Forgot password?</a>
+        <a routerLink="/forgot-password">Forgot password?</a>
       </p>
     </div>
   </div>
