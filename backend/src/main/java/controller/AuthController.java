@@ -103,6 +103,20 @@ public class AuthController {
                     .body(ApiResponse.error(e.getMessage()));
         }
     }
+
+    // TEMP - Activate account by email (no email service)
+    @PostMapping("/activate-direct")
+    public ResponseEntity<?> activateAccountDirect(@RequestParam String email) {
+        try {
+            System.out.println("[AuthController] Direct activation for email=" + email);
+            userService.activateAccountByEmail(email);
+            return ResponseEntity.ok(ApiResponse.success(
+                    "Account activated successfully (direct).", null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
     
     // Password reset request
     @PostMapping("/password-reset/request")

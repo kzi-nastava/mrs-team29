@@ -23,6 +23,7 @@ public interface UserService {
     void logout(String userId);
     void registerUser(RegisterRequestDTO dto);
     void activateAccount(String token);
+    void activateAccountByEmail(String email);
     void requestPasswordReset(String email);
     void resetPasswordWithToken(PasswordResetTokenDTO dto);
     void setDriverStatus(String driverId, boolean active);

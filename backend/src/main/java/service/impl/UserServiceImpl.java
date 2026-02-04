@@ -196,6 +196,21 @@ public class UserServiceImpl implements UserService {
         token.setUsed(true);
         activationTokenRepository.save(token);
     }
+
+    @Override
+    @Transactional
+    public void activateAccountByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.isActivated()) {
+            return;
+        }
+
+        user.setActivated(true);
+        user.setIsActive(true);
+        userRepository.save(user);
+    }
     
     @Override
     @Transactional
