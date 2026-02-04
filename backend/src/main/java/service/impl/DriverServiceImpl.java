@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import domain.entities.*;
 import domain.enums.*;
 import service.DriverService;
+import service.EmailService;
 import repository.*;
 
 @Service
@@ -20,11 +21,14 @@ public class DriverServiceImpl implements DriverService {
 
 	private final DriverRepository driverRepository;
     private final ActivationTokenRepository activationTokenRepository;
+    private final EmailService emailService;
 
     public DriverServiceImpl(DriverRepository driverRepository,
-                             ActivationTokenRepository activationTokenRepository) {
+                             ActivationTokenRepository activationTokenRepository,
+                             EmailService emailService) {
         this.driverRepository = driverRepository;
         this.activationTokenRepository = activationTokenRepository;
+        this.emailService = emailService;
     }
 	
 	
@@ -60,6 +64,12 @@ public class DriverServiceImpl implements DriverService {
         );
 
         activationTokenRepository.save(token);
+
+        // Send activation email to driver
+        String fullName = driver.getFirstName() + " " + driver.getLastName();
+        emailService.sendActivationEmail(driver.getEmail(), fullName, token.getToken());
+
+        System.out.println("Driver activation email sent to " + driver.getEmail());
 
         return driver;
     }

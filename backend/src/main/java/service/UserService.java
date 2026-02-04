@@ -17,4 +17,14 @@ public interface UserService {
     List<ProfileChangeRequestDTO> getAllPendingProfileChangeRequests();
     void approveProfileChangeRequest(String requestId);
     void rejectProfileChangeRequest(String requestId);
+    
+    // Authentication methods
+    LoginResponseDTO login(LoginRequestDTO dto);
+    void logout(String userId);
+    void registerUser(RegisterRequestDTO dto);
+    void activateAccount(String token);
+    void requestPasswordReset(String email);
+    void resetPasswordWithToken(PasswordResetTokenDTO dto);
+    void setDriverStatus(String driverId, boolean active);
+    boolean canDriverLogout(String driverId);
 }
