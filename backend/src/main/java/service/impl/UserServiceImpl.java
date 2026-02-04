@@ -283,7 +283,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
         
         // Check if driver has any active rides
-        long activeRides = rideRepository.findByDriverIdAndStatus(driverId, RideStatus.ACTIVE).size();
+        long activeRides = rideRepository.findByDriver_IdAndStatus(driverId, RideStatus.ACTIVE).size();
         return activeRides == 0;
     }
     
@@ -353,7 +353,7 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public List<ProfileChangeRequestDTO> getProfileChangeRequests(String userId) {
-        List<ProfileChangeRequest> requests = profileChangeRequestRepository.findByUserId(userId);
+        List<ProfileChangeRequest> requests = profileChangeRequestRepository.findByUser_Id(userId);
         return requests.stream()
             .map(this::mapToDTO)
             .collect(java.util.stream.Collectors.toList());

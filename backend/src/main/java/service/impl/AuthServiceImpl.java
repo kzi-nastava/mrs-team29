@@ -125,7 +125,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
         
         // Check if driver has any active rides (ACTIVE status)
-        long activeRides = rideRepository.findByDriverIdAndStatus(driverId, RideStatus.ACTIVE).size();
+        long activeRides = rideRepository.findByDriver_IdAndStatus(driverId, RideStatus.ACTIVE).size();
         return activeRides == 0;
     }
     

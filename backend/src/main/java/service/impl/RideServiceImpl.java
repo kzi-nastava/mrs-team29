@@ -44,7 +44,7 @@ public class RideServiceImpl implements RideService {
         User creator = userRepository.findById(dto.getCreatorId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        boolean hasActiveRide = rideRepository.existsByPassengerIdAndStatusIn(
+        boolean hasActiveRide = rideRepository.existsByPassengers_IdAndStatusIn(
                 creator.getId(),
                 List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.ACTIVE)
         );
@@ -269,7 +269,7 @@ public class RideServiceImpl implements RideService {
 	
 	@Override
 	public List<FavoriteRouteDTO> getUserFavoriteRoutes(String userId) {
-	    List<FavoriteRoute> routes = favoriteRouteRepository.findByUserId(userId);
+        List<FavoriteRoute> routes = favoriteRouteRepository.findByUser_Id(userId);
 	    return routes.stream()
 	        .map(this::mapFavoriteRouteToDTO)
 	        .collect(java.util.stream.Collectors.toList());
@@ -341,7 +341,7 @@ public class RideServiceImpl implements RideService {
 	
 	@Override
 	public boolean hasActiveRide(String userId) {
-	    return rideRepository.existsByPassengerIdAndStatusIn(
+        return rideRepository.existsByPassengers_IdAndStatusIn(
 	        userId,
 	        List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.ACTIVE)
 	    );

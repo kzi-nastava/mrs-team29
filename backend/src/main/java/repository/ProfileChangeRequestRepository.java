@@ -14,6 +14,6 @@ public interface ProfileChangeRequestRepository
 
     List<ProfileChangeRequest> findByStatus(ChangeRequestStatus status);
 
-    List<ProfileChangeRequest> findByUserId(String userId);
+    List<ProfileChangeRequest> findByUser_Id(String userId);
 }
 
