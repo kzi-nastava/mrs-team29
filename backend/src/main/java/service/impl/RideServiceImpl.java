@@ -93,7 +93,6 @@ public class RideServiceImpl implements RideService {
                 .orElseThrow(() -> new RuntimeException("No available drivers"));
 
         Ride ride = new Ride();
-        ride.setId(UUID.randomUUID().toString());
         ride.setPickupAddress(pickup);
         ride.setDestinationAddress(destination);
         ride.setStops(stops);
@@ -185,7 +184,6 @@ public class RideServiceImpl implements RideService {
                 .orElseThrow(() -> new RuntimeException("No available drivers"));
 
         Ride ride = new Ride();
-        ride.setId(UUID.randomUUID().toString());
         ride.setPickupAddress(route.getPickupAddress());
         ride.setDestinationAddress(route.getDestinationAddress());
         ride.setStops(route.getStops());

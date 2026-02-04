@@ -50,8 +50,8 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
         
-        // Check if account is activated
-        if (!user.isActivated()) {
+        // Check if account is active
+        if (!user.getIsActive()) {
             throw new RuntimeException("Account not activated. Please check your email.");
         }
         
@@ -138,9 +138,8 @@ public class UserServiceImpl implements UserService {
         user.setLastName(dto.getLastName());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setUserType(UserType.CLIENT); // Default to client
-        user.setActivated(false); // Not activated until email confirmation
         user.setUserName(dto.getEmail()); // Use email as username
-        user.setIsActive(false);
+        user.setIsActive(false); // Not activated until email confirmation
         user.setIsBlocked(false);
         
         // Set default profile picture if not provided
@@ -154,7 +153,6 @@ public class UserServiceImpl implements UserService {
         
         // Create activation token (valid for 24 hours)
         ActivationToken token = new ActivationToken();
-        token.setId(UUID.randomUUID().toString());
         token.setToken(UUID.randomUUID().toString());
         token.setUser(user);
         token.setExpiresAt(LocalDateTime.now().plusHours(24));
@@ -187,7 +185,6 @@ public class UserServiceImpl implements UserService {
         
         // Activate user
         User user = token.getUser();
-        user.setActivated(true);
         user.setIsActive(true);
         userRepository.save(user);
         
@@ -202,11 +199,10 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (user.isActivated()) {
+        if (user.getIsActive()) {
             return;
         }
 
-        user.setActivated(true);
         user.setIsActive(true);
         userRepository.save(user);
     }
@@ -219,7 +215,6 @@ public class UserServiceImpl implements UserService {
         
         // Create password reset token (valid for 1 hour)
         ActivationToken token = new ActivationToken();
-        token.setId(UUID.randomUUID().toString());
         token.setToken(UUID.randomUUID().toString());
         token.setUser(user);
         token.setExpiresAt(LocalDateTime.now().plusHours(1));

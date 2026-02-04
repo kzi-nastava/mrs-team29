@@ -28,6 +28,12 @@ public class MapServiceImpl implements MapService {
     @Value("${map.user-agent:Driverr/1.0 (contact@example.com)}")
     private String userAgent;
 
+    @Value("${map.nominatim.email:contact@example.com}")
+    private String nominatimEmail;
+
+    @Value("${map.referer:http://localhost:4200}")
+    private String referer;
+
     public MapServiceImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -39,6 +45,7 @@ public class MapServiceImpl implements MapService {
                 .queryParam("format", "json")
                 .queryParam("limit", 1)
                 .queryParam("addressdetails", 1)
+            .queryParam("email", nominatimEmail)
                 .queryParam("q", query)
                 .build(true)
                 .toUri();
@@ -57,6 +64,7 @@ public class MapServiceImpl implements MapService {
                 .path("/reverse")
                 .queryParam("format", "json")
                 .queryParam("addressdetails", 1)
+            .queryParam("email", nominatimEmail)
                 .queryParam("lat", latitude)
                 .queryParam("lon", longitude)
                 .build(true)
@@ -93,6 +101,7 @@ public class MapServiceImpl implements MapService {
     private List<Map<String, Object>> exchangeForList(URI uri) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.USER_AGENT, userAgent);
+        headers.set(HttpHeaders.REFERER, referer);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
@@ -108,6 +117,7 @@ public class MapServiceImpl implements MapService {
     private Map<String, Object> exchangeForMap(URI uri) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.USER_AGENT, userAgent);
+        headers.set(HttpHeaders.REFERER, referer);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(

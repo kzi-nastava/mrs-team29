@@ -41,7 +41,7 @@ export class LoginComponent {
       next: (response) => {
         console.log('[Login] success', response);
         this.loading = false;
-        this.router.navigate(['/order-ride']);
+        this.router.navigate(['/main-page']);
       },
       error: (err) => {
         console.error('[Login] error', err);
