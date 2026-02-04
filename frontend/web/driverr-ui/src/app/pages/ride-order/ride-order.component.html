@@ -1,7 +1,7 @@
 <div class="order-ride-page">
   <div class="order-container">
     <h1 class="title">Order a Ride</h1>
-    <p class="subtitle">Enter your ride details and confirm your order</p>
+    <p class="subtitle">Select locations on the map or search for addresses</p>
 
     <!-- Active Ride Warning -->
     <div *ngIf="hasActiveRide" class="alert alert-warning">
@@ -18,48 +18,75 @@
       {{ message }}
     </div>
 
-    <!-- Order Form -->
-    <form [formGroup]="rideForm" (ngSubmit)="orderRide()" class="order-form">
-
-      <div class="form-section">
-        <h3>Ride Location</h3>
+    <!-- Map Section -->
+    <div class="map-section">
+      <div class="map-controls">
+        <div class="search-bar">
+          <input 
+            type="text" 
+            [(ngModel)]="searchQuery"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="Search for an address..."
+            (keyup.enter)="searchAddress()"
+          />
+          <button type="button" class="search-btn" (click)="searchAddress()">Search</button>
+        </div>
         
-        <div class="form-group">
-          <label for="pickup">Pickup Location</label>
-          <input 
-            id="pickup" 
-            type="text" 
-            formControlName="pickupAddressId"
-            placeholder="Enter pickup address"
-            [class.error]="rideForm.get('pickupAddressId')?.invalid && rideForm.get('pickupAddressId')?.touched"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="destination">Destination</label>
-          <input 
-            id="destination" 
-            type="text" 
-            formControlName="destinationAddressId"
-            placeholder="Enter destination address"
-            [class.error]="rideForm.get('destinationAddressId')?.invalid && rideForm.get('destinationAddressId')?.touched"
-          />
-        </div>
-
-        <div class="stops-section">
-          <h4>Additional Stops (Optional)</h4>
-          <div *ngFor="let stop of stops; let i = index" class="stop-item">
-            <input 
-              type="text" 
-              [(ngModel)]="stops[i]"
-              [ngModelOptions]="{ standalone: true }"
-              placeholder="Stop {{ i + 1 }}"
-            />
-            <button type="button" class="remove-btn" (click)="removeStop(i)">Remove</button>
-          </div>
-          <button type="button" class="secondary-btn" (click)="addStop()">+ Add Stop</button>
+        <div class="location-buttons">
+          <button 
+            type="button" 
+            class="map-btn pickup-btn" 
+            [class.active]="selectingFor === 'pickup'"
+            (click)="startSelectingPickup()"
+          >
+            📍 Set Pickup
+          </button>
+          <button 
+            type="button" 
+            class="map-btn destination-btn"
+            [class.active]="selectingFor === 'destination'"
+            (click)="startSelectingDestination()"
+          >
+            🎯 Set Destination
+          </button>
         </div>
       </div>
+
+      <div id="map" class="map-container"></div>
+
+      <!-- Selected Addresses Display -->
+      <div class="selected-addresses" *ngIf="pickupAddress || destinationAddress">
+        <div class="address-item" *ngIf="pickupAddress">
+          <span class="address-label">Pickup:</span>
+          <span class="address-text">{{ pickupAddress.displayName || pickupAddress.street }}</span>
+          <button type="button" class="clear-btn" (click)="clearPickup()">✕</button>
+        </div>
+        <div class="address-item" *ngIf="destinationAddress">
+          <span class="address-label">Destination:</span>
+          <span class="address-text">{{ destinationAddress.displayName || destinationAddress.street }}</span>
+          <button type="button" class="clear-btn" (click)="clearDestination()">✕</button>
+        </div>
+      </div>
+
+      <!-- Route Info -->
+      <div class="route-info-box" *ngIf="routeInfo">
+        <div class="info-item">
+          <span class="info-label">Distance:</span>
+          <span class="info-value">{{ formatDistance(routeInfo.distanceMeters) }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Duration:</span>
+          <span class="info-value">{{ formatDuration(routeInfo.durationSeconds) }}</span>
+        </div>
+        <div class="info-item estimated-price">
+          <span class="info-label">Estimated Price:</span>
+          <span class="info-value price">{{ estimatedPrice }} RSD</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Form -->
+    <form [formGroup]="rideForm" (ngSubmit)="orderRide()" class="order-form">
 
       <div class="form-section">
         <h3>Ride Details</h3>

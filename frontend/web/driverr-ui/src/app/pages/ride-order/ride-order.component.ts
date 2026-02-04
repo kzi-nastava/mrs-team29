@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { RideService } from '../../services/ride.service';
 import { FavoriteRouteService } from '../../services/favorite-route.service';
+import { MapService, AddressResponse, RouteResult } from '../../services/map.service';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import * as L from 'leaflet';
 
 @Component({
   selector: 'app-order-ride',
@@ -11,7 +13,7 @@ import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } 
   templateUrl: './ride-order.component.html',
   styleUrls: ['./ride-order.component.css']
 })
-export class OrderRideComponent implements OnInit {
+export class OrderRideComponent implements OnInit, AfterViewInit {
 
   rideForm!: FormGroup;
   creatorId = 'USER_ID_123'; // later from auth
@@ -25,6 +27,19 @@ export class OrderRideComponent implements OnInit {
   loading = false;
   hasActiveRide = false;
 
+  // Map properties
+  map!: L.Map;
+  pickupMarker?: L.Marker;
+  destinationMarker?: L.Marker;
+  routeLine?: L.Polyline;
+  pickupAddress?: AddressResponse;
+  destinationAddress?: AddressResponse;
+  searchQuery = '';
+  searchResults: AddressResponse[] = [];
+  selectingFor: 'pickup' | 'destination' | null = null;
+  routeInfo?: RouteResult;
+  estimatedPrice = 0;
+
   vehicleTypes = [
     { value: 'STANDARD', label: 'Standard Car' },
     { value: 'LUXURY', label: 'Luxury Car' },
@@ -34,13 +49,35 @@ export class OrderRideComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private rideService: RideService,
-    private favoriteRouteService: FavoriteRouteService
+    private favoriteRouteService: FavoriteRouteService,
+    private mapService: MapService
   ) {}
 
   ngOnInit() {
     this.initializeForm();
     this.checkActiveRide();
     this.loadFavoriteRoutes();
+  }
+
+  ngAfterViewInit() {
+    this.initializeMap();
+  }
+
+  initializeMap() {
+    // Default center: Novi Sad, Serbia
+    this.map = L.map('map').setView([45.2671, 19.8335], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(this.map);
+
+    // Click on map to select location
+    this.map.on('click', (e: L.LeafletMouseEvent) => {
+      if (this.selectingFor) {
+        this.selectLocationFromMap(e.latlng.lat, e.latlng.lng);
+      }
+    });
   }
 
   initializeForm() {
@@ -159,5 +196,205 @@ export class OrderRideComponent implements OnInit {
 
   toggleFavoritesPopup() {
     this.showFavorites = !this.showFavorites;
+  }
+
+  // Map-related methods
+  startSelectingPickup() {
+    this.selectingFor = 'pickup';
+    this.errorMessage = 'Click on the map or search for a pickup location';
+  }
+
+  startSelectingDestination() {
+    this.selectingFor = 'destination';
+    this.errorMessage = 'Click on the map or search for a destination';
+  }
+
+  searchAddress() {
+    if (!this.searchQuery.trim()) {
+      return;
+    }
+
+    this.loading = true;
+    this.mapService.geocodeAndSave(this.searchQuery).subscribe({
+      next: (address) => {
+        this.loading = false;
+        
+        if (this.selectingFor === 'pickup') {
+          this.setPickupAddress(address);
+        } else if (this.selectingFor === 'destination') {
+          this.setDestinationAddress(address);
+        }
+
+        // Move map to location
+        this.map.setView([address.latitude, address.longitude], 15);
+        this.searchQuery = '';
+        this.selectingFor = null;
+        this.errorMessage = '';
+      },
+      error: (err) => {
+        this.loading = false;
+        this.errorMessage = 'Address not found. Try a different search.';
+      }
+    });
+  }
+
+  selectLocationFromMap(lat: number, lng: number) {
+    this.loading = true;
+    this.mapService.reverseGeocodeAndSave(lat, lng).subscribe({
+      next: (address) => {
+        this.loading = false;
+        
+        if (this.selectingFor === 'pickup') {
+          this.setPickupAddress(address);
+        } else if (this.selectingFor === 'destination') {
+          this.setDestinationAddress(address);
+        }
+
+        this.selectingFor = null;
+        this.errorMessage = '';
+      },
+      error: (err) => {
+        this.loading = false;
+        this.errorMessage = 'Could not get address for this location';
+      }
+    });
+  }
+
+  setPickupAddress(address: AddressResponse) {
+    this.pickupAddress = address;
+    this.rideForm.patchValue({ pickupAddressId: address.id });
+
+    // Remove old marker
+    if (this.pickupMarker) {
+      this.map.removeLayer(this.pickupMarker);
+    }
+
+    // Add new marker
+    const icon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    this.pickupMarker = L.marker([address.latitude, address.longitude], { icon })
+      .addTo(this.map)
+      .bindPopup(`<b>Pickup:</b><br>${address.displayName || address.street}`);
+
+    this.calculateRoute();
+  }
+
+  setDestinationAddress(address: AddressResponse) {
+    this.destinationAddress = address;
+    this.rideForm.patchValue({ destinationAddressId: address.id });
+
+    // Remove old marker
+    if (this.destinationMarker) {
+      this.map.removeLayer(this.destinationMarker);
+    }
+
+    // Add new marker
+    const icon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    this.destinationMarker = L.marker([address.latitude, address.longitude], { icon })
+      .addTo(this.map)
+      .bindPopup(`<b>Destination:</b><br>${address.displayName || address.street}`);
+
+    this.calculateRoute();
+  }
+
+  calculateRoute() {
+    if (!this.pickupAddress || !this.destinationAddress) {
+      return;
+    }
+
+    this.mapService.getRoute(
+      this.pickupAddress.latitude,
+      this.pickupAddress.longitude,
+      this.destinationAddress.latitude,
+      this.destinationAddress.longitude
+    ).subscribe({
+      next: (route) => {
+        this.routeInfo = route;
+        
+        // Calculate estimated price (base price + distance-based pricing)
+        const vehicleType = this.rideForm.get('vehicleType')?.value;
+        let basePrice = 200;
+        if (vehicleType === 'LUXURY') basePrice = 400;
+        if (vehicleType === 'VAN') basePrice = 300;
+        
+        const distanceKm = route.distanceMeters / 1000;
+        this.estimatedPrice = Math.round(basePrice + (distanceKm * 120));
+
+        // Draw route line on map
+        if (this.routeLine) {
+          this.map.removeLayer(this.routeLine);
+        }
+
+        this.routeLine = L.polyline([
+          [this.pickupAddress!.latitude, this.pickupAddress!.longitude],
+          [this.destinationAddress!.latitude, this.destinationAddress!.longitude]
+        ], { color: '#2ec4b6', weight: 4 }).addTo(this.map);
+
+        // Fit map to show both markers
+        const bounds = L.latLngBounds([
+          [this.pickupAddress!.latitude, this.pickupAddress!.longitude],
+          [this.destinationAddress!.latitude, this.destinationAddress!.longitude]
+        ]);
+        this.map.fitBounds(bounds, { padding: [50, 50] });
+      },
+      error: (err) => {
+        console.error('Route calculation failed', err);
+      }
+    });
+  }
+
+  clearPickup() {
+    this.pickupAddress = undefined;
+    this.rideForm.patchValue({ pickupAddressId: '' });
+    if (this.pickupMarker) {
+      this.map.removeLayer(this.pickupMarker);
+      this.pickupMarker = undefined;
+    }
+    this.clearRoute();
+  }
+
+  clearDestination() {
+    this.destinationAddress = undefined;
+    this.rideForm.patchValue({ destinationAddressId: '' });
+    if (this.destinationMarker) {
+      this.map.removeLayer(this.destinationMarker);
+      this.destinationMarker = undefined;
+    }
+    this.clearRoute();
+  }
+
+  clearRoute() {
+    if (this.routeLine) {
+      this.map.removeLayer(this.routeLine);
+      this.routeLine = undefined;
+    }
+    this.routeInfo = undefined;
+    this.estimatedPrice = 0;
+  }
+
+  formatDuration(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}m ${secs}s`;
+  }
+
+  formatDistance(meters: number): string {
+    const km = (meters / 1000).toFixed(2);
+    return `${km} km`;
   }
 }

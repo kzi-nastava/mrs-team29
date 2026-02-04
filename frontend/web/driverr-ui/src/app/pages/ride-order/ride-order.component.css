@@ -6,7 +6,7 @@
 }
 
 .order-container {
-  max-width: 700px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -398,4 +398,171 @@ input[type="checkbox"] {
 .message.error {
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
+}
+
+/* Map Section */
+.map-section {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.map-controls {
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.search-btn {
+  padding: 12px 24px;
+  background: #2ec4b6;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.search-btn:hover {
+  background: #26b2a6;
+}
+
+.location-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.map-btn {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.map-btn:hover {
+  border-color: #2ec4b6;
+  background: rgba(46, 196, 182, 0.05);
+}
+
+.map-btn.active {
+  border-color: #2ec4b6;
+  background: #2ec4b6;
+  color: white;
+}
+
+.map-container {
+  width: 100%;
+  height: 500px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.selected-addresses {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.address-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: white;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.address-item:last-child {
+  margin-bottom: 0;
+}
+
+.address-label {
+  font-weight: 600;
+  color: #2ec4b6;
+  min-width: 100px;
+}
+
+.address-text {
+  flex: 1;
+  color: #333;
+  font-size: 14px;
+}
+
+.clear-btn {
+  padding: 5px 10px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.clear-btn:hover {
+  background: #dc2626;
+}
+
+.route-info-box {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  background: linear-gradient(135deg, #2ec4b6 0%, #26b2a6 100%);
+  padding: 20px;
+  border-radius: 8px;
+  color: white;
+}
+
+.info-item {
+  text-align: center;
+}
+
+.info-label {
+  display: block;
+  font-size: 12px;
+  opacity: 0.9;
+  margin-bottom: 5px;
+}
+
+.info-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.info-value.price {
+  font-size: 24px;
+}
+
+@media (max-width: 768px) {
+  .route-info-box {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .location-buttons {
+    flex-direction: column;
+  }
 }
