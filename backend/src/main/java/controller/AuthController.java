@@ -23,9 +23,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO dto) {
         try {
+            System.out.println("[AuthController] Login attempt for email=" + dto.getEmail());
             LoginResponseDTO response = userService.login(dto);
+            System.out.println("[AuthController] Login success for email=" + dto.getEmail());
             return ResponseEntity.ok(ApiResponse.success("Login successful", response));
         } catch (RuntimeException e) {
+            System.out.println("[AuthController] Login failed for email=" + dto.getEmail() + " reason=" + e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.error(e.getMessage()));
         }
@@ -75,11 +78,14 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO dto) {
         try {
+            System.out.println("[AuthController] Register attempt for email=" + dto.getEmail());
             userService.registerUser(dto);
+            System.out.println("[AuthController] Register success for email=" + dto.getEmail());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success(
                             "Registration successful. Please check your email to activate your account.", null));
         } catch (RuntimeException e) {
+            System.out.println("[AuthController] Register failed for email=" + dto.getEmail() + " reason=" + e.getMessage());
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(e.getMessage()));
         }

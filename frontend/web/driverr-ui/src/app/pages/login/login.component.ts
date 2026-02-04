@@ -23,6 +23,7 @@ export class LoginComponent {
   ) {}
 
   onSubmit(): void {
+    console.log('[Login] submit', { email: this.email });
     if (!this.email || !this.password) {
       this.error = 'Please enter email and password';
       return;
@@ -38,10 +39,12 @@ export class LoginComponent {
 
     this.authService.login(credentials).subscribe({
       next: (response) => {
+        console.log('[Login] success', response);
         this.loading = false;
         this.router.navigate(['/order-ride']);
       },
       error: (err) => {
+        console.error('[Login] error', err);
         this.loading = false;
         this.error = err.error?.message || 'Login failed. Please try again.';
       }

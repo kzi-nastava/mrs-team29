@@ -56,9 +56,11 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
+    console.log('[AuthService] login request', credentials);
     return this.http.post<ApiResponse<LoginResponse>>(`${this.apiUrl}/login`, credentials)
       .pipe(
         tap(response => {
+          console.log('[AuthService] login response', response);
           if (response.data) {
             localStorage.setItem('authToken', response.data.token);
             localStorage.setItem('userId', response.data.userId);
@@ -72,8 +74,10 @@ export class AuthService {
   }
 
   register(data: RegisterRequest): Observable<any> {
+    console.log('[AuthService] register request', data);
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/register`, data)
       .pipe(
+        tap(response => console.log('[AuthService] register response', response)),
         map(response => response)
       );
   }
