@@ -179,8 +179,7 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
       next: (res) => {
         this.loading = false;
         this.message = `Ride ordered! Price: ${res.price} RSD. Driver will arrive shortly.`;
-        this.rideForm.reset();
-        this.stops = [];
+        this.resetToDefault(true);
         this.checkActiveRide(); // Refresh active ride status
       },
       error: (err) => {
@@ -422,6 +421,41 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
     }
     this.routeInfo = undefined;
     this.estimatedPrice = 0;
+  }
+
+  resetToDefault(keepMessage = false) {
+    const existingMessage = this.message;
+    this.rideForm.reset({
+      pickupAddressId: '',
+      destinationAddressId: '',
+      vehicleType: 'STANDARD',
+      scheduledTime: '',
+      passengerIds: '',
+      pets: false,
+      baby: false,
+      notes: ''
+    });
+    this.stops = [];
+    this.searchQuery = '';
+    this.pickupAddress = undefined;
+    this.destinationAddress = undefined;
+    this.selectingFor = null;
+
+    if (this.pickupMarker) {
+      this.map.removeLayer(this.pickupMarker);
+      this.pickupMarker = undefined;
+    }
+    if (this.destinationMarker) {
+      this.map.removeLayer(this.destinationMarker);
+      this.destinationMarker = undefined;
+    }
+    this.clearRoute();
+
+    if (!keepMessage) {
+      this.message = '';
+    } else {
+      this.message = existingMessage;
+    }
   }
 
   formatDuration(seconds: number): string {

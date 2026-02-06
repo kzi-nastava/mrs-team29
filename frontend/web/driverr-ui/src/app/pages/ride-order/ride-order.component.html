@@ -16,6 +16,7 @@
     <!-- Success Message -->
     <div *ngIf="message" class="alert alert-success">
       {{ message }}
+      <button type="button" class="secondary-btn" (click)="resetToDefault()">Reset</button>
     </div>
 
     <!-- Map Section -->
