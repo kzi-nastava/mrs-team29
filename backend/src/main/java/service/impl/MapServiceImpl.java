@@ -149,7 +149,7 @@ public class MapServiceImpl implements MapService {
         String postal = pick(address, "postcode");
         String country = pick(address, "country");
 
-        dto.setStreet(defaultIfBlank(street, "Unknown"));
+        dto.setStreet(defaultIfBlank(street, dto.getDisplayName()));
         dto.setStreetNumber(defaultIfBlank(number, "0"));
         dto.setCity(defaultIfBlank(city, "Unknown"));
         dto.setPostalCode(postal);

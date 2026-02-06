@@ -1,6 +1,7 @@
 package controller;
 
 import dto.map.AddressResponseDTO;
+import dto.map.AddressSaveRequestDTO;
 import dto.map.GeocodeRequestDTO;
 import dto.map.ReverseGeocodeRequestDTO;
 import jakarta.validation.Valid;
@@ -27,6 +28,11 @@ public class AddressController {
     @PostMapping("/reverse")
     public ResponseEntity<AddressResponseDTO> reverseGeocodeAndSave(@Valid @RequestBody ReverseGeocodeRequestDTO dto) {
         return ResponseEntity.ok(addressService.reverseGeocodeAndSave(dto.getLatitude(), dto.getLongitude()));
+    }
+
+    @PostMapping("/save")
+    public ResponseEntity<AddressResponseDTO> saveAddress(@Valid @RequestBody AddressSaveRequestDTO dto) {
+        return ResponseEntity.ok(addressService.saveFromGeocode(dto));
     }
 
     @GetMapping("/{id}")

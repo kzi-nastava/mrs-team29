@@ -2,8 +2,10 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FavoriteRouteService } from '../../services/favorite-route.service';
-import { MapService, AddressResponse } from '../../services/map.service';
+import { MapService, GeocodeResult } from '../../services/map.service';
+import { AuthService } from '../../services/auth.service';
 import * as L from 'leaflet';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-favorite-routes',
@@ -21,15 +23,15 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
   message = '';
   errorMessage = '';
   loading = false;
-  userId = 'USER_ID_123'; // later from auth
+  userId = '';
 
   // Map properties
   map!: L.Map;
   pickupMarker?: L.Marker;
   destinationMarker?: L.Marker;
   routeLine?: L.Polyline;
-  pickupAddress?: AddressResponse;
-  destinationAddress?: AddressResponse;
+  pickupAddress?: GeocodeResult;
+  destinationAddress?: GeocodeResult;
   searchQuery = '';
   selectingFor: 'pickup' | 'destination' | null = null;
   previewingRoute: any = null;
@@ -41,11 +43,17 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
   constructor(
     private fb: FormBuilder,
     private favoriteRouteService: FavoriteRouteService,
-    private mapService: MapService
+    private mapService: MapService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
     this.initializeForm();
+    this.userId = this.authService.getUserId();
+    if (!this.userId) {
+      this.errorMessage = 'Please log in to manage favorite routes.';
+      return;
+    }
     this.loadFavoriteRoutes();
   }
 
@@ -76,13 +84,16 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
   initializeForm() {
     this.form = this.fb.group({
       name: ['', Validators.required],
-      pickupAddressId: ['', Validators.required],
-      destinationAddressId: ['', Validators.required],
+      pickupAddressId: [''],
+      destinationAddressId: [''],
       stops: ['']
     });
   }
 
   loadFavoriteRoutes() {
+    if (!this.userId) {
+      return;
+    }
     this.loading = true;
     this.favoriteRouteService.getMyFavorites(this.userId).subscribe({
       next: (routes) => {
@@ -121,48 +132,65 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
       ? this.form.get('stops')?.value.split(',').map((s: string) => s.trim()).filter((s: string) => s)
       : [];
 
-    const routeData = {
-      clientId: this.userId,
-      name: this.form.get('name')?.value,
-      pickupAddressId: this.form.get('pickupAddressId')?.value,
-      destinationAddressId: this.form.get('destinationAddressId')?.value,
-      stops: stops
-    };
-
-    if (this.editingId) {
-      // Update existing
-      this.favoriteRouteService.updateFavorite(this.editingId, routeData).subscribe({
-        next: () => {
-          this.loading = false;
-          this.message = 'Route updated successfully!';
-          this.loadFavoriteRoutes();
-          this.form.reset();
-          this.editingId = null;
-          this.showForm = false;
-          setTimeout(() => this.message = '', 3000);
-        },
-        error: (error) => {
-          this.loading = false;
-          this.errorMessage = error.error?.message || 'Failed to update route';
-        }
-      });
-    } else {
-      // Create new
-      this.favoriteRouteService.createFavorite(routeData).subscribe({
-        next: () => {
-          this.loading = false;
-          this.message = 'Favorite route created!';
-          this.loadFavoriteRoutes();
-          this.form.reset();
-          this.showForm = false;
-          setTimeout(() => this.message = '', 3000);
-        },
-        error: (error) => {
-          this.loading = false;
-          this.errorMessage = error.error?.message || 'Failed to create route';
-        }
-      });
+    if (!this.pickupAddress || !this.destinationAddress) {
+      this.loading = false;
+      this.errorMessage = 'Please select pickup and destination on the map';
+      return;
     }
+
+    forkJoin({
+      pickup: this.mapService.saveAddress(this.pickupAddress),
+      destination: this.mapService.saveAddress(this.destinationAddress)
+    }).subscribe({
+      next: ({ pickup, destination }) => {
+        const routeData = {
+          userId: this.userId,
+          name: this.form.get('name')?.value,
+          pickupAddressId: pickup.id,
+          destinationAddressId: destination.id,
+          stopAddressIds: []
+        };
+
+        if (this.editingId) {
+          // Update existing
+          this.favoriteRouteService.updateFavorite(this.editingId, routeData).subscribe({
+            next: () => {
+              this.loading = false;
+              this.message = 'Route updated successfully!';
+              this.loadFavoriteRoutes();
+              this.form.reset();
+              this.editingId = null;
+              this.showForm = false;
+              setTimeout(() => this.message = '', 3000);
+            },
+            error: (error) => {
+              this.loading = false;
+              this.errorMessage = error.error?.message || 'Failed to update route';
+            }
+          });
+        } else {
+          // Create new
+          this.favoriteRouteService.createFavorite(routeData).subscribe({
+            next: () => {
+              this.loading = false;
+              this.message = 'Favorite route created!';
+              this.loadFavoriteRoutes();
+              this.form.reset();
+              this.showForm = false;
+              setTimeout(() => this.message = '', 3000);
+            },
+            error: (error) => {
+              this.loading = false;
+              this.errorMessage = error.error?.message || 'Failed to create route';
+            }
+          });
+        }
+      },
+      error: () => {
+        this.loading = false;
+        this.errorMessage = 'Failed to save addresses for this route';
+      }
+    });
   }
 
   editRoute(route: any) {
@@ -173,6 +201,32 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
       destinationAddressId: route.destinationAddressId,
       stops: route.stops ? route.stops.join(', ') : ''
     });
+
+    if (route.pickupAddress) {
+      this.pickupAddress = {
+        displayName: route.pickupAddress.displayName || route.pickupAddress.street,
+        street: route.pickupAddress.street,
+        streetNumber: route.pickupAddress.streetNumber,
+        city: route.pickupAddress.city,
+        postalCode: route.pickupAddress.postalCode,
+        country: route.pickupAddress.country,
+        latitude: route.pickupAddress.latitude,
+        longitude: route.pickupAddress.longitude
+      };
+    }
+
+    if (route.destinationAddress) {
+      this.destinationAddress = {
+        displayName: route.destinationAddress.displayName || route.destinationAddress.street,
+        street: route.destinationAddress.street,
+        streetNumber: route.destinationAddress.streetNumber,
+        city: route.destinationAddress.city,
+        postalCode: route.destinationAddress.postalCode,
+        country: route.destinationAddress.country,
+        latitude: route.destinationAddress.latitude,
+        longitude: route.destinationAddress.longitude
+      };
+    }
     this.showForm = true;
   }
 
@@ -220,7 +274,7 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
     this.loading = true;
     const target = this.resolveSelectionTarget();
     this.selectingFor = target;
-    this.mapService.geocodeAndSave(this.searchQuery).subscribe({
+    this.mapService.geocode(this.searchQuery).subscribe({
       next: (address) => {
         this.loading = false;
 
@@ -245,7 +299,7 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
   selectLocationFromMap(lat: number, lng: number) {
     this.loading = true;
     const target = this.resolveSelectionTarget();
-    this.mapService.reverseGeocodeAndSave(lat, lng).subscribe({
+    this.mapService.reverseGeocode(lat, lng).subscribe({
       next: (address) => {
         this.loading = false;
 
@@ -278,9 +332,9 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
     return 'pickup';
   }
 
-  setPickupAddress(address: AddressResponse) {
+  setPickupAddress(address: GeocodeResult) {
     this.pickupAddress = address;
-    this.form.patchValue({ pickupAddressId: address.id });
+    this.form.patchValue({ pickupAddressId: '' });
 
     if (this.pickupMarker) {
       this.map.removeLayer(this.pickupMarker);
@@ -302,9 +356,9 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
     this.drawRoute();
   }
 
-  setDestinationAddress(address: AddressResponse) {
+  setDestinationAddress(address: GeocodeResult) {
     this.destinationAddress = address;
-    this.form.patchValue({ destinationAddressId: address.id });
+    this.form.patchValue({ destinationAddressId: '' });
 
     if (this.destinationMarker) {
       this.map.removeLayer(this.destinationMarker);

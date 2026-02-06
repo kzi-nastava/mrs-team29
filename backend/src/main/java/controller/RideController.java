@@ -39,6 +39,11 @@ public class RideController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @GetMapping("/user/{userId}/active")
+    public ResponseEntity<Boolean> hasActiveRide(@PathVariable String userId) {
+        return ResponseEntity.ok(rideService.hasActiveRide(userId));
+    }
+
     @PatchMapping("/{rideId}/start")
     public ResponseEntity<RideStartResponseDTO> startRide(@PathVariable String rideId) {
         return ResponseEntity.ok(rideService.startRide(rideId));

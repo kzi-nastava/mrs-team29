@@ -58,6 +58,11 @@ export class MapService {
     return this.http.post<AddressResponse>(`${this.apiUrl}/addresses/reverse`, { latitude, longitude });
   }
 
+  // Save address from geocode data without external lookup
+  saveAddress(geocode: GeocodeResult): Observable<AddressResponse> {
+    return this.http.post<AddressResponse>(`${this.apiUrl}/addresses/save`, geocode);
+  }
+
   // Get route information (distance and duration)
   getRoute(fromLat: number, fromLon: number, toLat: number, toLon: number): Observable<RouteResult> {
     return this.http.post<RouteResult>(`${this.apiUrl}/map/route`, {

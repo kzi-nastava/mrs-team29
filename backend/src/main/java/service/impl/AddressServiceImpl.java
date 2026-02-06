@@ -1,6 +1,7 @@
 package service.impl;
 
 import dto.map.AddressResponseDTO;
+import dto.map.AddressSaveRequestDTO;
 import dto.map.GeocodeResultDTO;
 import domain.entities.Address;
 import org.springframework.stereotype.Service;
@@ -39,11 +40,28 @@ public class AddressServiceImpl implements AddressService {
             geocode.setDisplayName("Pinned location");
             geocode.setLatitude(latitude);
             geocode.setLongitude(longitude);
-            geocode.setStreet("Unknown");
+            geocode.setStreet("Pinned location");
             geocode.setStreetNumber("0");
             geocode.setCity("Unknown");
             geocode.setCountry("Unknown");
         }
+        Address address = findOrCreate(geocode);
+        return AddressResponseDTO.from(address, geocode.getDisplayName());
+    }
+
+    @Override
+    @Transactional
+    public AddressResponseDTO saveFromGeocode(AddressSaveRequestDTO dto) {
+        GeocodeResultDTO geocode = new GeocodeResultDTO();
+        geocode.setDisplayName(dto.getDisplayName());
+        geocode.setLatitude(dto.getLatitude());
+        geocode.setLongitude(dto.getLongitude());
+        geocode.setStreet(dto.getStreet());
+        geocode.setStreetNumber(dto.getStreetNumber());
+        geocode.setCity(dto.getCity());
+        geocode.setPostalCode(dto.getPostalCode());
+        geocode.setCountry(dto.getCountry());
+
         Address address = findOrCreate(geocode);
         return AddressResponseDTO.from(address, geocode.getDisplayName());
     }
