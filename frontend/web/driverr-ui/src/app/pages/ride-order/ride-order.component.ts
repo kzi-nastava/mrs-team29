@@ -74,9 +74,9 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
 
     // Click on map to select location
     this.map.on('click', (e: L.LeafletMouseEvent) => {
-      if (this.selectingFor || !this.pickupAddress || !this.destinationAddress) {
-        this.selectLocationFromMap(e.latlng.lat, e.latlng.lng);
-      }
+      const target = this.resolveSelectionTarget();
+      this.selectingFor = target;
+      this.selectLocationFromMap(e.latlng.lat, e.latlng.lng);
     });
   }
 
@@ -216,6 +216,7 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
 
     this.loading = true;
     const target = this.resolveSelectionTarget();
+    this.selectingFor = target;
     this.mapService.geocodeAndSave(this.searchQuery).subscribe({
       next: (address) => {
         this.loading = false;

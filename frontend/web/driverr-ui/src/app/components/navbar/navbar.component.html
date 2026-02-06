@@ -1,7 +1,7 @@
 <nav class="navbar">
-  <div class="logo">
+  <a class="logo" routerLink="/main-page">
     Driverr
-  </div>
+  </a>
 
   <ul class="nav-links">
     <ng-container *ngIf="isAuthenticated; else guestLinks">
