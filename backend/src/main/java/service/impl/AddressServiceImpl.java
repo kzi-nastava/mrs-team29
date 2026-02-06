@@ -31,7 +31,19 @@ public class AddressServiceImpl implements AddressService {
     @Override
     @Transactional
     public AddressResponseDTO reverseGeocodeAndSave(double latitude, double longitude) {
-        GeocodeResultDTO geocode = mapService.reverseGeocode(latitude, longitude);
+        GeocodeResultDTO geocode;
+        try {
+            geocode = mapService.reverseGeocode(latitude, longitude);
+        } catch (RuntimeException ex) {
+            geocode = new GeocodeResultDTO();
+            geocode.setDisplayName("Pinned location");
+            geocode.setLatitude(latitude);
+            geocode.setLongitude(longitude);
+            geocode.setStreet("Unknown");
+            geocode.setStreetNumber("0");
+            geocode.setCity("Unknown");
+            geocode.setCountry("Unknown");
+        }
         Address address = findOrCreate(geocode);
         return AddressResponseDTO.from(address, geocode.getDisplayName());
     }

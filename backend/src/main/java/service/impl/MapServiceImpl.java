@@ -47,7 +47,8 @@ public class MapServiceImpl implements MapService {
                 .queryParam("addressdetails", 1)
             .queryParam("email", nominatimEmail)
                 .queryParam("q", query)
-                .build(true)
+            .build()
+            .encode()
                 .toUri();
 
         List<Map<String, Object>> results = exchangeForList(uri);
@@ -67,7 +68,8 @@ public class MapServiceImpl implements MapService {
             .queryParam("email", nominatimEmail)
                 .queryParam("lat", latitude)
                 .queryParam("lon", longitude)
-                .build(true)
+            .build()
+            .encode()
                 .toUri();
 
         Map<String, Object> result = exchangeForMap(uri);
