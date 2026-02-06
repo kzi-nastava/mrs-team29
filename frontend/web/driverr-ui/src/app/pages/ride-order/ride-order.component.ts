@@ -251,7 +251,7 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
         // Move map to location
         this.map.setView([address.latitude, address.longitude], 15);
         this.searchQuery = '';
-        this.selectingFor = null;
+        this.clearSelectingForDeferred();
         this.clearErrorMessageDeferred();
       },
       error: (err) => {
@@ -274,7 +274,7 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
           this.setDestinationAddress(address);
         }
 
-        this.selectingFor = null;
+        this.clearSelectingForDeferred();
         this.clearErrorMessageDeferred();
       },
       error: (err) => {
@@ -438,6 +438,12 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
   private clearErrorMessageDeferred() {
     setTimeout(() => {
       this.errorMessage = '';
+    }, 0);
+  }
+
+  private clearSelectingForDeferred() {
+    setTimeout(() => {
+      this.selectingFor = null;
     }, 0);
   }
 }

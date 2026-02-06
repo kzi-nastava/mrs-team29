@@ -21,7 +21,8 @@ public class DriverrApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(DriverrApplication.class, args);
-		System.out.printf("Application initialized");
+		System.out.printf("Application initialized\n");
+		System.out.printf("-------------------------------------\n");
 	}
 
 }
