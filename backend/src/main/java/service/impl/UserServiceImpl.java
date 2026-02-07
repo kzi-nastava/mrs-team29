@@ -298,14 +298,41 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.getUserType() == UserType.DRIVER) {
-            ProfileChangeRequest request = new ProfileChangeRequest(
-                    user,
-                    "PROFILE_UPDATE",
-                    user.toString(),
-                    dto.toString()
+            boolean created = false;
+            created |= createProfileChangeRequestIfChanged(
+                user,
+                "firstName",
+                user.getFirstName(),
+                dto.getFirstName()
+            );
+            created |= createProfileChangeRequestIfChanged(
+                user,
+                "lastName",
+                user.getLastName(),
+                dto.getLastName()
+            );
+            created |= createProfileChangeRequestIfChanged(
+                user,
+                "gender",
+                user.getGender() == null ? null : user.getGender().name(),
+                dto.getGender() == null ? null : dto.getGender().name()
+            );
+            created |= createProfileChangeRequestIfChanged(
+                user,
+                "phoneNumber",
+                user.getPhoneNumber(),
+                dto.getPhoneNumber()
+            );
+            created |= createProfileChangeRequestIfChanged(
+                user,
+                "profilePictureUrl",
+                user.getProfilePictureUrl(),
+                dto.getProfilePictureUrl()
             );
 
-            profileChangeRequestRepository.save(request);
+            if (!created) {
+            return UserProfileDTO.fromUser(user);
+            }
             return UserProfileDTO.fromUser(user);
         }
 
@@ -367,28 +394,26 @@ public class UserServiceImpl implements UserService {
     public void approveProfileChangeRequest(String requestId) {
         ProfileChangeRequest request = profileChangeRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
-        
-        request.setStatus(ChangeRequestStatus.APPROVED);
-        profileChangeRequestRepository.save(request);
-        
+
         User user = request.getUser();
         applyProfileChange(user, request.getFieldName(), request.getNewValue());
         userRepository.save(user);
+        profileChangeRequestRepository.deleteById(requestId);
     }
     
     @Override
     public void rejectProfileChangeRequest(String requestId) {
         ProfileChangeRequest request = profileChangeRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
-        
-        request.setStatus(ChangeRequestStatus.REJECTED);
-        profileChangeRequestRepository.save(request);
+        profileChangeRequestRepository.delete(request);
     }
     
     private ProfileChangeRequestDTO mapToDTO(ProfileChangeRequest request) {
         ProfileChangeRequestDTO dto = new ProfileChangeRequestDTO();
+        User user = request.getUser();
         dto.setId(request.getId());
-        dto.setUserId(request.getUser().getId());
+        dto.setUserId(user.getId());
+        dto.setUserName(buildUserDisplayName(user));
         dto.setFieldName(request.getFieldName());
         dto.setOldValue(request.getOldValue());
         dto.setNewValue(request.getNewValue());
@@ -396,15 +421,57 @@ public class UserServiceImpl implements UserService {
         dto.setCreatedAt(request.getCreatedAt());
         return dto;
     }
+
+    private String buildUserDisplayName(User user) {
+        String firstName = user.getFirstName() == null ? "" : user.getFirstName().trim();
+        String lastName = user.getLastName() == null ? "" : user.getLastName().trim();
+        String fullName = (firstName + " " + lastName).trim();
+        if (!fullName.isEmpty()) {
+            return fullName;
+        }
+        if (user.getUserName() != null && !user.getUserName().isBlank()) {
+            return user.getUserName();
+        }
+        return user.getEmail();
+    }
     
     private void applyProfileChange(User user, String fieldName, String newValue) {
         switch (fieldName) {
             case "firstName": user.setFirstName(newValue); break;
             case "lastName": user.setLastName(newValue); break;
+            case "gender":
+                if (newValue == null || newValue.isBlank()) {
+                    user.setGender(null);
+                } else {
+                    user.setGender(Gender.valueOf(newValue));
+                }
+                break;
             case "phoneNumber": user.setPhoneNumber(newValue); break;
             case "profilePictureUrl": user.setProfilePictureUrl(newValue); break;
             default: throw new RuntimeException("Unknown field: " + fieldName);
         }
+    }
+
+    private boolean createProfileChangeRequestIfChanged(
+            User user,
+            String fieldName,
+            String oldValue,
+            String newValue
+    ) {
+        String oldVal = oldValue == null ? "" : oldValue;
+        String newVal = newValue == null ? "" : newValue;
+        if (oldVal.equals(newVal)) {
+            return false;
+        }
+
+        ProfileChangeRequest request = new ProfileChangeRequest(
+                user,
+                fieldName,
+                oldVal,
+                newVal
+        );
+        profileChangeRequestRepository.save(request);
+        return true;
     }
     
     @Override

@@ -42,7 +42,9 @@ export class AdminApprovalComponent implements OnInit {
       next: () => {
         this.message = 'Request approved successfully!';
         this.messageType = 'success';
-        this.loadPendingRequests();
+        this.profileChangeRequests = this.profileChangeRequests.filter(
+          (request) => request.id !== requestId
+        );
         setTimeout(() => this.message = '', 3000);
       },
       error: (error) => {
@@ -57,7 +59,9 @@ export class AdminApprovalComponent implements OnInit {
       next: () => {
         this.message = 'Request rejected successfully!';
         this.messageType = 'success';
-        this.loadPendingRequests();
+        this.profileChangeRequests = this.profileChangeRequests.filter(
+          (request) => request.id !== requestId
+        );
         setTimeout(() => this.message = '', 3000);
       },
       error: (error) => {
