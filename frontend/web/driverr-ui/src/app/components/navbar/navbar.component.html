@@ -1,16 +1,17 @@
 <nav class="navbar">
-  <div class="logo">
+  <a class="logo" routerLink="/main-page">
     Driverr
-  </div>
+  </a>
 
   <ul class="nav-links">
     <ng-container *ngIf="isAuthenticated; else guestLinks">
+      <li><a routerLink="/main-page">Main Page</a></li>
       <li *ngIf="isClient"><a routerLink="/order-ride">Order Ride</a></li>
       <li *ngIf="isClient"><a routerLink="/favorite-routes">Favorites</a></li>
       <li *ngIf="isDriver"><a routerLink="/driver/history">My Rides</a></li>
       <li *ngIf="isAdmin"><a routerLink="/admin/driver-register">Register Driver</a></li>
       <li *ngIf="isAdmin"><a routerLink="/admin/approvals">Approvals</a></li>
-      <li><a routerLink="/profile">Profile</a></li>
+      <li *ngIf="!isAdmin"><a routerLink="/profile">Profile</a></li>
       <li><button class="logout-btn" type="button" (click)="logout()">Logout</button></li>
     </ng-container>
     <ng-template #guestLinks>

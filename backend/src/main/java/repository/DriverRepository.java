@@ -30,7 +30,6 @@ public interface DriverRepository extends JpaRepository<Driver, String> {
         AND d.status = 'ACTIVE'
     """)
     Optional<Driver> findActiveDriverById(@Param("driverId") String driverId);
-    Optional<ActivationToken> findByToken(String token);
-    Optional<Driver> findById(User userId);
-	Optional<Driver> findFirstAvailableDriver();
+
+    Optional<Driver> findFirstByStatusAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(DriverStatus status);
 }

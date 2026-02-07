@@ -15,6 +15,7 @@ export class RegisterComponent {
   form = {
     firstName: '',
     lastName: '',
+    gender: '',
     email: '',
     phoneNumber: '',
     address: '',
@@ -32,6 +33,7 @@ export class RegisterComponent {
   ) {}
 
   onSubmit(): void {
+    console.log('[Register] submit', { email: this.form.email });
     // Validate form
     if (!this.form.firstName || !this.form.lastName || !this.form.email || 
         !this.form.phoneNumber || !this.form.address || 
@@ -57,6 +59,7 @@ export class RegisterComponent {
     const registerData: RegisterRequest = {
       firstName: this.form.firstName,
       lastName: this.form.lastName,
+      gender: this.form.gender || undefined,
       email: this.form.email,
       phoneNumber: this.form.phoneNumber,
       address: this.form.address,
@@ -66,6 +69,7 @@ export class RegisterComponent {
 
     this.authService.register(registerData).subscribe({
       next: (response) => {
+        console.log('[Register] success', response);
         this.loading = false;
         this.success = 'Registration successful! Please check your email to activate your account.';
         setTimeout(() => {
@@ -73,6 +77,7 @@ export class RegisterComponent {
         }, 3000);
       },
       error: (err) => {
+        console.error('[Register] error', err);
         this.loading = false;
         this.error = err.error?.message || 'Registration failed. Please try again.';
       }

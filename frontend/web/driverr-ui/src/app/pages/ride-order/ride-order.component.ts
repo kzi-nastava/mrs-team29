@@ -2,6 +2,7 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { RideService } from '../../services/ride.service';
 import { FavoriteRouteService } from '../../services/favorite-route.service';
 import { MapService, AddressResponse, RouteResult } from '../../services/map.service';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import * as L from 'leaflet';
@@ -16,7 +17,7 @@ import * as L from 'leaflet';
 export class OrderRideComponent implements OnInit, AfterViewInit {
 
   rideForm!: FormGroup;
-  creatorId = 'USER_ID_123'; // later from auth
+  creatorId = '';
   
   showFavorites = false;
   favoriteRoutes: any[] = [];
@@ -50,11 +51,17 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
     private fb: FormBuilder,
     private rideService: RideService,
     private favoriteRouteService: FavoriteRouteService,
-    private mapService: MapService
+    private mapService: MapService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
     this.initializeForm();
+    this.creatorId = this.authService.getUserId();
+    if (!this.creatorId) {
+      this.errorMessage = 'Please log in to order a ride.';
+      return;
+    }
     this.checkActiveRide();
     this.loadFavoriteRoutes();
   }
@@ -74,9 +81,9 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
 
     // Click on map to select location
     this.map.on('click', (e: L.LeafletMouseEvent) => {
-      if (this.selectingFor) {
-        this.selectLocationFromMap(e.latlng.lat, e.latlng.lng);
-      }
+      const target = this.resolveSelectionTarget();
+      this.selectingFor = target;
+      this.selectLocationFromMap(e.latlng.lat, e.latlng.lng);
     });
   }
 
@@ -94,6 +101,9 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
   }
 
   checkActiveRide() {
+    if (!this.creatorId) {
+      return;
+    }
     this.rideService.hasActiveRide(this.creatorId).subscribe({
       next: (hasActive) => {
         this.hasActiveRide = hasActive;
@@ -108,6 +118,9 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
   }
 
   loadFavoriteRoutes() {
+    if (!this.creatorId) {
+      return;
+    }
     this.favoriteRouteService.getMyFavorites(this.creatorId).subscribe({
       next: (routes) => {
         this.favoriteRoutes = routes;
@@ -127,6 +140,10 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
   }
 
   orderRide() {
+    if (!this.creatorId) {
+      this.errorMessage = 'Please log in to order a ride.';
+      return;
+    }
     // Check for active ride first
     if (this.hasActiveRide) {
       this.errorMessage = 'You have an active ride. Complete or cancel it before ordering another.';
@@ -149,10 +166,10 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
       creatorId: this.creatorId,
       pickupAddressId: this.rideForm.get('pickupAddressId')?.value,
       destinationAddressId: this.rideForm.get('destinationAddressId')?.value,
+      stopAddressIds: [],
       vehicleType: this.rideForm.get('vehicleType')?.value,
       scheduledTime: this.rideForm.get('scheduledTime')?.value || null,
       passengerIds: passengerIds,
-      stops: this.stops.map(s => ({ street: s })),
       pets: this.rideForm.get('pets')?.value,
       baby: this.rideForm.get('baby')?.value,
       notes: this.rideForm.get('notes')?.value
@@ -162,8 +179,7 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
       next: (res) => {
         this.loading = false;
         this.message = `Ride ordered! Price: ${res.price} RSD. Driver will arrive shortly.`;
-        this.rideForm.reset();
-        this.stops = [];
+        this.resetToDefault(true);
         this.checkActiveRide(); // Refresh active ride status
       },
       error: (err) => {
@@ -174,6 +190,10 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
   }
 
   orderFromFavorite(routeId: string) {
+    if (!this.creatorId) {
+      this.errorMessage = 'Please log in to order a ride.';
+      return;
+    }
     if (this.hasActiveRide) {
       this.errorMessage = 'You have an active ride. Complete or cancel it before ordering another.';
       return;
@@ -215,21 +235,23 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
     }
 
     this.loading = true;
+    const target = this.resolveSelectionTarget();
+    this.selectingFor = target;
     this.mapService.geocodeAndSave(this.searchQuery).subscribe({
       next: (address) => {
         this.loading = false;
-        
-        if (this.selectingFor === 'pickup') {
+
+        if (target === 'pickup') {
           this.setPickupAddress(address);
-        } else if (this.selectingFor === 'destination') {
+        } else {
           this.setDestinationAddress(address);
         }
 
         // Move map to location
         this.map.setView([address.latitude, address.longitude], 15);
         this.searchQuery = '';
-        this.selectingFor = null;
-        this.errorMessage = '';
+        this.clearSelectingForDeferred();
+        this.clearErrorMessageDeferred();
       },
       error: (err) => {
         this.loading = false;
@@ -240,24 +262,38 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
 
   selectLocationFromMap(lat: number, lng: number) {
     this.loading = true;
+    const target = this.resolveSelectionTarget();
     this.mapService.reverseGeocodeAndSave(lat, lng).subscribe({
       next: (address) => {
         this.loading = false;
-        
-        if (this.selectingFor === 'pickup') {
+
+        if (target === 'pickup') {
           this.setPickupAddress(address);
-        } else if (this.selectingFor === 'destination') {
+        } else {
           this.setDestinationAddress(address);
         }
 
-        this.selectingFor = null;
-        this.errorMessage = '';
+        this.clearSelectingForDeferred();
+        this.clearErrorMessageDeferred();
       },
       error: (err) => {
         this.loading = false;
         this.errorMessage = 'Could not get address for this location';
       }
     });
+  }
+
+  private resolveSelectionTarget(): 'pickup' | 'destination' {
+    if (this.selectingFor) {
+      return this.selectingFor;
+    }
+    if (!this.pickupAddress) {
+      return 'pickup';
+    }
+    if (!this.destinationAddress) {
+      return 'destination';
+    }
+    return 'pickup';
   }
 
   setPickupAddress(address: AddressResponse) {
@@ -387,6 +423,41 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
     this.estimatedPrice = 0;
   }
 
+  resetToDefault(keepMessage = false) {
+    const existingMessage = this.message;
+    this.rideForm.reset({
+      pickupAddressId: '',
+      destinationAddressId: '',
+      vehicleType: 'STANDARD',
+      scheduledTime: '',
+      passengerIds: '',
+      pets: false,
+      baby: false,
+      notes: ''
+    });
+    this.stops = [];
+    this.searchQuery = '';
+    this.pickupAddress = undefined;
+    this.destinationAddress = undefined;
+    this.selectingFor = null;
+
+    if (this.pickupMarker) {
+      this.map.removeLayer(this.pickupMarker);
+      this.pickupMarker = undefined;
+    }
+    if (this.destinationMarker) {
+      this.map.removeLayer(this.destinationMarker);
+      this.destinationMarker = undefined;
+    }
+    this.clearRoute();
+
+    if (!keepMessage) {
+      this.message = '';
+    } else {
+      this.message = existingMessage;
+    }
+  }
+
   formatDuration(seconds: number): string {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -396,5 +467,17 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
   formatDistance(meters: number): string {
     const km = (meters / 1000).toFixed(2);
     return `${km} km`;
+  }
+
+  private clearErrorMessageDeferred() {
+    setTimeout(() => {
+      this.errorMessage = '';
+    }, 0);
+  }
+
+  private clearSelectingForDeferred() {
+    setTimeout(() => {
+      this.selectingFor = null;
+    }, 0);
   }
 }

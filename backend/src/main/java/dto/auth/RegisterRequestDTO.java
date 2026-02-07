@@ -1,5 +1,6 @@
 package dto.auth;
 
+import domain.enums.Gender;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -22,6 +23,8 @@ public class RegisterRequestDTO {
     
     @NotBlank(message = "Last name is required")
     private String lastName;
+
+    private Gender gender;
     
     @NotBlank(message = "Address is required")
     private String address;
@@ -46,7 +49,9 @@ public class RegisterRequestDTO {
     public void setFirstName(String firstName) { this.firstName = firstName; }
     
     public String getLastName() { return lastName; }
+    public Gender getGender() { return gender; }
     public void setLastName(String lastName) { this.lastName = lastName; }
+    public void setGender(Gender gender) { this.gender = gender; }
     
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }

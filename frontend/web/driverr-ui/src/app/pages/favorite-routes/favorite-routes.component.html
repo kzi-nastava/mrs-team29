@@ -11,6 +11,10 @@
       {{ errorMessage }}
     </div>
 
+    <div *ngIf="hasActiveRide" class="alert alert-warning">
+      You have an active ride. Complete or cancel it before ordering another.
+    </div>
+
     <!-- Form Toggle Button -->
     <div class="form-toggle">
       <button 
@@ -63,16 +67,20 @@
         <div id="favorites-map" class="map-container"></div>
 
         <!-- Selected Addresses Display -->
-        <div class="selected-addresses" *ngIf="pickupAddress || destinationAddress">
-          <div class="address-item" *ngIf="pickupAddress">
+        <div class="selected-addresses">
+          <div class="address-item">
             <span class="address-label">Pickup:</span>
-            <span class="address-text">{{ pickupAddress.displayName || pickupAddress.street }}</span>
-            <button type="button" class="clear-btn" (click)="clearPickup()">✕</button>
+            <span class="address-text" [class.placeholder]="!pickupAddress">
+              {{ pickupAddress?.displayName || pickupAddress?.street || 'Not selected' }}
+            </span>
+            <button type="button" class="clear-btn" (click)="clearPickup()" *ngIf="pickupAddress">✕</button>
           </div>
-          <div class="address-item" *ngIf="destinationAddress">
+          <div class="address-item">
             <span class="address-label">Destination:</span>
-            <span class="address-text">{{ destinationAddress.displayName || destinationAddress.street }}</span>
-            <button type="button" class="clear-btn" (click)="clearDestination()">✕</button>
+            <span class="address-text" [class.placeholder]="!destinationAddress">
+              {{ destinationAddress?.displayName || destinationAddress?.street || 'Not selected' }}
+            </span>
+            <button type="button" class="clear-btn" (click)="clearDestination()" *ngIf="destinationAddress">✕</button>
           </div>
         </div>
       </div>
@@ -105,14 +113,14 @@
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="primary-btn" [disabled]="form.invalid || loading">
-            {{ loading ? 'Saving...' : editingId ? 'Update Route' : 'Create Route' }}
+          <button type="submit" class="primary-btn" [disabled]="form.invalid || saving">
+            {{ saving ? 'Saving...' : editingId ? 'Update Route' : 'Create Route' }}
           </button>
           <button 
             type="button" 
             class="secondary-btn" 
             (click)="cancelEdit()"
-            [disabled]="loading"
+            [disabled]="saving"
           >
             Cancel
           </button>
@@ -129,65 +137,63 @@
       <p>Loading routes...</p>
     </div>
 
-    <div *ngIf="!loading && favoriteRoutes.length > 0" class="routes-grid">
-      <div *ngFor="let route of favoriteRoutes" class="route-card">
-        <div class="route-header">
-          <h3>{{ route.name }}</h3>
-          <button type="button" class="preview-btn" (click)="previewRoute(route)">
-            🗺️ View on Map
-          </button>
-        </div>
-
-        <div class="route-body">
-          <div class="route-info">
-            <div class="info-row">
-              <span class="label">From:</span>
-              <span class="value">{{ route.pickupAddress?.street || route.pickupAddressId }}</span>
-            </div>
-            <div class="arrow">→</div>
-            <div class="info-row">
-              <span class="label">To:</span>
-              <span class="value">{{ route.destinationAddress?.street || route.destinationAddressId }}</span>
-            </div>
-          </div>
-
-          <div *ngIf="route.stops && route.stops.length > 0" class="stops-info">
-            <p class="label">Stops:</p>
-            <ul class="stops-list">
-              <li *ngFor="let stop of route.stops">{{ stop }}</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="route-actions">
-          <button 
-            type="button"
-            class="edit-btn" 
-            (click)="editRoute(route)"
-            [disabled]="loading"
-          >
-            Edit
-          </button>
-          <button 
-            type="button"
-            class="delete-btn" 
-            (click)="deleteRoute(route.id)"
-            [disabled]="loading"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
+    <table *ngIf="!loading && favoriteRoutes.length > 0" class="routes-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Stops</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let route of favoriteRoutes">
+          <td>{{ route.name }}</td>
+          <td>{{ route.pickupAddress?.street || route.pickupAddressId || 'Unknown' }}</td>
+          <td>{{ route.destinationAddress?.street || route.destinationAddressId || 'Unknown' }}</td>
+          <td>{{ route.stops?.length ? route.stops.join(', ') : '—' }}</td>
+          <td class="actions-cell">
+            <button type="button" class="preview-btn" (click)="previewRoute(route)">
+              View
+            </button>
+            <button
+              type="button"
+              class="order-btn"
+              (click)="orderFromFavorite(route.id)"
+              [disabled]="ordering || hasActiveRide"
+            >
+              {{ ordering ? 'Ordering...' : 'Order' }}
+            </button>
+            <button
+              type="button"
+              class="edit-btn"
+              (click)="editRoute(route)"
+              [disabled]="loading"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              class="delete-btn"
+              (click)="deleteRoute(route.id)"
+              [disabled]="loading"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
     <!-- Route Preview Modal -->
     <div *ngIf="previewingRoute" class="preview-modal">
       <div class="preview-content">
         <div class="preview-header">
           <h2>{{ previewingRoute.name }}</h2>
-          <button type="button" class="close-btn" (click)="closePreview()">✕</button>
+          <button type="button" class="close-preview-btn" (click)="closePreview()">✕</button>
         </div>
-        <div id="favorites-map" class="map-container-modal"></div>
+        <div id="favorites-preview-map" class="preview-map-container"></div>
         <div class="preview-info">
           <div class="info-row">
             <span class="label">From:</span>

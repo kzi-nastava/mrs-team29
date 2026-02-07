@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CommonModule } from '@angular/common';
 import { ProfileService } from '../../services/profile.service';
 import { DriverService } from '../../services/driver.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-profile',
@@ -15,12 +16,13 @@ export class ProfileComponent implements OnInit {
 
   profileForm!: FormGroup;
   passwordForm!: FormGroup;
-  userId = 'HARDCODED_ID_ZA_SADA'; // kasnije iz auth-a
+  userId = '';
   
   showPasswordChange = false;
   passwordMessage = '';
   passwordError = '';
   profileMessage = '';
+  profileDefaults: any = null;
   
   workingHours: number = 0;
   isDriver = false;
@@ -29,7 +31,8 @@ export class ProfileComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private profileService: ProfileService,
-    private driverService: DriverService
+    private driverService: DriverService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -49,15 +52,39 @@ export class ProfileComponent implements OnInit {
       confirmPassword: ['', [Validators.required, Validators.minLength(6)]]
     }, { validators: this.passwordMatchValidator });
 
-    this.loadProfile();
-    this.loadWorkingHours();
+    const currentUser = this.authService.getCurrentUser();
+    this.userId = currentUser?.userId || '';
+
+    if (currentUser) {
+      this.profileForm.patchValue({
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        email: currentUser.email
+      });
+      this.isDriver = currentUser.isDriver || currentUser.role === 'DRIVER';
+    }
+
+    if (this.userId) {
+      this.loadProfile();
+      this.loadWorkingHours();
+    }
   }
 
   loadProfile() {
     this.profileService.getProfile(this.userId)
       .subscribe({
         next: (profile) => {
-          this.profileForm.patchValue(profile);
+          const profileValues = {
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            gender: profile.gender,
+            username: profile.username || profile.userName,
+            email: profile.email,
+            phoneNumber: profile.phoneNumber,
+            profilePictureUrl: profile.profilePictureUrl
+          };
+          this.profileForm.patchValue(profileValues);
+          this.profileDefaults = { ...profileValues };
           this.isDriver = profile.isDriver || profile.driverId;
         },
         error: (error) => console.error('Failed to load profile:', error)
@@ -65,6 +92,10 @@ export class ProfileComponent implements OnInit {
   }
 
   loadWorkingHours() {
+    if (!this.userId) {
+      return;
+    }
+
     this.driverService.getWorkingHours(this.userId).subscribe({
       next: (data) => {
         this.workingHours = data.workingHours || 0;
@@ -72,19 +103,25 @@ export class ProfileComponent implements OnInit {
       },
       error: () => {
         this.workingHours = 0;
-        this.isDriver = false;
+        // leave isDriver as-is
       }
     });
   }
 
   saveProfile() {
+    if (!this.userId) {
+      this.profileMessage = 'User not loaded. Please log in again.';
+      return;
+    }
     this.loading = true;
     this.profileMessage = '';
-    this.profileService.updateProfile(this.userId, this.profileForm.getRawValue())
+    const payload = this.profileForm.getRawValue();
+    this.profileService.updateProfile(this.userId, payload)
       .subscribe({
         next: () => {
           this.loading = false;
           this.profileMessage = 'Profile updated successfully!';
+          this.profileDefaults = { ...payload };
           setTimeout(() => this.profileMessage = '', 3000);
         },
         error: (error) => {
@@ -92,6 +129,21 @@ export class ProfileComponent implements OnInit {
           this.profileMessage = error.error?.message || 'Failed to update profile';
         }
       });
+  }
+
+  resetProfileToDefault() {
+    if (!this.profileDefaults) {
+      return;
+    }
+    this.profileForm.reset({
+      firstName: this.profileDefaults.firstName || '',
+      lastName: this.profileDefaults.lastName || '',
+      gender: this.profileDefaults.gender || '',
+      username: this.profileDefaults.username || '',
+      email: this.profileDefaults.email || '',
+      phoneNumber: this.profileDefaults.phoneNumber || '',
+      profilePictureUrl: this.profileDefaults.profilePictureUrl || ''
+    });
   }
 
   togglePasswordChange() {

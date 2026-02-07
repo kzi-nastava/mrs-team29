@@ -10,9 +10,9 @@ import domain.entities.*;
 @Repository
 public interface FavoriteRouteRepository extends JpaRepository<FavoriteRoute, String> {
 
-    List<FavoriteRoute> findByUserId(String userId);
+    List<FavoriteRoute> findByUser_Id(String userId);
 
-    boolean existsByUserIdAndPickupAddressAndDestinationAddress(
+    boolean existsByUser_IdAndPickupAddressAndDestinationAddress(
         String userId,
         Address pickupAddress,
         Address destinationAddress

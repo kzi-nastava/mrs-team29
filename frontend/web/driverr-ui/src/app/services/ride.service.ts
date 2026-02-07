@@ -48,7 +48,7 @@ export class RideService {
   // Order Ride from Favorite Route
   orderRideFromFavorite(favoriteRouteId: string, clientId: string) {
     return this.http.post<any>(
-      `${this.api}/from-favorite/${favoriteRouteId}`,
+      `${this.api}/favorites/${favoriteRouteId}`,
       { clientId }
     );
   }

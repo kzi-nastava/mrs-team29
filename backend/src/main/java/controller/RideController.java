@@ -9,7 +9,7 @@ import service.RideService;
 
 @RestController
 @RequestMapping("/api/rides")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:4200")
 public class RideController {
 
     private final RideService rideService;
@@ -37,6 +37,11 @@ public class RideController {
     ) {
         RideResponseDTO response = rideService.orderRideFromFavorite(favoriteRouteId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/user/{userId}/active")
+    public ResponseEntity<Boolean> hasActiveRide(@PathVariable String userId) {
+        return ResponseEntity.ok(rideService.hasActiveRide(userId));
     }
 
     @PatchMapping("/{rideId}/start")

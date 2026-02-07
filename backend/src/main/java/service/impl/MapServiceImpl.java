@@ -28,6 +28,12 @@ public class MapServiceImpl implements MapService {
     @Value("${map.user-agent:Driverr/1.0 (contact@example.com)}")
     private String userAgent;
 
+    @Value("${map.nominatim.email:contact@example.com}")
+    private String nominatimEmail;
+
+    @Value("${map.referer:http://localhost:4200}")
+    private String referer;
+
     public MapServiceImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -39,8 +45,10 @@ public class MapServiceImpl implements MapService {
                 .queryParam("format", "json")
                 .queryParam("limit", 1)
                 .queryParam("addressdetails", 1)
+            .queryParam("email", nominatimEmail)
                 .queryParam("q", query)
-                .build(true)
+            .build()
+            .encode()
                 .toUri();
 
         List<Map<String, Object>> results = exchangeForList(uri);
@@ -57,13 +65,27 @@ public class MapServiceImpl implements MapService {
                 .path("/reverse")
                 .queryParam("format", "json")
                 .queryParam("addressdetails", 1)
+                .queryParam("email", nominatimEmail)
                 .queryParam("lat", latitude)
                 .queryParam("lon", longitude)
-                .build(true)
+                .build()
+                .encode()
                 .toUri();
 
-        Map<String, Object> result = exchangeForMap(uri);
-        return mapNominatimResult(result);
+        try {
+            Map<String, Object> result = exchangeForMap(uri);
+            return mapNominatimResult(result);
+        } catch (RuntimeException ex) {
+            GeocodeResultDTO fallback = new GeocodeResultDTO();
+            fallback.setDisplayName("Pinned location");
+            fallback.setLatitude(latitude);
+            fallback.setLongitude(longitude);
+            fallback.setStreet("Pinned location");
+            fallback.setStreetNumber("0");
+            fallback.setCity("Unknown");
+            fallback.setCountry("Unknown");
+            return fallback;
+        }
     }
 
     @Override
@@ -93,6 +115,7 @@ public class MapServiceImpl implements MapService {
     private List<Map<String, Object>> exchangeForList(URI uri) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.USER_AGENT, userAgent);
+        headers.set(HttpHeaders.REFERER, referer);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
@@ -108,6 +131,7 @@ public class MapServiceImpl implements MapService {
     private Map<String, Object> exchangeForMap(URI uri) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.USER_AGENT, userAgent);
+        headers.set(HttpHeaders.REFERER, referer);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
@@ -137,7 +161,7 @@ public class MapServiceImpl implements MapService {
         String postal = pick(address, "postcode");
         String country = pick(address, "country");
 
-        dto.setStreet(defaultIfBlank(street, "Unknown"));
+        dto.setStreet(defaultIfBlank(street, dto.getDisplayName()));
         dto.setStreetNumber(defaultIfBlank(number, "0"));
         dto.setCity(defaultIfBlank(city, "Unknown"));
         dto.setPostalCode(postal);

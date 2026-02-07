@@ -16,6 +16,7 @@
     <!-- Success Message -->
     <div *ngIf="message" class="alert alert-success">
       {{ message }}
+      <button type="button" class="secondary-btn" (click)="resetToDefault()">Reset</button>
     </div>
 
     <!-- Map Section -->
@@ -55,16 +56,20 @@
       <div id="map" class="map-container"></div>
 
       <!-- Selected Addresses Display -->
-      <div class="selected-addresses" *ngIf="pickupAddress || destinationAddress">
-        <div class="address-item" *ngIf="pickupAddress">
+      <div class="selected-addresses">
+        <div class="address-item">
           <span class="address-label">Pickup:</span>
-          <span class="address-text">{{ pickupAddress.displayName || pickupAddress.street }}</span>
-          <button type="button" class="clear-btn" (click)="clearPickup()">✕</button>
+          <span class="address-text" [class.placeholder]="!pickupAddress">
+            {{ pickupAddress?.displayName || pickupAddress?.street || 'Not selected' }}
+          </span>
+          <button type="button" class="clear-btn" (click)="clearPickup()" *ngIf="pickupAddress">✕</button>
         </div>
-        <div class="address-item" *ngIf="destinationAddress">
+        <div class="address-item">
           <span class="address-label">Destination:</span>
-          <span class="address-text">{{ destinationAddress.displayName || destinationAddress.street }}</span>
-          <button type="button" class="clear-btn" (click)="clearDestination()">✕</button>
+          <span class="address-text" [class.placeholder]="!destinationAddress">
+            {{ destinationAddress?.displayName || destinationAddress?.street || 'Not selected' }}
+          </span>
+          <button type="button" class="clear-btn" (click)="clearDestination()" *ngIf="destinationAddress">✕</button>
         </div>
       </div>
 

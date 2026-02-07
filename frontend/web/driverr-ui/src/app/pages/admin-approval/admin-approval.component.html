@@ -1,7 +1,7 @@
-<div class="admin-approval-page">
-  <div class="approval-container">
-    <h1 class="title">Profile Change Requests</h1>
-    <p class="subtitle">Review and approve/reject pending profile changes</p>
+<div class="history-page">
+  <div class="history-card">
+    <h1 class="title">Driver Profile Approvals</h1>
+    <p class="subtitle">Review and approve or reject driver profile changes</p>
 
     <div *ngIf="message" [class.alert]="true" [class.alert-success]="messageType === 'success'" [class.alert-danger]="messageType === 'error'">
       {{ message }}
@@ -15,48 +15,42 @@
       <p>No pending profile change requests</p>
     </div>
 
-    <div *ngIf="!loading && profileChangeRequests.length > 0" class="requests-list">
-      <div *ngFor="let request of profileChangeRequests" class="request-card">
-        <div class="request-header">
-          <h3>{{ request.userId }}</h3>
-          <span class="field-name">{{ request.fieldName }}</span>
-        </div>
-
-        <div class="request-body">
-          <div class="change-details">
-            <div class="detail-group">
-              <label>Current Value:</label>
-              <span class="old-value">{{ request.oldValue || 'N/A' }}</span>
-            </div>
-            <div class="change-arrow">→</div>
-            <div class="detail-group">
-              <label>New Value:</label>
-              <span class="new-value">{{ request.newValue }}</span>
-            </div>
-          </div>
-
-          <div class="request-metadata">
-            <small>Requested: {{ request.createdAt | date:'short' }}</small>
-          </div>
-        </div>
-
-        <div class="request-actions">
-          <button 
-            class="approve-btn" 
-            (click)="approveRequest(request.id)"
-            type="button"
-          >
-            Approve
-          </button>
-          <button 
-            class="reject-btn" 
-            (click)="rejectRequest(request.id)"
-            type="button"
-          >
-            Reject
-          </button>
-        </div>
-      </div>
-    </div>
+    <table *ngIf="!loading && profileChangeRequests.length > 0" class="history-table">
+      <thead>
+        <tr>
+          <th>Driver</th>
+          <th>Field</th>
+          <th>Current</th>
+          <th>Requested</th>
+          <th>Submitted</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let request of profileChangeRequests">
+          <td>{{ request.userName || 'Unknown' }}</td>
+          <td>{{ request.fieldName }}</td>
+          <td>{{ request.oldValue || 'N/A' }}</td>
+          <td>{{ request.newValue || 'N/A' }}</td>
+          <td>{{ request.createdAt | date:'short' }}</td>
+          <td class="actions-cell">
+            <button
+              class="approve-btn"
+              type="button"
+              (click)="approveRequest(request.id)"
+            >
+              Approve
+            </button>
+            <button
+              class="reject-btn"
+              type="button"
+              (click)="rejectRequest(request.id)"
+            >
+              Reject
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>

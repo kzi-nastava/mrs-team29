@@ -8,6 +8,7 @@ import { OrderRideComponent } from './pages/ride-order/ride-order.component';
 import { DriverActivationComponent } from './pages/driver-activation/driver-activation.component';
 import { AdminApprovalComponent } from './pages/admin-approval/admin-approval.component';
 import { FavoriteRoutesComponent } from './pages/favorite-routes/favorite-routes.component';
+import { MainPageComponent } from './pages/main-page/main-page.component';
 import { ActivateComponent } from './pages/activate/activate.component';
 import { RequestPasswordResetComponent } from './pages/request-password-reset/request-password-reset.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
@@ -23,6 +24,7 @@ export const routes: Routes = [
   { path: 'driver-activate', component: DriverActivationComponent }, // 2.2.3
   { path: 'admin/driver-register', component: AdminDriverRegisterComponent, canActivate: [authGuard] },
   { path: 'admin/approvals', component: AdminApprovalComponent, canActivate: [authGuard] }, // 2.3 Admin dashboard
+  { path: 'main-page', component: MainPageComponent, canActivate: [authGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] }, // 2.3 with password change
   { path: 'driver-history', component: DriverHistoryComponent, canActivate: [authGuard] },
   { path: 'order-ride', component: OrderRideComponent, canActivate: [authGuard] }, // 2.4.1 Enhanced

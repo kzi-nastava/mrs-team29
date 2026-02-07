@@ -12,7 +12,7 @@ import service.MapService;
 
 @RestController
 @RequestMapping("/api/map")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:4200")
 public class MapController {
 
     private final MapService mapService;

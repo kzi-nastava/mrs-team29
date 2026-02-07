@@ -40,8 +40,8 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
         
-        // Check if account is activated
-        if (!user.isActivated()) {
+        // Check if account is active
+        if (!user.getIsActive()) {
             throw new RuntimeException("Account not activated. Please check your email.");
         }
         
@@ -125,7 +125,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
         
         // Check if driver has any active rides (ACTIVE status)
-        long activeRides = rideRepository.findByDriverIdAndStatus(driverId, RideStatus.ACTIVE).size();
+        long activeRides = rideRepository.findByDriver_IdAndStatus(driverId, RideStatus.ACTIVE).size();
         return activeRides == 0;
     }
     
@@ -144,14 +144,13 @@ public class AuthServiceImpl implements AuthService {
         
         // Create new user
         User user = new User();
-        user.setId(UUID.randomUUID().toString());
         user.setEmail(dto.getEmail());
         user.setPassword(dto.getPassword()); // In production, hash with BCrypt
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
+        user.setGender(dto.getGender());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setUserType(UserType.CLIENT); // Default to client (passenger), can upgrade to driver later
-        user.setActivated(false); // Not activated until email confirmation
         user.setUserName(dto.getEmail()); // Use email as username for now
         user.setIsActive(false); // User account not yet activated
         user.setIsBlocked(false);
@@ -167,7 +166,6 @@ public class AuthServiceImpl implements AuthService {
         
         // Create activation token (valid for 24 hours)
         ActivationToken token = new ActivationToken();
-        token.setId(UUID.randomUUID().toString());
         token.setToken(UUID.randomUUID().toString());
         token.setUser(user);
         token.setExpiresAt(LocalDateTime.now().plusHours(24));
@@ -198,7 +196,6 @@ public class AuthServiceImpl implements AuthService {
         
         // Activate user
         User user = token.getUser();
-        user.setActivated(true);
         user.setIsActive(true);
         userRepository.save(user);
         
@@ -215,7 +212,6 @@ public class AuthServiceImpl implements AuthService {
         
         // Create password reset token (valid for 1 hour)
         ActivationToken token = new ActivationToken();
-        token.setId(UUID.randomUUID().toString());
         token.setToken(UUID.randomUUID().toString());
         token.setUser(user);
         token.setExpiresAt(LocalDateTime.now().plusHours(1));

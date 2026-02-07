@@ -28,7 +28,7 @@ export class ProfileService {
 
   // Admin - Get all pending profile change requests
   getAllPendingProfileChangeRequests() {
-    return this.http.get<any[]>(`${this.api}/admin/profile-change-requests`);
+    return this.http.get<any[]>(`http://localhost:8081/api/admin/profile-change-requests`);
   }
 
   // Admin - Approve profile change request
