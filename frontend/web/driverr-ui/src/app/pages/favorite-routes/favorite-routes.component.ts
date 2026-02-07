@@ -23,6 +23,8 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
   message = '';
   errorMessage = '';
   loading = false;
+  saving = false;
+  mapLoading = false;
   userId = '';
 
   // Map properties
@@ -124,7 +126,7 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    this.loading = true;
+    this.saving = true;
     this.errorMessage = '';
     this.message = '';
 
@@ -133,7 +135,7 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
       : [];
 
     if (!this.pickupAddress || !this.destinationAddress) {
-      this.loading = false;
+      this.saving = false;
       this.errorMessage = 'Please select pickup and destination on the map';
       return;
     }
@@ -155,7 +157,7 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
           // Update existing
           this.favoriteRouteService.updateFavorite(this.editingId, routeData).subscribe({
             next: () => {
-              this.loading = false;
+              this.saving = false;
               this.message = 'Route updated successfully!';
               this.loadFavoriteRoutes();
               this.form.reset();
@@ -164,7 +166,7 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
               setTimeout(() => this.message = '', 3000);
             },
             error: (error) => {
-              this.loading = false;
+              this.saving = false;
               this.errorMessage = error.error?.message || 'Failed to update route';
             }
           });
@@ -172,7 +174,7 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
           // Create new
           this.favoriteRouteService.createFavorite(routeData).subscribe({
             next: () => {
-              this.loading = false;
+              this.saving = false;
               this.message = 'Favorite route created!';
               this.loadFavoriteRoutes();
               this.form.reset();
@@ -180,14 +182,14 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
               setTimeout(() => this.message = '', 3000);
             },
             error: (error) => {
-              this.loading = false;
+              this.saving = false;
               this.errorMessage = error.error?.message || 'Failed to create route';
             }
           });
         }
       },
       error: () => {
-        this.loading = false;
+        this.saving = false;
         this.errorMessage = 'Failed to save addresses for this route';
       }
     });
@@ -271,12 +273,12 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    this.loading = true;
+    this.mapLoading = true;
     const target = this.resolveSelectionTarget();
     this.selectingFor = target;
     this.mapService.geocode(this.searchQuery).subscribe({
       next: (address) => {
-        this.loading = false;
+        this.mapLoading = false;
 
         if (target === 'pickup') {
           this.setPickupAddress(address);
@@ -290,18 +292,18 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
         this.errorMessage = '';
       },
       error: (err) => {
-        this.loading = false;
+        this.mapLoading = false;
         this.errorMessage = 'Address not found. Try a different search.';
       }
     });
   }
 
   selectLocationFromMap(lat: number, lng: number) {
-    this.loading = true;
+    this.mapLoading = true;
     const target = this.resolveSelectionTarget();
     this.mapService.reverseGeocode(lat, lng).subscribe({
       next: (address) => {
-        this.loading = false;
+        this.mapLoading = false;
 
         if (target === 'pickup') {
           this.setPickupAddress(address);
@@ -313,7 +315,7 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
         this.errorMessage = '';
       },
       error: (err) => {
-        this.loading = false;
+        this.mapLoading = false;
         this.errorMessage = 'Could not get address for this location';
       }
     });

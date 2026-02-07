@@ -65,15 +65,27 @@ public class MapServiceImpl implements MapService {
                 .path("/reverse")
                 .queryParam("format", "json")
                 .queryParam("addressdetails", 1)
-            .queryParam("email", nominatimEmail)
+                .queryParam("email", nominatimEmail)
                 .queryParam("lat", latitude)
                 .queryParam("lon", longitude)
-            .build()
-            .encode()
+                .build()
+                .encode()
                 .toUri();
 
-        Map<String, Object> result = exchangeForMap(uri);
-        return mapNominatimResult(result);
+        try {
+            Map<String, Object> result = exchangeForMap(uri);
+            return mapNominatimResult(result);
+        } catch (RuntimeException ex) {
+            GeocodeResultDTO fallback = new GeocodeResultDTO();
+            fallback.setDisplayName("Pinned location");
+            fallback.setLatitude(latitude);
+            fallback.setLongitude(longitude);
+            fallback.setStreet("Pinned location");
+            fallback.setStreetNumber("0");
+            fallback.setCity("Unknown");
+            fallback.setCountry("Unknown");
+            return fallback;
+        }
     }
 
     @Override

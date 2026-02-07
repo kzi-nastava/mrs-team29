@@ -110,13 +110,13 @@
 
         <div class="form-actions">
           <button type="submit" class="primary-btn" [disabled]="form.invalid || loading">
-            {{ loading ? 'Saving...' : editingId ? 'Update Route' : 'Create Route' }}
+            {{ saving ? 'Saving...' : editingId ? 'Update Route' : 'Create Route' }}
           </button>
           <button 
             type="button" 
             class="secondary-btn" 
             (click)="cancelEdit()"
-            [disabled]="loading"
+            [disabled]="saving"
           >
             Cancel
           </button>
