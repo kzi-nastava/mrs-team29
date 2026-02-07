@@ -48,17 +48,23 @@ label {
   color: #374151;
 }
 
-input {
+input,
+select {
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
   font-size: 14px;
 }
 
-input:focus {
+input:focus,
+select:focus {
   outline: none;
   border-color: #2ec4b6;
   box-shadow: 0 0 0 2px rgba(46, 196, 182, 0.2);
+}
+
+select {
+  background-color: #ffffff;
 }
 
 /* Button */

@@ -25,6 +25,7 @@ export interface RegisterRequest {
   confirmPassword: string;
   firstName: string;
   lastName: string;
+  gender?: string;
   address: string;
   phoneNumber: string;
   profilePictureUrl?: string;

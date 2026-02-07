@@ -148,6 +148,7 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(dto.getPassword()); // In production, hash with BCrypt
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
+        user.setGender(dto.getGender());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setUserType(UserType.CLIENT); // Default to client (passenger), can upgrade to driver later
         user.setUserName(dto.getEmail()); // Use email as username for now

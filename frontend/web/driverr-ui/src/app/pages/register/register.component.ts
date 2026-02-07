@@ -15,6 +15,7 @@ export class RegisterComponent {
   form = {
     firstName: '',
     lastName: '',
+    gender: '',
     email: '',
     phoneNumber: '',
     address: '',
@@ -58,6 +59,7 @@ export class RegisterComponent {
     const registerData: RegisterRequest = {
       firstName: this.form.firstName,
       lastName: this.form.lastName,
+      gender: this.form.gender || undefined,
       email: this.form.email,
       phoneNumber: this.form.phoneNumber,
       address: this.form.address,
