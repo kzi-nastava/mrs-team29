@@ -22,6 +22,7 @@ export class ProfileComponent implements OnInit {
   passwordMessage = '';
   passwordError = '';
   profileMessage = '';
+  profileDefaults: any = null;
   
   workingHours: number = 0;
   isDriver = false;
@@ -73,7 +74,7 @@ export class ProfileComponent implements OnInit {
     this.profileService.getProfile(this.userId)
       .subscribe({
         next: (profile) => {
-          this.profileForm.patchValue({
+          const profileValues = {
             firstName: profile.firstName,
             lastName: profile.lastName,
             gender: profile.gender,
@@ -81,7 +82,9 @@ export class ProfileComponent implements OnInit {
             email: profile.email,
             phoneNumber: profile.phoneNumber,
             profilePictureUrl: profile.profilePictureUrl
-          });
+          };
+          this.profileForm.patchValue(profileValues);
+          this.profileDefaults = { ...profileValues };
           this.isDriver = profile.isDriver || profile.driverId;
         },
         error: (error) => console.error('Failed to load profile:', error)
@@ -112,11 +115,13 @@ export class ProfileComponent implements OnInit {
     }
     this.loading = true;
     this.profileMessage = '';
-    this.profileService.updateProfile(this.userId, this.profileForm.getRawValue())
+    const payload = this.profileForm.getRawValue();
+    this.profileService.updateProfile(this.userId, payload)
       .subscribe({
         next: () => {
           this.loading = false;
           this.profileMessage = 'Profile updated successfully!';
+          this.profileDefaults = { ...payload };
           setTimeout(() => this.profileMessage = '', 3000);
         },
         error: (error) => {
@@ -124,6 +129,21 @@ export class ProfileComponent implements OnInit {
           this.profileMessage = error.error?.message || 'Failed to update profile';
         }
       });
+  }
+
+  resetProfileToDefault() {
+    if (!this.profileDefaults) {
+      return;
+    }
+    this.profileForm.reset({
+      firstName: this.profileDefaults.firstName || '',
+      lastName: this.profileDefaults.lastName || '',
+      gender: this.profileDefaults.gender || '',
+      username: this.profileDefaults.username || '',
+      email: this.profileDefaults.email || '',
+      phoneNumber: this.profileDefaults.phoneNumber || '',
+      profilePictureUrl: this.profileDefaults.profilePictureUrl || ''
+    });
   }
 
   togglePasswordChange() {
