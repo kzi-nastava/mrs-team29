@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FavoriteRouteService } from '../../services/favorite-route.service';
 import { MapService, GeocodeResult } from '../../services/map.service';
 import { AuthService } from '../../services/auth.service';
+import { RideService } from '../../services/ride.service';
 import * as L from 'leaflet';
 import { forkJoin } from 'rxjs';
 
@@ -24,8 +25,10 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
   errorMessage = '';
   loading = false;
   saving = false;
+  ordering = false;
   mapLoading = false;
   userId = '';
+  hasActiveRide = false;
 
   // Map properties
   map!: L.Map;
@@ -46,7 +49,8 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
     private fb: FormBuilder,
     private favoriteRouteService: FavoriteRouteService,
     private mapService: MapService,
-    private authService: AuthService
+    private authService: AuthService,
+    private rideService: RideService
   ) {}
 
   ngOnInit() {
@@ -57,6 +61,7 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
       return;
     }
     this.loadFavoriteRoutes();
+    this.checkActiveRide();
   }
 
   ngAfterViewInit() {
@@ -105,6 +110,20 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
       error: (error) => {
         this.loading = false;
         this.errorMessage = 'Failed to load favorite routes';
+      }
+    });
+  }
+
+  checkActiveRide() {
+    if (!this.userId) {
+      return;
+    }
+    this.rideService.hasActiveRide(this.userId).subscribe({
+      next: (hasActive) => {
+        this.hasActiveRide = hasActive;
+      },
+      error: () => {
+        this.hasActiveRide = false;
       }
     });
   }
@@ -191,6 +210,33 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
       error: () => {
         this.saving = false;
         this.errorMessage = 'Failed to save addresses for this route';
+      }
+    });
+  }
+
+  orderFromFavorite(routeId: string) {
+    if (this.hasActiveRide) {
+      this.errorMessage = 'You have an active ride. Complete or cancel it before ordering another.';
+      return;
+    }
+    if (!this.userId) {
+      this.errorMessage = 'Please log in to order a ride.';
+      return;
+    }
+
+    this.ordering = true;
+    this.errorMessage = '';
+    this.message = '';
+    this.favoriteRouteService.orderFromFavorite(routeId, this.userId).subscribe({
+      next: () => {
+        this.ordering = false;
+        this.message = 'Ride ordered from favorite route!';
+        this.checkActiveRide();
+        setTimeout(() => this.message = '', 3000);
+      },
+      error: (error) => {
+        this.ordering = false;
+        this.errorMessage = error.error?.message || 'Failed to order from favorite route';
       }
     });
   }

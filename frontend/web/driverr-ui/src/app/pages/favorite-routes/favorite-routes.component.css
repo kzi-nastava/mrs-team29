@@ -41,6 +41,12 @@
   border: 1px solid #f5c6cb;
 }
 
+.alert-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #92400e;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
 .form-toggle {
   margin-bottom: 30px;
 }
@@ -350,6 +356,72 @@ small {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 20px;
+}
+
+.routes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.routes-table th {
+  text-align: left;
+  padding: 12px;
+  background: #eef2f1;
+  color: #374151;
+  font-weight: 600;
+}
+
+.routes-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.routes-table tr:last-child td {
+  border-bottom: none;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.order-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #2ec4b6;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.preview-btn {
+  padding: 8px 12px;
+  border: 1px solid #667eea;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #667eea;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.preview-btn:hover {
+  background: #667eea;
+  color: #ffffff;
+}
+
+.order-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .route-card {
