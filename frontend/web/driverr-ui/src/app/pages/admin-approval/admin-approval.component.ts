@@ -26,7 +26,9 @@ export class AdminApprovalComponent implements OnInit {
     this.loading = true;
     this.profileService.getAllPendingProfileChangeRequests().subscribe({
       next: (requests) => {
-        this.profileChangeRequests = requests;
+        this.profileChangeRequests = requests.filter(
+          (request) => request.status === 'PENDING' || !request.status
+        );
         this.loading = false;
       },
       error: (error) => {

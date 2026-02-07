@@ -398,14 +398,16 @@ public class UserServiceImpl implements UserService {
         User user = request.getUser();
         applyProfileChange(user, request.getFieldName(), request.getNewValue());
         userRepository.save(user);
-        profileChangeRequestRepository.deleteById(requestId);
+        request.setStatus(ChangeRequestStatus.APPROVED);
+        profileChangeRequestRepository.save(request);
     }
     
     @Override
     public void rejectProfileChangeRequest(String requestId) {
         ProfileChangeRequest request = profileChangeRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
-        profileChangeRequestRepository.delete(request);
+        request.setStatus(ChangeRequestStatus.REJECTED);
+        profileChangeRequestRepository.save(request);
     }
     
     private ProfileChangeRequestDTO mapToDTO(ProfileChangeRequest request) {
