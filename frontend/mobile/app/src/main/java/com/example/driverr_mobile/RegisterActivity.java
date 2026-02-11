@@ -1,8 +1,10 @@
 package com.example.driverr_mobile;
 
 import android.os.Bundle;
+import android.content.Intent;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
@@ -81,8 +83,12 @@ public class RegisterActivity extends AppCompatActivity {
 
                     if (response.isSuccessful()) {
                         Toast.makeText(RegisterActivity.this, "Registration submitted", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish();
                     } else {
-                        Toast.makeText(RegisterActivity.this, "Registration failed", Toast.LENGTH_SHORT).show();
+                        String errorMessage = extractErrorMessage(response);
+                        Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -94,9 +100,30 @@ public class RegisterActivity extends AppCompatActivity {
                 }
             });
         });
+
+        findViewById(R.id.register_footer).setOnClickListener(v -> {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private String textOf(TextInputEditText input) {
         return input.getText() == null ? "" : input.getText().toString().trim();
+    }
+
+    private String extractErrorMessage(retrofit2.Response<?> response) {
+        if (response.errorBody() == null) {
+            return "Registration failed";
+        }
+        try {
+            String body = response.errorBody().string();
+            ApiResponse<?> apiResponse = new Gson().fromJson(body, ApiResponse.class);
+            if (apiResponse != null && apiResponse.getMessage() != null && !apiResponse.getMessage().isBlank()) {
+                return apiResponse.getMessage();
+            }
+        } catch (Exception ignored) {
+        }
+        return "Registration failed";
     }
 }

@@ -1,8 +1,10 @@
 package com.example.driverr_mobile;
 
 import android.os.Bundle;
+import android.content.Intent;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -58,8 +60,12 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                         sessionManager.saveAuth(response.body().getData());
                         Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
+                        String errorMessage = extractErrorMessage(response);
+                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -71,5 +77,25 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
         });
+
+        findViewById(R.id.login_footer).setOnClickListener(v -> {
+            Intent intent = new Intent(this, RegisterActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    private String extractErrorMessage(retrofit2.Response<?> response) {
+        if (response.errorBody() == null) {
+            return "Login failed";
+        }
+        try {
+            String body = response.errorBody().string();
+            ApiResponse<?> apiResponse = new Gson().fromJson(body, ApiResponse.class);
+            if (apiResponse != null && apiResponse.getMessage() != null && !apiResponse.getMessage().isBlank()) {
+                return apiResponse.getMessage();
+            }
+        } catch (Exception ignored) {
+        }
+        return "Login failed";
     }
 }
