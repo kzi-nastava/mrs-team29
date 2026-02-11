@@ -5,6 +5,7 @@ import domain.entities.*;
 import domain.enums.*;
 import repository.*;
 import service.AuthService;
+import service.EmailService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ public class AuthServiceImpl implements AuthService {
     private final DriverRepository driverRepository;
     private final ActivationTokenRepository activationTokenRepository;
     private final RideRepository rideRepository;
+    private final EmailService emailService;
     
     private static final String DEFAULT_PROFILE_PICTURE = "https://via.placeholder.com/150";
     
@@ -26,11 +28,13 @@ public class AuthServiceImpl implements AuthService {
             UserRepository userRepository,
             DriverRepository driverRepository,
             ActivationTokenRepository activationTokenRepository,
-            RideRepository rideRepository) {
+            RideRepository rideRepository,
+            EmailService emailService) {
         this.userRepository = userRepository;
         this.driverRepository = driverRepository;
         this.activationTokenRepository = activationTokenRepository;
         this.rideRepository = rideRepository;
+        this.emailService = emailService;
     }
     
     @Override
@@ -173,9 +177,8 @@ public class AuthServiceImpl implements AuthService {
         
         activationTokenRepository.save(token);
         
-        // TODO: Send activation email
-        // emailService.sendActivationEmail(user.getEmail(), token.getToken());
-        System.out.println("Activation link: http://localhost:4200/activate?token=" + token.getToken());
+        String fullName = user.getFirstName() + " " + user.getLastName();
+        emailService.sendActivationEmail(user.getEmail(), fullName, token.getToken());
     }
     
     @Override

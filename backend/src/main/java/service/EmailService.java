@@ -1,5 +1,6 @@
 package service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -8,13 +9,17 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    
+    @Value("${app.backend.url:http://localhost:8081}")
+    private String backendUrl;
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 
     public void sendActivationEmail(String toEmail, String fullName, String activationToken) {
-        String activationLink = "http://localhost:4200/activate?token=" + activationToken;
+        // Backend activation endpoint - works for both web and mobile
+        String activationLink = backendUrl + "/api/auth/activate?token=" + activationToken;
         
         String subject = "Activate Your Driverr Account";
         String body = "Dear " + fullName + ",\n\n"
@@ -30,7 +35,8 @@ public class EmailService {
     }
 
     public void sendPasswordResetEmail(String toEmail, String fullName, String resetToken) {
-        String resetLink = "http://localhost:4200/reset-password?token=" + resetToken;
+        // Backend reset endpoint - works for both web and mobile
+        String resetLink = backendUrl + "/api/auth/password-reset/reset?token=" + resetToken;
         
         String subject = "Reset Your Driverr Password";
         String body = "Dear " + fullName + ",\n\n"
