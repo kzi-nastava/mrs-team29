@@ -19,6 +19,14 @@ import com.example.driverr_mobile.data.model.FavoriteRoute;
 import com.example.driverr_mobile.data.model.GeocodeRequest;
 import com.example.driverr_mobile.data.network.ApiClient;
 import com.example.driverr_mobile.data.prefs.SessionManager;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -26,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FavoriteRoutesActivity extends AppCompatActivity {
+public class FavoriteRoutesActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private TextView messageText;
     private TextView errorText;
@@ -50,6 +58,12 @@ public class FavoriteRoutesActivity extends AppCompatActivity {
     private String editingId;
     private String pickupAddressId;
     private String destinationAddressId;
+    
+    private GoogleMap googleMap;
+    private Marker pickupMarker;
+    private Marker destinationMarker;
+    private AddressResponse pickupAddressData;
+    private AddressResponse destinationAddressData;
 
     private final List<FavoriteRoute> favoriteRoutes = new ArrayList<>();
 
@@ -90,9 +104,33 @@ public class FavoriteRoutesActivity extends AppCompatActivity {
             return;
         }
 
-        toggleButton.setOnClickListener(v -> toggleForm());
-        cancelButton.setOnClickListener(v -> closeForm());
-        saveButton.setOnClickListener(v -> saveFavoriteRoute());
+        // Initialize map
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.favorite_map);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
+
+        formContainer.setVisibility(View.GONE);
+        loadFavoriteRoutes();
+        checkActiveRide();
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        googleMap = map;
+        
+        // Default center: Novi Sad, Serbia
+        LatLng noviSad = new LatLng(45.2671, 19.8335);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(noviSad, 13));
+        
+        // Enable zoom controls
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
+        
+        // Set map click listener
+        googleMap.setOnMapClickListener(latLng -> {
+            reverseGeocodeLocation(latLng);
+        }ClickListener(v -> saveFavoriteRoute());
         findViewById(R.id.favorite_pickup_find).setOnClickListener(v -> geocodeAddress(true));
         findViewById(R.id.favorite_destination_find).setOnClickListener(v -> geocodeAddress(false));
 
@@ -242,15 +280,31 @@ public class FavoriteRoutesActivity extends AppCompatActivity {
         destinationSelected.setText("Not selected");
         pickupAddressId = null;
         destinationAddressId = null;
+        pickupAddressData = null;
+        destinationAddressData = null;
         hideMessages();
+        
+        // Clear markers
+        if (pickupMarker != null) {
+            pickupMarker.remove();
+            pickupMarker = null;
+        }
+        if (destinationMarker != null) {
+            destinationMarker.remove();
+            destinationMarker = null;
+        }
     }
 
     private void geocodeAddress(boolean pickup) {
         TextInputEditText sourceInput = pickup ? pickupInput : destinationInput;
-        String query = textOf(sourceInput);
-        if (query.isEmpty()) {
-            Toast.makeText(this, "Enter an address to search", Toast.LENGTH_SHORT).show();
-            return;
+        String query = textOf(sourAddressData = address;
+                            pickupSelected.setText(display);
+                            addPickupMarker(new LatLng(address.getLatitude(), address.getLongitude()), display);
+                        } else {
+                            destinationAddressId = address.getId();
+                            destinationAddressData = address;
+                            destinationSelected.setText(display);
+                            addDestinationMarker(new LatLng(address.getLatitude(), address.getLongitude()), 
         }
 
         setSaving(true);
@@ -427,6 +481,97 @@ public class FavoriteRoutesActivity extends AppCompatActivity {
                         showError("Network error while ordering ride");
                     }
                 });
+    }
+
+    private void reverseGeocodeLocation(LatLng latLng) {
+        // Reverse geocode using Nominatim API
+        String query = latLng.latitude + "," + latLng.longitude;
+        
+        setSaving(true);
+        ApiClient.getAddressApi().geocodeAndSave(new GeocodeRequest(query))
+                .enqueue(new retrofit2.Callback<AddressResponse>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<AddressResponse> call,
+                                           retrofit2.Response<AddressResponse> response) {
+                        setSaving(false);
+                        if (!response.isSuccessful() || response.body() == null) {
+                            Toast.makeText(FavoriteRoutesActivity.this, "Could not get address for this location", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        AddressResponse address = response.body();
+                        String display = address.getDisplayName();
+                        if (display == null || display.isBlank()) {
+                            display = address.getStreet() + " " + address.getStreetNumber();
+                        }
+
+                        // Assign to pickup if not set, otherwise to destination
+                        if (pickupAddressId == null || pickupAddressId.isBlank()) {
+                            pickupAddressId = address.getId();
+                            pickupAddressData = address;
+                            pickupSelected.setText(display);
+                            addPickupMarker(latLng, display);
+                        } else if (destinationAddressId == null || destinationAddressId.isBlank()) {
+                            destinationAddressId = address.getId();
+                            destinationAddressData = address;
+                            destinationSelected.setText(display);
+                            addDestinationMarker(latLng, display);
+                        } else {
+                            // Both are set, replace destination
+                            destinationAddressId = address.getId();
+                            destinationAddressData = address;
+                            destinationSelected.setText(display);
+                            addDestinationMarker(latLng, display);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<AddressResponse> call, Throwable t) {
+                        setSaving(false);
+                        Toast.makeText(FavoriteRoutesActivity.this, "Network error", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void addPickupMarker(LatLng position, String title) {
+        if (googleMap == null) return;
+        
+        // Remove old pickup marker
+        if (pickupMarker != null) {
+            pickupMarker.remove();
+        }
+        
+        // Add green marker for pickup
+        pickupMarker = googleMap.addMarker(new MarkerOptions()
+                .position(position)
+                .title("Pickup: " + title)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+        
+        // Move camera to marker
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
+    }
+
+    private void addDestinationMarker(LatLng position, String title) {
+        if (googleMap == null) return;
+        
+        // Remove old destination marker
+        if (destinationMarker != null) {
+            destinationMarker.remove();
+        }
+        
+        // Add red marker for destination
+        destinationMarker = googleMap.addMarker(new MarkerOptions()
+                .position(position)
+                .title("Destination: " + title)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        
+        // Move camera to show both markers if pickup exists
+        if (pickupMarker != null) {
+            // Zoom to show both markers
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 13));
+        } else {
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
+        }
     }
 
     private void showMessage(String message) {
