@@ -25,6 +25,18 @@ public class SessionManager {
                 .apply();
     }
 
+    public String getUserId() {
+        return prefs.getString(KEY_USER_ID, "");
+    }
+
+    public String getEmail() {
+        return prefs.getString(KEY_EMAIL, "");
+    }
+
+    public String getToken() {
+        return prefs.getString(KEY_TOKEN, "");
+    }
+
     public void clear() {
         prefs.edit().clear().apply();
     }

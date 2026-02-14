@@ -55,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleNavigation(MenuItem item) {
+        if (item.getItemId() == R.id.nav_profile) {
+            startActivity(new Intent(this, ProfileActivity.class));
+            return;
+        }
         if (item.getItemId() == R.id.nav_admin) {
             startActivity(new Intent(this, DriverRegisterActivity.class));
             return;
