@@ -99,6 +99,36 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(new Intent(this, FavoriteRoutesActivity.class));
             return;
         }
+        if (item.getItemId() == R.id.nav_ride) {
+            startActivity(new Intent(this, DriverRideActivity.class));
+            return;
+        }
+        if (item.getItemId() == R.id.nav_driver_history) {
+            startActivity(new Intent(this, DriverHistoryActivity.class));
+            return;
+        }
+        if (item.getItemId() == R.id.nav_profile) {
+            startActivity(new Intent(this, ProfileActivity.class));
+            return;
+        }
+        if (item.getItemId() == R.id.nav_admin_approvals) {
+            startActivity(new Intent(this, AdminApprovalActivity.class));
+            return;
+        }
+        if (item.getItemId() == R.id.nav_logout) {
+            SessionManager sessionManager = new SessionManager(this);
+            sessionManager.clear();
+            Intent intent = new Intent(this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        String label = item.getTitle() == null ? "" : item.getTitle().toString();
+        Toast.makeText(this, label + " (coming soon)", Toast.LENGTH_SHORT).show();
+    }
+        }
         if (item.getItemId() == R.id.nav_profile) {
             startActivity(new Intent(this, ProfileActivity.class));
             return;
