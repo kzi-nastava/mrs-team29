@@ -38,6 +38,9 @@
         <activity
             android:name=".AdminApprovalActivity"
             android:exported="false" />
+        <activity
+            android:name=".RideOrderActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

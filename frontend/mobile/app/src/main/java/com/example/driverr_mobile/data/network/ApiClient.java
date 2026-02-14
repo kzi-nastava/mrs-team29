@@ -13,6 +13,8 @@ public final class ApiClient {
     private static DriverApi driverApi;
     private static UserApi userApi;
     private static AdminApi adminApi;
+    private static RideApi rideApi;
+    private static AddressApi addressApi;
 
     private ApiClient() {}
 
@@ -42,6 +44,20 @@ public final class ApiClient {
             adminApi = getRetrofit().create(AdminApi.class);
         }
         return adminApi;
+    }
+
+    public static RideApi getRideApi() {
+        if (rideApi == null) {
+            rideApi = getRetrofit().create(RideApi.class);
+        }
+        return rideApi;
+    }
+
+    public static AddressApi getAddressApi() {
+        if (addressApi == null) {
+            addressApi = getRetrofit().create(AddressApi.class);
+        }
+        return addressApi;
     }
 
     private static Retrofit getRetrofit() {
