@@ -41,6 +41,9 @@
         <activity
             android:name=".RideOrderActivity"
             android:exported="false" />
+        <activity
+            android:name=".FavoriteRoutesActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

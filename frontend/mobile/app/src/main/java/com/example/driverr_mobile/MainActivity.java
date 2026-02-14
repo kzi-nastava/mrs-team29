@@ -68,6 +68,10 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(this, RideOrderActivity.class));
             return;
         }
+        if (item.getItemId() == R.id.nav_favorites) {
+            startActivity(new Intent(this, FavoriteRoutesActivity.class));
+            return;
+        }
         if (item.getItemId() == R.id.nav_profile) {
             startActivity(new Intent(this, ProfileActivity.class));
             return;

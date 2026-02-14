@@ -15,6 +15,7 @@ public final class ApiClient {
     private static AdminApi adminApi;
     private static RideApi rideApi;
     private static AddressApi addressApi;
+    private static FavoriteRouteApi favoriteRouteApi;
 
     private ApiClient() {}
 
@@ -58,6 +59,13 @@ public final class ApiClient {
             addressApi = getRetrofit().create(AddressApi.class);
         }
         return addressApi;
+    }
+
+    public static FavoriteRouteApi getFavoriteRouteApi() {
+        if (favoriteRouteApi == null) {
+            favoriteRouteApi = getRetrofit().create(FavoriteRouteApi.class);
+        }
+        return favoriteRouteApi;
     }
 
     private static Retrofit getRetrofit() {
