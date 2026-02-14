@@ -14,19 +14,23 @@ import domain.entities.*;
 import domain.enums.*;
 import service.DriverService;
 import service.EmailService;
+import utils.AddressParser;
 import repository.*;
 
 @Service
 public class DriverServiceImpl implements DriverService {
 
 	private final DriverRepository driverRepository;
+    private final AddressRepository addressRepository;
     private final ActivationTokenRepository activationTokenRepository;
     private final EmailService emailService;
 
     public DriverServiceImpl(DriverRepository driverRepository,
+                             AddressRepository addressRepository,
                              ActivationTokenRepository activationTokenRepository,
                              EmailService emailService) {
         this.driverRepository = driverRepository;
+        this.addressRepository = addressRepository;
         this.activationTokenRepository = activationTokenRepository;
         this.emailService = emailService;
     }
@@ -45,7 +49,17 @@ public class DriverServiceImpl implements DriverService {
         driver.setEmail(dto.getEmail());
         driver.setPassword(dto.getPassword());
         driver.setPhoneNumber(dto.getPhoneNumber());
-        driver.setAddress(dto.getAddress());
+        if (dto.getAddress() != null) {
+            Address address = dto.getAddress();
+            if (isBlank(address.getStreetNumber()) && !isBlank(address.getStreet())) {
+                address = AddressParser.parseAddressLine(address.getStreet());
+            }
+            if (isBlank(address.getStreet()) || isBlank(address.getStreetNumber())) {
+                throw new RuntimeException("Address must include street and number");
+            }
+            addressRepository.save(address);
+            driver.setAddress(address);
+        }
         driver.setProfilePictureUrl(dto.getProfilePictureUrl());
 
         driver.setVehicle(vehicle);
@@ -145,4 +159,8 @@ public class DriverServiceImpl implements DriverService {
 		// For now return mock data
 		return 6.5;
 	}
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
 }

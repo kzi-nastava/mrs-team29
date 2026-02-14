@@ -8,13 +8,19 @@
         android:title="Order Ride" />
     <item
         android:id="@+id/nav_favorites"
-        android:title="Favorite Routes" />
+        android:title="Favorite Rides" />
+    <item
+        android:id="@+id/nav_ride"
+        android:title="Ride" />
+    <item
+        android:id="@+id/nav_driver_history"
+        android:title="Driver History" />
     <item
         android:id="@+id/nav_profile"
         android:title="Profile" />
     <item
-        android:id="@+id/nav_admin"
-        android:title="Admin Approvals" />
+        android:id="@+id/nav_admin_approvals"
+        android:title="Driver Approval" />
     <item
         android:id="@+id/nav_logout"
         android:title="Logout" />

@@ -13,6 +13,9 @@ public class EmailService {
     @Value("${app.backend.url:http://localhost:8081}")
     private String backendUrl;
 
+    @Value("${spring.mail.username:}")
+    private String mailFrom;
+
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
@@ -57,13 +60,14 @@ public class EmailService {
             message.setTo(to);
             message.setSubject(subject);
             message.setText(body);
-            message.setFrom("noreply@driverr.com");
+            message.setFrom(mailFrom == null || mailFrom.isBlank() ? "noreply@driverr.com" : mailFrom);
 
             mailSender.send(message);
             System.out.println("Email sent successfully to " + to);
         } catch (Exception e) {
             System.err.println("Failed to send email: " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Failed to send email", e);
         }
     }
 }

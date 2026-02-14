@@ -29,6 +29,15 @@
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
+        <activity
+            android:name=".DriverRegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminApprovalActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -10,11 +10,42 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public final class ApiClient {
     private static Retrofit retrofit;
     private static AuthApi authApi;
+    private static DriverApi driverApi;
+    private static UserApi userApi;
+    private static AdminApi adminApi;
 
     private ApiClient() {}
 
     public static AuthApi getAuthApi() {
         if (authApi == null) {
+            authApi = getRetrofit().create(AuthApi.class);
+        }
+        return authApi;
+    }
+
+    public static DriverApi getDriverApi() {
+        if (driverApi == null) {
+            driverApi = getRetrofit().create(DriverApi.class);
+        }
+        return driverApi;
+    }
+
+    public static UserApi getUserApi() {
+        if (userApi == null) {
+            userApi = getRetrofit().create(UserApi.class);
+        }
+        return userApi;
+    }
+
+    public static AdminApi getAdminApi() {
+        if (adminApi == null) {
+            adminApi = getRetrofit().create(AdminApi.class);
+        }
+        return adminApi;
+    }
+
+    private static Retrofit getRetrofit() {
+        if (retrofit == null) {
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
@@ -27,9 +58,7 @@ public final class ApiClient {
                     .client(client)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
-
-            authApi = retrofit.create(AuthApi.class);
         }
-        return authApi;
+        return retrofit;
     }
 }

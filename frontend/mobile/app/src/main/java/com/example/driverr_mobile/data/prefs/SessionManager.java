@@ -10,6 +10,7 @@ public class SessionManager {
     private static final String KEY_TOKEN = "auth_token";
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_EMAIL = "user_email";
+    private static final String KEY_ROLE = "user_role";
 
     private final SharedPreferences prefs;
 
@@ -22,7 +23,24 @@ public class SessionManager {
                 .putString(KEY_TOKEN, response.getToken())
                 .putString(KEY_USER_ID, response.getUserId())
                 .putString(KEY_EMAIL, response.getEmail())
+                .putString(KEY_ROLE, response.getRole())
                 .apply();
+    }
+
+    public String getUserId() {
+        return prefs.getString(KEY_USER_ID, "");
+    }
+
+    public String getEmail() {
+        return prefs.getString(KEY_EMAIL, "");
+    }
+
+    public String getToken() {
+        return prefs.getString(KEY_TOKEN, "");
+    }
+
+    public String getRole() {
+        return prefs.getString(KEY_ROLE, "");
     }
 
     public void clear() {

@@ -14,6 +14,7 @@ import domain.enums.*;
 import service.UserService;
 import service.EmailService;
 import repository.*;
+import utils.AddressParser;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -21,6 +22,7 @@ public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
     private final ProfileChangeRequestRepository profileChangeRequestRepository;
     private final DriverRepository driverRepository;
+    private final AddressRepository addressRepository;
     private final ActivationTokenRepository activationTokenRepository;
     private final RideRepository rideRepository;
     private final EmailService emailService;
@@ -30,12 +32,14 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository,
                            ProfileChangeRequestRepository profileChangeRequestRepository,
                            DriverRepository driverRepository,
+                           AddressRepository addressRepository,
                            ActivationTokenRepository activationTokenRepository,
                            RideRepository rideRepository,
                            EmailService emailService) {
         this.userRepository = userRepository;
         this.profileChangeRequestRepository = profileChangeRequestRepository;
         this.driverRepository = driverRepository;
+        this.addressRepository = addressRepository;
         this.activationTokenRepository = activationTokenRepository;
         this.rideRepository = rideRepository;
         this.emailService = emailService;
@@ -142,6 +146,10 @@ public class UserServiceImpl implements UserService {
         user.setUserName(dto.getEmail()); // Use email as username
         user.setIsActive(false); // Not activated until email confirmation
         user.setIsBlocked(false);
+
+        Address address = AddressParser.parseAddressLine(dto.getAddress());
+        addressRepository.save(address);
+        user.setAddress(address);
         
         // Set default profile picture if not provided
         if (dto.getProfilePictureUrl() == null || dto.getProfilePictureUrl().isEmpty()) {
@@ -340,7 +348,17 @@ public class UserServiceImpl implements UserService {
         user.setLastName(dto.getLastName());
         user.setGender(dto.getGender());
         user.setPhoneNumber(dto.getPhoneNumber());
-        user.setAddress(dto.getAddress());
+        if (dto.getAddress() != null) {
+            Address address = dto.getAddress();
+            if (isBlank(address.getStreetNumber()) && !isBlank(address.getStreet())) {
+                address = AddressParser.parseAddressLine(address.getStreet());
+            }
+            if (isBlank(address.getStreet()) || isBlank(address.getStreetNumber())) {
+                throw new RuntimeException("Address must include street and number");
+            }
+            addressRepository.save(address);
+            user.setAddress(address);
+        }
         user.setProfilePictureUrl(dto.getProfilePictureUrl());
 
         userRepository.save(user);
@@ -371,6 +389,10 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(dto.getNewPassword());
         userRepository.save(user);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
     
     @Override
