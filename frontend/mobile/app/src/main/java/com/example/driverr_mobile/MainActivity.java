@@ -1,5 +1,6 @@
 package com.example.driverr_mobile;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -54,6 +55,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleNavigation(MenuItem item) {
+        if (item.getItemId() == R.id.nav_admin) {
+            startActivity(new Intent(this, DriverRegisterActivity.class));
+            return;
+        }
+
         String label = item.getTitle() == null ? "" : item.getTitle().toString();
         Toast.makeText(this, label + " clicked", Toast.LENGTH_SHORT).show();
     }

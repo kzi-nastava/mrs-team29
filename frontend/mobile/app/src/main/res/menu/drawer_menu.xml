@@ -14,7 +14,7 @@
         android:title="Profile" />
     <item
         android:id="@+id/nav_admin"
-        android:title="Admin Approvals" />
+        android:title="Register Driver" />
     <item
         android:id="@+id/nav_logout"
         android:title="Logout" />
