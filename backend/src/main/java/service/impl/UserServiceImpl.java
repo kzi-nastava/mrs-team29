@@ -282,11 +282,11 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public boolean canDriverLogout(String driverId) {
-        Driver driver = driverRepository.findById(driverId)
+        driverRepository.findById(driverId)
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
         
         // Check if driver has any active rides
-        long activeRides = rideRepository.findByDriver_IdAndStatus(driverId, RideStatus.ACTIVE).size();
+        long activeRides = rideRepository.findByDriver_IdAndStatus(driverId, RideStatus.IN_PROGRESS).size();
         return activeRides == 0;
     }
     

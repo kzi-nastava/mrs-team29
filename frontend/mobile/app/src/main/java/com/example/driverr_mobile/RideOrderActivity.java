@@ -90,6 +90,8 @@ public class RideOrderActivity extends AppCompatActivity implements OnMapReadyCa
             Toast.makeText(this, "Please log in to order a ride.", Toast.LENGTH_LONG).show();
             finish();
             return;
+        }
+
         // Initialize map
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.order_map);
@@ -114,7 +116,7 @@ public class RideOrderActivity extends AppCompatActivity implements OnMapReadyCa
         // Set map click listener
         googleMap.setOnMapClickListener(latLng -> {
             reverseGeocodeLocation(latLng);
-        }
+    });
 
         findViewById(R.id.order_pickup_find).setOnClickListener(v -> geocodeAddress(true));
         findViewById(R.id.order_destination_find).setOnClickListener(v -> geocodeAddress(false));
@@ -139,28 +141,9 @@ public class RideOrderActivity extends AppCompatActivity implements OnMapReadyCa
                         orderButton.setEnabled(true);
                     }
                 });
-    }AddressData = address;
-                            pickupSelected.setText(display);
-                            addPickupMarker(new LatLng(address.getLatitude(), address.getLongitude()), display);
-                        } else {
-                            destinationAddressId = address.getId();
-                            destinationAddressData = address;
-                            destinationSelected.setText(display);
-                            addDestinationMarker(new LatLng(address.getLatitude(), address.getLongitude()), nput : destinationInput;
-        String query = textOf(sourceInput);
-        if (query.isEmpty()) {
-            Toast.makeText(this, "Enter an address to search", Toast.LENGTH_SHORT).show();
-            return;
-        }
+    }
 
-        setLoading(true);
-        ApiClient.getAddressApi().geocodeAndSave(new GeocodeRequest(query))
-                .enqueue(new retrofit2.Callback<AddressResponse>() {
-                    @Override
-                    public void onResponse(retrofit2.Call<AddressResponse> call,
-                                           retrofit2.Response<AddressResponse> response) {
-                        setLoading(false);
-                 reverseGeocodeLocation(LatLng latLng) {
+    private void reverseGeocodeLocation(LatLng latLng) {
         // Reverse geocode using Nominatim API
         // Format: reverse geocode by lat/lng to get address
         String query = latLng.latitude + "," + latLng.longitude;
@@ -233,18 +216,6 @@ public class RideOrderActivity extends AppCompatActivity implements OnMapReadyCa
         if (googleMap == null) return;
         
         // Remove old destination marker
-        pickupAddressData = null;
-        destinationAddressData = null;
-        
-        // Clear markers
-        if (pickupMarker != null) {
-            pickupMarker.remove();
-            pickupMarker = null;
-        }
-        if (destinationMarker != null) {
-            destinationMarker.remove();
-            destinationMarker = null;
-        }
         if (destinationMarker != null) {
             destinationMarker.remove();
         }
@@ -262,34 +233,6 @@ public class RideOrderActivity extends AppCompatActivity implements OnMapReadyCa
         } else {
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
         }
-    }
-
-    private void        if (!response.isSuccessful() || response.body() == null) {
-                            Toast.makeText(RideOrderActivity.this, "Address not found", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        AddressResponse address = response.body();
-                        String display = address.getDisplayName();
-                        if (display == null || display.isBlank()) {
-                            display = address.getStreet() + " " + address.getStreetNumber();
-                        }
-
-                        if (pickup) {
-                            pickupAddressId = address.getId();
-                            pickupSelected.setText(display);
-                        } else {
-                            destinationAddressId = address.getId();
-                            destinationSelected.setText(display);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(retrofit2.Call<AddressResponse> call, Throwable t) {
-                        setLoading(false);
-                        Toast.makeText(RideOrderActivity.this, "Network error", Toast.LENGTH_SHORT).show();
-                    }
-                });
     }
 
     private void submitOrder() {

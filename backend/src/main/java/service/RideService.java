@@ -6,21 +6,29 @@ import domain.entities.Ride;
 import dto.ride.*;
 
 public interface RideService {
-	Ride createRide(Ride ride);
-	void cancelRide(String rideId);
-	Ride getRidebyId(String rideId);
-	List<Ride> getActiveRides();
+	// Client side - order rides
 	RideResponseDTO orderRide(RideOrderDTO dto);
 	RideResponseDTO orderRideFromFavorite(String favoriteRouteId, FavoriteRideOrderDTO dto);
-	RideStartResponseDTO startRide(String rideId);
-	RideTrackingDTO getRideTracking(String rideId);
-	void reportInconsistency(RideInconsistencyReportDTO dto);
-	RideFinishResponseDTO finishRideResponse(RideFinishDTO dto);
+	boolean hasActiveRide(String userId);
+	
+	// Driver side - manage current ride
+	RideResponseDTO getDriverCurrentRide(String driverId);
 	RideResponseDTO startRide(String rideId, String driverId);
 	RideResponseDTO finishRide(String rideId, String driverId);
+	
+	// Ride history
+	List<RideResponseDTO> getDriverRideHistory(String driverId);
+	List<RideResponseDTO> getUserRideHistory(String userId);
+	
+	// Favorite routes management
 	List<FavoriteRouteDTO> getUserFavoriteRoutes(String userId);
 	FavoriteRouteDTO createFavoriteRoute(FavoriteRouteDTO dto);
 	FavoriteRouteDTO updateFavoriteRoute(String routeId, FavoriteRouteDTO dto);
 	void deleteFavoriteRoute(String routeId);
-	boolean hasActiveRide(String userId);
+	
+	// Legacy/stub methods (to be implemented or removed)
+	Ride createRide(Ride ride);
+	void cancelRide(String rideId);
+	Ride getRidebyId(String rideId);
+	List<Ride> getActiveRides();
 }

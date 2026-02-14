@@ -130,7 +130,8 @@ public class FavoriteRoutesActivity extends AppCompatActivity implements OnMapRe
         // Set map click listener
         googleMap.setOnMapClickListener(latLng -> {
             reverseGeocodeLocation(latLng);
-        }ClickListener(v -> saveFavoriteRoute());
+        });
+        findViewById(R.id.favorite_save_button).setOnClickListener(v -> saveFavoriteRoute());
         findViewById(R.id.favorite_pickup_find).setOnClickListener(v -> geocodeAddress(true));
         findViewById(R.id.favorite_destination_find).setOnClickListener(v -> geocodeAddress(false));
 

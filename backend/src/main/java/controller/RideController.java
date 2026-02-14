@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import service.RideService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/rides")
 @CrossOrigin(origins = "http://localhost:4200")
@@ -18,6 +20,8 @@ public class RideController {
         this.rideService = rideService;
     }
 
+    // ============ CLIENT ENDPOINTS ============
+    
     @PostMapping
     public ResponseEntity<?> orderRide(@Valid @RequestBody RideOrderDTO dto) {
         // Check if user already has an active ride
@@ -44,32 +48,51 @@ public class RideController {
         return ResponseEntity.ok(rideService.hasActiveRide(userId));
     }
 
-    @PatchMapping("/{rideId}/start")
-    public ResponseEntity<RideStartResponseDTO> startRide(@PathVariable String rideId) {
-        return ResponseEntity.ok(rideService.startRide(rideId));
+    @GetMapping("/user/{userId}/history")
+    public ResponseEntity<List<RideResponseDTO>> getUserRideHistory(@PathVariable String userId) {
+        return ResponseEntity.ok(rideService.getUserRideHistory(userId));
     }
 
-    @GetMapping("/{rideId}/tracking")
-    public ResponseEntity<RideTrackingDTO> getRideTracking(@PathVariable String rideId) {
-        return ResponseEntity.ok(rideService.getRideTracking(rideId));
+    // ============ DRIVER ENDPOINTS ============
+    
+    @GetMapping("/driver/{driverId}/current")
+    public ResponseEntity<?> getDriverCurrentRide(@PathVariable String driverId) {
+        try {
+            RideResponseDTO response = rideService.getDriverCurrentRide(driverId);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.ok(null); // No active ride
+        }
     }
 
-    @PostMapping("/{rideId}/inconsistency")
-    public ResponseEntity<Void> reportInconsistency(
+    @PostMapping("/{rideId}/start")
+    public ResponseEntity<?> startRide(
             @PathVariable String rideId,
-            @Valid @RequestBody RideInconsistencyReportDTO dto) {
-
-        dto.setRideId(rideId);
-        rideService.reportInconsistency(dto);
-        return ResponseEntity.ok().build();
+            @RequestParam String driverId
+    ) {
+        try {
+            RideResponseDTO response = rideService.startRide(rideId, driverId);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/{rideId}/finish")
-    public ResponseEntity<RideFinishResponseDTO> finishRide(
+    public ResponseEntity<?> finishRide(
             @PathVariable String rideId,
-            @Valid @RequestBody RideFinishDTO dto) {
+            @RequestParam String driverId
+    ) {
+        try {
+            RideResponseDTO response = rideService.finishRide(rideId, driverId);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
-        dto.setRideId(rideId);
-        return ResponseEntity.ok(rideService.finishRideResponse(dto));
+    @GetMapping("/driver/{driverId}/history")
+    public ResponseEntity<List<RideResponseDTO>> getDriverRideHistory(@PathVariable String driverId) {
+        return ResponseEntity.ok(rideService.getDriverRideHistory(driverId));
     }
 }
