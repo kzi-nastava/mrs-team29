@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/admin_request_driver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:text="Driver" />
+
+        <TextView
+            android:id="@+id/admin_request_field"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Field"
+            android:layout_marginTop="6dp" />
+
+        <TextView
+            android:id="@+id/admin_request_old_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Old Value"
+            android:layout_marginTop="6dp" />
+
+        <TextView
+            android:id="@+id/admin_request_new_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Value"
+            android:layout_marginTop="6dp" />
+
+        <TextView
+            android:id="@+id/admin_request_created_at"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Created At"
+            android:layout_marginTop="6dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/admin_request_approve"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Approve" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/admin_request_reject"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="Reject"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
