@@ -286,8 +286,8 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
         
         // Check if driver has any active rides
-        long activeRides = rideRepository.findByDriver_IdAndStatus(driverId, RideStatus.IN_PROGRESS).size();
-        return activeRides == 0;
+        return !rideRepository.existsByDriver_IdAndStatusIn(driverId, 
+            List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.IN_PROGRESS));
     }
     
     // ==================== User Profile Methods ====================

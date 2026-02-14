@@ -1,0 +1,117 @@
+<div class="driver-ride-page">
+  <div class="driver-ride-container">
+    <h1 class="title">Current Ride</h1>
+    <p class="subtitle">Manage your assigned or in-progress ride</p>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading ride information...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Success Message -->
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+
+    <!-- No Current Ride -->
+    <div *ngIf="!loading && !currentRide && !errorMessage" class="no-ride">
+      <div class="no-ride-icon">🚗</div>
+      <h2>No Active Ride</h2>
+      <p>You don't have any assigned or in-progress rides at the moment.</p>
+      <p class="hint">New rides will appear here automatically when assigned.</p>
+    </div>
+
+    <!-- Current Ride Details -->
+    <div *ngIf="!loading && currentRide" class="ride-details-container">
+      
+      <!-- Status Badge -->
+      <div class="status-badge" [ngClass]="getStatusClass(currentRide.status)">
+        <span class="status-text">{{ getStatusText(currentRide.status) }}</span>
+      </div>
+
+      <!-- Ride Information Card -->
+      <div class="ride-info-card">
+        <h2>Ride #{{ currentRide.rideId.substring(0, 8) }}</h2>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">📍 Pickup</span>
+            <span class="info-value">{{ currentRide.pickupAddress }}</span>
+          </div>
+          
+          <div class="info-item">
+            <span class="info-label">🎯 Destination</span>
+            <span class="info-value">{{ currentRide.destinationAddress }}</span>
+          </div>
+          
+          <div class="info-item">
+            <span class="info-label">💰 Price</span>
+            <span class="info-value price">{{ formatPrice(currentRide.price) }}</span>
+          </div>
+          
+          <div class="info-item">
+            <span class="info-label">👥 Passengers</span>
+            <span class="info-value">{{ currentRide.passengerIds.length }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="currentRide.createdAt">
+            <span class="info-label">🕐 Ordered At</span>
+            <span class="info-value">{{ formatDate(currentRide.createdAt) }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="currentRide.startedAt">
+            <span class="info-label">🚀 Started At</span>
+            <span class="info-value">{{ formatDate(currentRide.startedAt) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map Section -->
+      <div class="map-section">
+        <div id="driver-map" class="map-container"></div>
+        <div class="map-legend">
+          <div class="legend-item">
+            <span class="marker-icon pickup">📍</span>
+            <span>Pickup Location</span>
+          </div>
+          <div class="legend-item">
+            <span class="marker-icon destination">🎯</span>
+            <span>Destination</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button 
+          *ngIf="canStartRide()" 
+          class="btn btn-start"
+          [disabled]="loading"
+          (click)="startRide()"
+        >
+          🚀 Start Ride
+        </button>
+
+        <button 
+          *ngIf="canFinishRide()" 
+          class="btn btn-finish"
+          [disabled]="loading"
+          (click)="finishRide()"
+        >
+          ✅ Finish Ride
+        </button>
+
+        <div *ngIf="!canStartRide() && !canFinishRide()" class="info-message">
+          <p>⏳ Ride status: {{ currentRide.status }}</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
