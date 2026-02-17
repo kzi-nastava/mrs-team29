@@ -6,6 +6,8 @@ import domain.enums.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -45,12 +47,38 @@ class RideServiceImplTest {
         assertEquals("User not found", ex.getMessage());
     }
 
+     @Test
+    void orderRide_activeRide_throws() {
+        User user = buildUser("user-1", "user1@test.com");
+        RideOrderDTO dto = buildOrderDto(user.getId(), "addr-1", "addr-2");
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(rideRepository.existsByPassengers_IdAndStatusIn(eq(user.getId()), any()))
+            .thenReturn(true);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> rideService.orderRide(dto));
+        assertEquals("User already has active ride", ex.getMessage());
+    }
+
     private RideOrderDTO buildOrderDto(String creatorId, String pickupId, String destinationId) {
         RideOrderDTO dto = new RideOrderDTO();
         dto.setCreatorId(creatorId);
         dto.setPickupAddressId(pickupId);
         dto.setDestinationAddressId(destinationId);
         return dto;
+    }
+
+    private User buildUser(String id, String email) {
+        User user = new User();
+        user.setId(id);
+        user.setFirstName("Test");
+        user.setLastName("User");
+        user.setUserName("test-user");
+        user.setEmail(email);
+        user.setPassword("pass");
+        user.setUserType(UserType.CLIENT);
+        user.setIsActive(true);
+        user.setIsBlocked(false);
+        return user;
     }
 
 }
