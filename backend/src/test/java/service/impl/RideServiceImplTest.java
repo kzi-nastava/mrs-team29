@@ -59,6 +59,20 @@ class RideServiceImplTest {
         assertEquals("User already has active ride", ex.getMessage());
     }
 
+    @Test
+    void orderRide_scheduledTimeInPast_throws() {
+        User user = buildUser("user-1", "user1@test.com");
+        RideOrderDTO dto = buildOrderDto(user.getId(), "addr-1", "addr-2");
+        dto.setScheduledTime(LocalDateTime.now().minusMinutes(1));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(rideRepository.existsByPassengers_IdAndStatusIn(eq(user.getId()), any()))
+            .thenReturn(false);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> rideService.orderRide(dto));
+        assertEquals("Cannot schedule rides in the past", ex.getMessage());
+    }
+
+
     private RideOrderDTO buildOrderDto(String creatorId, String pickupId, String destinationId) {
         RideOrderDTO dto = new RideOrderDTO();
         dto.setCreatorId(creatorId);
