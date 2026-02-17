@@ -88,7 +88,39 @@ class RideControllerIT {
         }
     }
 
-    
+    @Test
+    void orderRide_success_returnsCreated() throws Exception {
+        RideOrderDTO dto = buildOrderDto();
+
+        mockMvc.perform(post("/api/rides")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+            .andExpect(status().isCreated());
+    }
+
+    @Test
+    void orderRide_activeRide_returnsBadRequest() throws Exception {
+        Ride existing = buildRide(RideStatus.ASSIGNED);
+        rideRepository.save(existing);
+
+        RideOrderDTO dto = buildOrderDto();
+
+        mockMvc.perform(post("/api/rides")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void orderRide_scheduledTimeInPast_returnsBadRequest() throws Exception {
+        RideOrderDTO dto = buildOrderDto();
+        dto.setScheduledTime(LocalDateTime.now().minusMinutes(10));
+
+        mockMvc.perform(post("/api/rides")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+            .andExpect(status().isBadRequest());
+    }
 
     private RideOrderDTO buildOrderDto() {
         RideOrderDTO dto = new RideOrderDTO();
