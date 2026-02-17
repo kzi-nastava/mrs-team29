@@ -16,6 +16,7 @@ import service.RideService;
 import repository.*;
 
 @Service
+@SuppressWarnings("null")
 public class RideServiceImpl implements RideService {
 
 	private final RideRepository rideRepository;

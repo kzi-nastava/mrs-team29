@@ -21,6 +21,7 @@ import repository.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@SuppressWarnings("null")
 class RideControllerIT {
     @Autowired
     private MockMvc mockMvc;

@@ -22,6 +22,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import repository.*;
 
+@SuppressWarnings("null")
 @ExtendWith(MockitoExtension.class)
 class RideServiceImplTest {
     @Mock

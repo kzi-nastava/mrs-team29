@@ -18,6 +18,7 @@ import utils.AddressParser;
 import repository.*;
 
 @Service
+@SuppressWarnings("null")
 public class DriverServiceImpl implements DriverService {
 
 	private final DriverRepository driverRepository;
