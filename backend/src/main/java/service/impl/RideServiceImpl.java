@@ -231,10 +231,28 @@ public class RideServiceImpl implements RideService {
 
     @Override
     public List<RideResponseDTO> getDriverRideHistory(String driverId) {
-        List<Ride> history = rideRepository.findByDriver_IdAndStatusOrderByTimestampsDesc(
-                driverId,
-                RideStatus.FINISHED
-        );
+        return getDriverRideHistory(driverId, null, null);
+    }
+    
+    @Override
+    public List<RideResponseDTO> getDriverRideHistory(String driverId, java.time.LocalDate startDate, java.time.LocalDate endDate) {
+        java.time.LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+        java.time.LocalDateTime endDateTime = endDate != null ? endDate.atTime(23, 59, 59) : null;
+        
+        List<Ride> history;
+        if (startDateTime == null && endDateTime == null) {
+            history = rideRepository.findByDriver_IdAndStatusOrderByTimestampsDesc(
+                    driverId,
+                    RideStatus.FINISHED
+            );
+        } else {
+            history = rideRepository.findDriverRideHistoryByDateRange(
+                    driverId,
+                    RideStatus.FINISHED,
+                    startDateTime,
+                    endDateTime
+            );
+        }
 
         return history.stream()
                 .map(RideResponseDTO::fromRide)

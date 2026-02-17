@@ -1,7 +1,9 @@
 package com.example.driverr_mobile;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -19,7 +21,10 @@ import com.example.driverr_mobile.data.network.RideApi;
 import com.example.driverr_mobile.data.prefs.SessionManager;
 import com.google.android.material.appbar.MaterialToolbar;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -33,10 +38,21 @@ public class DriverHistoryActivity extends AppCompatActivity {
     private TextView errorMessage;
     private LinearLayout rideHistoryContainer;
     private TextView noHistoryMessage;
+    private TextView summaryText;
+    
+    private Button startDateBtn;
+    private Button endDateBtn;
+    private Button filterBtn;
+    private Button clearBtn;
     
     private String driverId;
     private SessionManager sessionManager;
     private RideApi rideApi;
+    
+    private String startDate = null;
+    private String endDate = null;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    private SimpleDateFormat displayFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,14 +86,66 @@ public class DriverHistoryActivity extends AppCompatActivity {
         errorMessage = findViewById(R.id.error_message);
         rideHistoryContainer = findViewById(R.id.ride_history_container);
         noHistoryMessage = findViewById(R.id.no_history_message);
+        summaryText = findViewById(R.id.summary_text);
+        
+        startDateBtn = findViewById(R.id.start_date_btn);
+        endDateBtn = findViewById(R.id.end_date_btn);
+        filterBtn = findViewById(R.id.filter_btn);
+        clearBtn = findViewById(R.id.clear_btn);
         
         setSupportActionBar(toolbar);
+        
+        startDateBtn.setOnClickListener(v -> showStartDatePicker());
+        endDateBtn.setOnClickListener(v -> showEndDatePicker());
+        filterBtn.setOnClickListener(v -> loadRideHistory());
+        clearBtn.setOnClickListener(v -> clearDateFilter());
+    }
+
+    private void showStartDatePicker() {
+        Calendar calendar = Calendar.getInstance();
+        DatePickerDialog dialog = new DatePickerDialog(
+            this,
+            (view, year, month, dayOfMonth) -> {
+                calendar.set(year, month, dayOfMonth);
+                startDate = dateFormat.format(calendar.getTime());
+                startDateBtn.setText("From: " + displayFormat.format(calendar.getTime()));
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        );
+        dialog.show();
+    }
+
+    private void showEndDatePicker() {
+        Calendar calendar = Calendar.getInstance();
+        DatePickerDialog dialog = new DatePickerDialog(
+            this,
+            (view, year, month, dayOfMonth) -> {
+                calendar.set(year, month, dayOfMonth);
+                endDate = dateFormat.format(calendar.getTime());
+                endDateBtn.setText("To: " + displayFormat.format(calendar.getTime()));
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        );
+        dialog.show();
+    }
+
+    private void clearDateFilter() {
+        startDate = null;
+        endDate = null;
+        startDateBtn.setText("Select Start Date");
+        endDateBtn.setText("Select End Date");
+        loadRideHistory();
     }
 
     private void loadRideHistory() {
         progressBar.setVisibility(View.VISIBLE);
+        errorMessage.setVisibility(View.GONE);
         
-        rideApi.getDriverRideHistory(driverId).enqueue(new Callback<List<RideResponse>>() {
+        rideApi.getDriverRideHistory(driverId, startDate, endDate).enqueue(new Callback<List<RideResponse>>() {
             @Override
             public void onResponse(Call<List<RideResponse>> call, Response<List<RideResponse>> response) {
                 if (!isFinishing()) {
@@ -109,11 +177,22 @@ public class DriverHistoryActivity extends AppCompatActivity {
         if (rides == null || rides.isEmpty()) {
             noHistoryMessage.setVisibility(View.VISIBLE);
             rideHistoryContainer.setVisibility(View.GONE);
+            summaryText.setVisibility(View.GONE);
             return;
         }
         
         noHistoryMessage.setVisibility(View.GONE);
         rideHistoryContainer.setVisibility(View.VISIBLE);
+        summaryText.setVisibility(View.VISIBLE);
+        
+        // Calculate total earnings
+        double totalEarnings = 0;
+        for (RideResponse ride : rides) {
+            totalEarnings += ride.getPrice();
+        }
+        
+        summaryText.setText(String.format(Locale.getDefault(), 
+            "Total Rides: %d  |  Total Earnings: RSD %.2f", rides.size(), totalEarnings));
         
         for (RideResponse ride : rides) {
             View rideItem = createRideItemView(ride);
@@ -130,7 +209,7 @@ public class DriverHistoryActivity extends AppCompatActivity {
         itemLayout.setPadding(16, 12, 16, 12);
         itemLayout.setBackgroundColor(getResources().getColor(android.R.color.white, getTheme()));
         
-        // Add bottom margin by wrapping in a parent with margin
+        // Add bottom margin
         LinearLayout wrapper = new LinearLayout(this);
         wrapper.setLayoutParams(new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
@@ -142,42 +221,55 @@ public class DriverHistoryActivity extends AppCompatActivity {
         
         // Date
         TextView dateView = new TextView(this);
-        dateView.setText("📅 " + formatDate(ride.getCreatedAt()));
+        String dateStr = ride.getFinishedAt() != null ? ride.getFinishedAt() : ride.getCreatedAt();
+        dateView.setText("📅 " + formatDate(dateStr));
         dateView.setTextColor(getResources().getColor(android.R.color.darker_gray, getTheme()));
         dateView.setTextSize(12);
         itemLayout.addView(dateView);
         
         // Route
         TextView routeView = new TextView(this);
-        routeView.setText(ride.getPickupAddress() + " → " + ride.getDestinationAddress());
+        String pickup = ride.getPickupAddress() != null ? ride.getPickupAddress() : "N/A";
+        String dest = ride.getDestinationAddress() != null ? ride.getDestinationAddress() : "N/A";
+        routeView.setText(pickup + " → " + dest);
         routeView.setTextColor(getResources().getColor(android.R.color.black, getTheme()));
         routeView.setTextSize(14);
         routeView.setPadding(0, 8, 0, 0);
         itemLayout.addView(routeView);
         
-        // Price and Status
-        LinearLayout priceStatusLayout = new LinearLayout(this);
-        priceStatusLayout.setLayoutParams(new LinearLayout.LayoutParams(
+        // Price, Passengers and Status
+        LinearLayout infoLayout = new LinearLayout(this);
+        infoLayout.setLayoutParams(new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT));
-        priceStatusLayout.setOrientation(LinearLayout.HORIZONTAL);
-        priceStatusLayout.setPadding(0, 8, 0, 0);
+        infoLayout.setOrientation(LinearLayout.HORIZONTAL);
+        infoLayout.setPadding(0, 8, 0, 0);
         
         TextView priceView = new TextView(this);
-        priceView.setText("💰 RSD " + String.format("%.2f", ride.getPrice()));
+        priceView.setText("💰 RSD " + String.format(Locale.getDefault(), "%.2f", ride.getPrice()));
         priceView.setTextColor(getResources().getColor(android.R.color.holo_green_dark, getTheme()));
-        priceView.setTextStyle(android.graphics.Typeface.BOLD);
+        priceView.setTypeface(null, android.graphics.Typeface.BOLD);
         priceView.setTextSize(14);
-        priceView.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-        priceStatusLayout.addView(priceView);
+        LinearLayout.LayoutParams priceParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+        priceView.setLayoutParams(priceParams);
+        infoLayout.addView(priceView);
+        
+        TextView passengersView = new TextView(this);
+        int passengerCount = ride.getPassengerIds() != null ? ride.getPassengerIds().size() : 0;
+        passengersView.setText("👥 " + passengerCount);
+        passengersView.setTextColor(getResources().getColor(android.R.color.darker_gray, getTheme()));
+        passengersView.setTextSize(12);
+        passengersView.setPadding(16, 0, 0, 0);
+        infoLayout.addView(passengersView);
         
         TextView statusView = new TextView(this);
         statusView.setText(" ✅ Finished");
         statusView.setTextColor(getResources().getColor(android.R.color.holo_green_dark, getTheme()));
         statusView.setTextSize(12);
-        priceStatusLayout.addView(statusView);
+        statusView.setPadding(16, 0, 0, 0);
+        infoLayout.addView(statusView);
         
-        itemLayout.addView(priceStatusLayout);
+        itemLayout.addView(infoLayout);
         wrapper.addView(itemLayout);
         
         return wrapper;
@@ -197,6 +289,7 @@ public class DriverHistoryActivity extends AppCompatActivity {
         errorMessage.setVisibility(View.VISIBLE);
         rideHistoryContainer.setVisibility(View.GONE);
         noHistoryMessage.setVisibility(View.GONE);
+        summaryText.setVisibility(View.GONE);
     }
 
     @Override

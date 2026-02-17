@@ -92,7 +92,13 @@ public class RideController {
     }
 
     @GetMapping("/driver/{driverId}/history")
-    public ResponseEntity<List<RideResponseDTO>> getDriverRideHistory(@PathVariable String driverId) {
-        return ResponseEntity.ok(rideService.getDriverRideHistory(driverId));
+    public ResponseEntity<List<RideResponseDTO>> getDriverRideHistory(
+            @PathVariable String driverId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate
+    ) {
+        java.time.LocalDate start = startDate != null ? java.time.LocalDate.parse(startDate) : null;
+        java.time.LocalDate end = endDate != null ? java.time.LocalDate.parse(endDate) : null;
+        return ResponseEntity.ok(rideService.getDriverRideHistory(driverId, start, end));
     }
 }
