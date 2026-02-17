@@ -76,6 +76,33 @@ class RideRepositoryTest {
         }
     }
 
+    @Test
+    void existsByPassengers_IdAndStatusIn_returnsTrueForActiveRide() {
+        boolean exists = rideRepository.existsByPassengers_IdAndStatusIn(
+            userId,
+            List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
+        );
+        assertTrue(exists);
+    }
+
+    @Test
+    void findFirstByDriver_IdAndStatusInOrderByTimestampsDesc_returnsLatestRide() {
+        var result = rideRepository.findFirstByDriver_IdAndStatusInOrderByTimestampsDesc(
+            driverId,
+            List.of(RideStatus.ASSIGNED, RideStatus.FINISHED)
+        );
+
+        assertTrue(result.isPresent());
+        assertEquals(RideStatus.FINISHED, result.get().getStatus());
+    }
+
+    @Test
+    void findUserRideHistory_returnsOnlyFinishedRides() {
+        var history = rideRepository.findUserRideHistory(userId, RideStatus.FINISHED);
+        assertEquals(1, history.size());
+        assertEquals(RideStatus.FINISHED, history.get(0).getStatus());
+    }
+
     private Ride buildRide(RideStatus status, LocalDateTime timestamp) {
         Ride ride = new Ride();
         ride.setPickupAddress(addressRepository.findById(pickupId).orElseThrow());
