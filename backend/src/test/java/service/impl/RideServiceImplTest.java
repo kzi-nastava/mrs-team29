@@ -5,9 +5,11 @@ import domain.entities.*;
 import domain.enums.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -21,6 +23,7 @@ import repository.*;
 
 @ExtendWith(MockitoExtension.class)
 class RideServiceImplTest {
+    @Mock
     private RideRepository rideRepository;
 
     @Mock
@@ -89,6 +92,38 @@ class RideServiceImplTest {
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> rideService.orderRide(dto));
         assertEquals("No available drivers", ex.getMessage());
+    }
+
+@Test
+    void orderRide_success_assignsDriverAndCreatesRide() {
+        User user = buildUser("user-1", "user1@test.com");
+        Address pickup = buildAddress("addr-1");
+        Address destination = buildAddress("addr-2");
+        Driver driver = buildDriver("driver-1", "driver1@test.com");
+        RideOrderDTO dto = buildOrderDto(user.getId(), pickup.getId(), destination.getId());
+        dto.setVehicleType(VehicleType.STANDARD);
+
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(rideRepository.existsByPassengers_IdAndStatusIn(eq(user.getId()), any()))
+            .thenReturn(false);
+        when(addressRepository.findById(pickup.getId())).thenReturn(Optional.of(pickup));
+        when(addressRepository.findById(destination.getId())).thenReturn(Optional.of(destination));
+        when(driverRepository.findFirstByStatusAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(DriverStatus.AVAILABLE))
+            .thenReturn(Optional.of(driver));
+        when(driverRepository.save(driver)).thenReturn(driver);
+        when(rideRepository.save(any(Ride.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = rideService.orderRide(dto);
+
+        assertNotNull(response);
+        assertEquals(DriverStatus.BUSY, driver.getStatus());
+
+        ArgumentCaptor<Ride> rideCaptor = ArgumentCaptor.forClass(Ride.class);
+        verify(rideRepository).save(rideCaptor.capture());
+        Ride savedRide = rideCaptor.getValue();
+        assertEquals(RideStatus.ASSIGNED, savedRide.getStatus());
+        assertEquals(driver, savedRide.getDriver());
+        assertEquals(List.of(user), savedRide.getPassengers());
     }
 
     private RideOrderDTO buildOrderDto(String creatorId, String pickupId, String destinationId) {
