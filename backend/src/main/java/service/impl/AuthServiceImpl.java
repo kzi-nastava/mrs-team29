@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -128,9 +129,10 @@ public class AuthServiceImpl implements AuthService {
         Driver driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
         
-        // Check if driver has any active rides (ACTIVE status)
-        long activeRides = rideRepository.findByDriver_IdAndStatus(driverId, RideStatus.ACTIVE).size();
-        return activeRides == 0;
+        // Check if driver has any active rides
+        boolean hasActiveRides = rideRepository.existsByDriver_IdAndStatusIn(driverId,
+            List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.IN_PROGRESS));
+        return !hasActiveRides;
     }
     
     @Override

@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Ride } from '../models/ride.model';
 
 @Injectable({ providedIn: 'root' })
 export class RideService {
@@ -18,15 +20,34 @@ export class RideService {
     return this.http.get<boolean>(`${this.api}/user/${userId}/active`);
   }
 
-  // Get user's rides
-  getUserRides(userId: string) {
-    return this.http.get<any[]>(`${this.api}/user/${userId}`);
+  // Get user's ride history
+  getUserRideHistory(userId: string): Observable<Ride[]> {
+    return this.http.get<Ride[]>(`${this.api}/user/${userId}/history`);
   }
 
-  // Start ride (driver action)
-  startRide(rideId: string) {
-    return this.http.patch(`${this.api}/${rideId}/start`, {});
+  // ============ DRIVER ENDPOINTS ============
+  
+  // Get driver's current assigned/in-progress ride
+  getDriverCurrentRide(driverId: string): Observable<Ride> {
+    return this.http.get<Ride>(`${this.api}/driver/${driverId}/current`);
   }
+
+  // Start a ride (driver begins journey with passengers)
+  startRide(rideId: string, driverId: string): Observable<Ride> {
+    return this.http.post<Ride>(`${this.api}/${rideId}/start?driverId=${driverId}`, {});
+  }
+
+  // Finish a ride (driver completes journey)
+  finishRide(rideId: string, driverId: string): Observable<Ride> {
+    return this.http.post<Ride>(`${this.api}/${rideId}/finish?driverId=${driverId}`, {});
+  }
+
+  // Get driver's ride history
+  getDriverRideHistory(driverId: string): Observable<Ride[]> {
+    return this.http.get<Ride[]>(`${this.api}/driver/${driverId}/history`);
+  }
+
+  // ============ FAVORITE ROUTES ============
 
   // 2.4.3 – Favorite Routes
   getFavoriteRoutes(userId: string) {

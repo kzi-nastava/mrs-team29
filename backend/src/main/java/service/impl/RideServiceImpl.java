@@ -5,7 +5,7 @@ import dto.ride.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -46,7 +46,7 @@ public class RideServiceImpl implements RideService {
 
         boolean hasActiveRide = rideRepository.existsByPassengers_IdAndStatusIn(
                 creator.getId(),
-                List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.ACTIVE)
+                List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
         );
 
         if (hasActiveRide) {
@@ -92,13 +92,17 @@ public class RideServiceImpl implements RideService {
         Driver driver = driverRepository.findFirstByStatusAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(DriverStatus.AVAILABLE)
                 .orElseThrow(() -> new RuntimeException("No available drivers"));
 
+        // Assign driver and update their status
+        driver.setStatus(DriverStatus.BUSY);
+        driverRepository.save(driver);
+
         Ride ride = new Ride();
         ride.setPickupAddress(pickup);
         ride.setDestinationAddress(destination);
         ride.setStops(stops);
         ride.setPassengers(passengers);
         ride.setDriver(driver);
-        ride.setStatus(RideStatus.REQUESTED);
+        ride.setStatus(RideStatus.ASSIGNED);
         ride.setScheduledTime(dto.getScheduledTime());
         
         // Calculate price: base price by vehicle type + 120 per km
@@ -134,11 +138,18 @@ public class RideServiceImpl implements RideService {
         }
 
         if (ride.getStatus() != RideStatus.ASSIGNED) {
-            throw new RuntimeException("Ride cannot be started");
+            throw new RuntimeException("Ride cannot be started. Current status: " + ride.getStatus());
         }
 
-        ride.setStatus(RideStatus.ACTIVE);
-        ride.getTimestamps().add(LocalDateTime.now());
+        ride.setStatus(RideStatus.IN_PROGRESS);
+        List<LocalDateTime> timestamps = new ArrayList<>(ride.getTimestamps());
+        timestamps.add(LocalDateTime.now());
+        ride.setTimestamps(timestamps);
+
+        // Update driver status
+        Driver driver = ride.getDriver();
+        driver.setStatus(DriverStatus.ACTIVE);
+        driverRepository.save(driver);
 
         rideRepository.save(ride);
 
@@ -152,15 +163,17 @@ public class RideServiceImpl implements RideService {
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
 
         if (!ride.getDriver().getId().equals(driverId)) {
-            throw new RuntimeException("Driver not assigned");
+            throw new RuntimeException("Driver not assigned to this ride");
         }
 
-        if (ride.getStatus() != RideStatus.ACTIVE) {
-            throw new RuntimeException("Ride is not active");
+        if (ride.getStatus() != RideStatus.IN_PROGRESS) {
+            throw new RuntimeException("Ride is not in progress. Current status: " + ride.getStatus());
         }
 
         ride.setStatus(RideStatus.FINISHED);
-        ride.getTimestamps().add(LocalDateTime.now());
+        List<LocalDateTime> timestamps = new ArrayList<>(ride.getTimestamps());
+        timestamps.add(LocalDateTime.now());
+        ride.setTimestamps(timestamps);
 
         Driver driver = ride.getDriver();
         driver.setStatus(DriverStatus.AVAILABLE);
@@ -183,13 +196,17 @@ public class RideServiceImpl implements RideService {
         Driver driver = driverRepository.findFirstByStatusAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(DriverStatus.AVAILABLE)
                 .orElseThrow(() -> new RuntimeException("No available drivers"));
 
+        // Assign driver and update their status
+        driver.setStatus(DriverStatus.BUSY);
+        driverRepository.save(driver);
+
         Ride ride = new Ride();
         ride.setPickupAddress(route.getPickupAddress());
         ride.setDestinationAddress(route.getDestinationAddress());
         ride.setStops(route.getStops());
         ride.setPassengers(List.of(creator));
         ride.setDriver(driver);
-        ride.setStatus(RideStatus.REQUESTED);
+        ride.setStatus(RideStatus.ASSIGNED);
         ride.setPrice(700);
         ride.setTimestamps(List.of(LocalDateTime.now()));
 
@@ -199,46 +216,38 @@ public class RideServiceImpl implements RideService {
     }
 
     @Override
-    public RideStartResponseDTO startRide(String rideId) {
-
-        return new RideStartResponseDTO(
-                rideId,
-                RideStatus.ACTIVE,
-                LocalDateTime.now()
+    public RideResponseDTO getDriverCurrentRide(String driverId) {
+        Optional<Ride> currentRide = rideRepository.findFirstByDriver_IdAndStatusInOrderByTimestampsDesc(
+                driverId,
+                List.of(RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
         );
-    }
-    
-    @Override
-    public RideTrackingDTO getRideTracking(String rideId) {
 
-        // Stub response
-        return new RideTrackingDTO(
-                rideId,
-                45.2675,
-                19.8339,
-                8
-        );
+        if (currentRide.isEmpty()) {
+            throw new RuntimeException("No active ride found for driver");
+        }
+
+        return RideResponseDTO.fromRide(currentRide.get());
     }
 
     @Override
-    public void reportInconsistency(RideInconsistencyReportDTO dto) {
-        // Stub – Later saving into database
-        System.out.println("Inconsistency reported for ride " + dto.getRideId());
-    }
-    
-    @Override
-    public RideFinishResponseDTO finishRideResponse(RideFinishDTO dto) {
-
-        // Stub logic:
-        // - Ride Complete
-        // - Paid
-        // - Driver Available
-        // - No next Reserved Ride
-
-        return new RideFinishResponseDTO(
-                "AVAILABLE",
-                null
+    public List<RideResponseDTO> getDriverRideHistory(String driverId) {
+        List<Ride> history = rideRepository.findByDriver_IdAndStatusOrderByTimestampsDesc(
+                driverId,
+                RideStatus.FINISHED
         );
+
+        return history.stream()
+                .map(RideResponseDTO::fromRide)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<RideResponseDTO> getUserRideHistory(String userId) {
+        List<Ride> history = rideRepository.findUserRideHistory(userId, RideStatus.FINISHED);
+
+        return history.stream()
+                .map(RideResponseDTO::fromRide)
+                .collect(Collectors.toList());
     }
     
 	@Override
@@ -341,7 +350,7 @@ public class RideServiceImpl implements RideService {
 	public boolean hasActiveRide(String userId) {
         return rideRepository.existsByPassengers_IdAndStatusIn(
 	        userId,
-	        List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.ACTIVE)
+	        List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
 	    );
 	}
 	
