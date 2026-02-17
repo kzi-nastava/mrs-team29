@@ -24,15 +24,18 @@ public class DriverServiceImpl implements DriverService {
     private final AddressRepository addressRepository;
     private final ActivationTokenRepository activationTokenRepository;
     private final EmailService emailService;
+    private final RideRepository rideRepository;
 
     public DriverServiceImpl(DriverRepository driverRepository,
                              AddressRepository addressRepository,
                              ActivationTokenRepository activationTokenRepository,
-                             EmailService emailService) {
+                             EmailService emailService,
+                             RideRepository rideRepository) {
         this.driverRepository = driverRepository;
         this.addressRepository = addressRepository;
         this.activationTokenRepository = activationTokenRepository;
         this.emailService = emailService;
+        this.rideRepository = rideRepository;
     }
 	
 	
@@ -137,20 +140,31 @@ public class DriverServiceImpl implements DriverService {
     
 	@Override
 	public Driver getAvailableDriver() {
-		// TODO Auto-generated method stub
-		return null;
+		return driverRepository.findFirstByStatusAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(
+				DriverStatus.AVAILABLE)
+				.orElse(null);
 	}
 
 	@Override
 	public void updateStatus(String driverId, DriverStatus status) {
-		// TODO Auto-generated method stub
+		Driver driver = driverRepository.findById(driverId)
+				.orElseThrow(() -> new RuntimeException("Driver not found with id: " + driverId));
 		
+		driver.setStatus(status);
+		driverRepository.save(driver);
 	}
 
 	@Override
 	public List<DriverRideHistoryDTO> getDriverRideHistory(String driverId, LocalDate from, LocalDate to) {
-		// TODO: Implement when ride history is fully integrated
-		return List.of();
+		LocalDateTime startDateTime = (from != null) ? from.atStartOfDay() : null;
+		LocalDateTime endDateTime = (to != null) ? to.atTime(23, 59, 59) : null;
+		
+		List<Ride> rides = rideRepository.findDriverRideHistoryByDateRange(
+				driverId, RideStatus.FINISHED, startDateTime, endDateTime);
+		
+		return rides.stream()
+				.map(this::mapToDriverRideHistoryDTO)
+				.toList();
 	}
 	
 	@Override
@@ -158,6 +172,65 @@ public class DriverServiceImpl implements DriverService {
 		// TODO: Calculate from actual ride data when integrated
 		// For now return mock data
 		return 6.5;
+	}
+	
+	private DriverRideHistoryDTO mapToDriverRideHistoryDTO(Ride ride) {
+		LocalDateTime startTime = null;
+		LocalDateTime endTime = null;
+		
+		if (ride.getTimestamps() != null && !ride.getTimestamps().isEmpty()) {
+			if (ride.getTimestamps().size() > 1) {
+				startTime = ride.getTimestamps().get(1); // Started time
+			}
+			if (ride.getTimestamps().size() > 2) {
+				endTime = ride.getTimestamps().get(2); // Finished time
+			}
+		}
+		
+		String startLocation = formatAddress(ride.getPickupAddress());
+		String endLocation = formatAddress(ride.getDestinationAddress());
+		
+		List<PassengerInfoDTO> passengers = ride.getPassengers().stream()
+				.map(user -> new PassengerInfoDTO(
+						user.getId(),
+						user.getFirstName() + " " + user.getLastName(),
+						user.getEmail()
+				))
+				.toList();
+		
+		boolean canceled = ride.getStatus() == RideStatus.CANCELED_BY_DRIVER;
+		
+		return new DriverRideHistoryDTO(
+				ride.getId(),
+				startTime,
+				endTime,
+				startLocation,
+				endLocation,
+				canceled,
+				null, // canceledBy - would need additional data to determine
+				ride.getPrice(),
+				false, // panicActivated - would need additional data to determine
+				passengers
+		);
+	}
+	
+	private String formatAddress(Address address) {
+		if (address == null) {
+			return "N/A";
+		}
+		StringBuilder sb = new StringBuilder();
+		if (address.getStreet() != null) {
+			sb.append(address.getStreet());
+		}
+		if (address.getStreetNumber() != null) {
+			if (sb.length() > 0) sb.append(" ");
+			sb.append(address.getStreetNumber());
+		}
+		if (address.getCity() != null) {
+			if (sb.length() > 0) sb.append(", ");
+			sb.append(address.getCity());
+		}
+		return sb.toString();
 	}
 
     private boolean isBlank(String value) {
