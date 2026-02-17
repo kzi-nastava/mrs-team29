@@ -1,10 +1,11 @@
 /// <reference types="jasmine" />
 import { TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 import { AdminDriverRegisterComponent } from './driverRegister.component';
 import { DriverService } from '../../services/driver.service';
 
-driverRegister.component.spec.tsdescribe('AdminDriverRegisterComponent', () => {
+describe('AdminDriverRegisterComponent', () => {
   let component: AdminDriverRegisterComponent;
   let driverServiceSpy: jasmine.SpyObj<DriverService>;
 
@@ -12,7 +13,7 @@ driverRegister.component.spec.tsdescribe('AdminDriverRegisterComponent', () => {
     driverServiceSpy = jasmine.createSpyObj('DriverService', ['registerDriver']);
 
     await TestBed.configureTestingModule({
-      imports: [AdminDriverRegisterComponent],
+      imports: [AdminDriverRegisterComponent, ReactiveFormsModule],
       providers: [{ provide: DriverService, useValue: driverServiceSpy }]
     }).compileComponents();
 

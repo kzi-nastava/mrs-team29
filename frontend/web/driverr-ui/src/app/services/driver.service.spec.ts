@@ -30,5 +30,16 @@ describe('DriverService', () => {
     expect(req.request.body).toEqual(payload);
     req.flush({});
   });
+  
+  it('activateDriver posts to /api/drivers/activate', () => {
+    const activationDto = { activationToken: 'token123', password: 'newpass' };
+    
+    service.activateDriver(activationDto).subscribe();
+    
+    const req = httpMock.expectOne('http://localhost:8081/api/drivers/activate');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(activationDto);
+    req.flush({});
+  });
 });
 

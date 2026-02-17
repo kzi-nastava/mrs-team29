@@ -2,6 +2,7 @@ package controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dto.ride.RideOrderDTO;
@@ -96,6 +97,10 @@ class RideControllerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
             .andExpect(status().isCreated());
+        
+        // Verify a ride was created
+        List<Ride> createdRides = rideRepository.findByPassengers_IdAndStatus(creatorId, RideStatus.ASSIGNED);
+        assertTrue(createdRides.size() > 0, "Ride should be created");
     }
 
     @Test

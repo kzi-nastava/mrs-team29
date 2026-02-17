@@ -2,6 +2,7 @@ package repository;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import domain.entities.*;
 import domain.enums.*;
@@ -66,6 +67,7 @@ class DriverRepositoryTest {
         assertTrue(result.isPresent());
         assertTrue(result.get().getIsActive());
         assertFalse(result.get().getIsBlocked());
+        assertEquals(DriverStatus.AVAILABLE, result.get().getStatus());
     }
 
     private Driver buildDriver(String userName, String email) {

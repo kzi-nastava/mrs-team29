@@ -2,6 +2,7 @@ package repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import domain.entities.*;
 import domain.enums.*;
@@ -101,6 +102,17 @@ class RideRepositoryTest {
         var history = rideRepository.findUserRideHistory(userId, RideStatus.FINISHED);
         assertEquals(1, history.size());
         assertEquals(RideStatus.FINISHED, history.get(0).getStatus());
+    }
+    
+    @Test
+    void findByPassengers_IdAndStatus_returnsCorrectRides() {
+        var assignedRides = rideRepository.findByPassengers_IdAndStatus(userId, RideStatus.ASSIGNED);
+        assertEquals(1, assignedRides.size());
+        assertEquals(RideStatus.ASSIGNED, assignedRides.get(0).getStatus());
+        
+        var finishedRides = rideRepository.findByPassengers_IdAndStatus(userId, RideStatus.FINISHED);
+        assertEquals(1, finishedRides.size());
+        assertEquals(RideStatus.FINISHED, finishedRides.get(0).getStatus());
     }
 
     private Ride buildRide(RideStatus status, LocalDateTime timestamp) {
