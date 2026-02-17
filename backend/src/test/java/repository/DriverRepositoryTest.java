@@ -18,5 +18,76 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class DriverRepositoryTest {
 
-    
+    @Autowired
+    private DriverRepository driverRepository;
+
+    private String activeDriverId;
+    private String blockedDriverId;
+
+    @BeforeEach
+    void setUp() {
+        Driver active = buildDriver("active-" + UUID.randomUUID(), "active@test.com");
+        active.setStatus(DriverStatus.AVAILABLE);
+        active.setIsActive(true);
+        active.setIsBlocked(false);
+        active = driverRepository.save(active);
+        activeDriverId = active.getId();
+
+        Driver blocked = buildDriver("blocked-" + UUID.randomUUID(), "blocked@test.com");
+        blocked.setStatus(DriverStatus.AVAILABLE);
+        blocked.setIsActive(true);
+        blocked.setIsBlocked(true);
+        blocked = driverRepository.save(blocked);
+        blockedDriverId = blocked.getId();
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (activeDriverId != null) {
+            driverRepository.deleteById(activeDriverId);
+        }
+        if (blockedDriverId != null) {
+            driverRepository.deleteById(blockedDriverId);
+        }
+    }
+
+    @Test
+    void findAvailableDrivers_excludesBlockedAndInactive() {
+        List<Driver> available = driverRepository.findAvailableDrivers(DriverStatus.AVAILABLE);
+        assertFalse(available.isEmpty());
+        assertTrue(available.stream().allMatch(d -> d.getIsActive() && !d.getIsBlocked()));
+    }
+
+    @Test
+    void findFirstByStatusAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc_returnsActiveDriver() {
+        var result = driverRepository.findFirstByStatusAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(
+            DriverStatus.AVAILABLE
+        );
+        assertTrue(result.isPresent());
+        assertTrue(result.get().getIsActive());
+        assertFalse(result.get().getIsBlocked());
+    }
+
+    private Driver buildDriver(String userName, String email) {
+        Driver driver = new Driver();
+        driver.setFirstName("Test");
+        driver.setLastName("Driver");
+        driver.setUserName(userName);
+        driver.setEmail(email.replace("@", "+" + UUID.randomUUID() + "@"));
+        driver.setPassword("pass");
+        driver.setUserType(UserType.DRIVER);
+        driver.setIsActive(true);
+        driver.setIsBlocked(false);
+
+        Vehicle vehicle = new Vehicle();
+        vehicle.setVehicleModel("Model X");
+        vehicle.setType(VehicleType.STANDARD);
+        vehicle.setRegistrationPlate("TEST-" + UUID.randomUUID().toString().substring(0, 6));
+        vehicle.setSeats(4);
+        vehicle.setPetsAllowed(false);
+        vehicle.setBabiesAllowed(false);
+        driver.setVehicle(vehicle);
+
+        return driver;
+    }
 }
