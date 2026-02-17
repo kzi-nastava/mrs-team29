@@ -62,6 +62,34 @@ class RideControllerIT {
         driverId = driver.getId();
     }
 
+     @AfterEach
+    void tearDown() {
+        List<RideStatus> statuses = List.of(
+            RideStatus.REQUESTED,
+            RideStatus.ASSIGNED,
+            RideStatus.IN_PROGRESS,
+            RideStatus.FINISHED
+        );
+        for (RideStatus status : statuses) {
+            rideRepository.findByPassengers_IdAndStatus(creatorId, status)
+                .forEach(ride -> rideRepository.deleteById(ride.getId()));
+        }
+        if (driverId != null) {
+            driverRepository.deleteById(driverId);
+        }
+        if (pickupId != null) {
+            addressRepository.deleteById(pickupId);
+        }
+        if (destinationId != null) {
+            addressRepository.deleteById(destinationId);
+        }
+        if (creatorId != null) {
+            userRepository.deleteById(creatorId);
+        }
+    }
+
+    
+
     private RideOrderDTO buildOrderDto() {
         RideOrderDTO dto = new RideOrderDTO();
         dto.setCreatorId(creatorId);
