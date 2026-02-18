@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RideService } from '../../services/ride.service';
@@ -24,7 +24,8 @@ export class DriverHistoryComponent implements OnInit {
 
   constructor(
     private rideService: RideService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -37,6 +38,15 @@ export class DriverHistoryComponent implements OnInit {
   }
 
   loadRideHistory() {
+    if (this.loading) {
+      return;
+    }
+
+    if (this.startDate && this.endDate && this.startDate > this.endDate) {
+      this.errorMessage = 'Start date cannot be after end date.';
+      return;
+    }
+
     this.loading = true;
     this.errorMessage = '';
     
@@ -47,14 +57,22 @@ export class DriverHistoryComponent implements OnInit {
     ).subscribe({
       next: (rides) => {
         console.log('Driver ride history loaded:', rides);
-        this.rides = rides;
-        this.filteredRides = rides;
+        this.rides = Array.isArray(rides) ? [...rides] : [];
+        this.filteredRides = [...this.rides];
+        this.errorMessage = '';
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading driver ride history:', err);
-        this.errorMessage = err?.error?.message || err?.message || 'Failed to load ride history';
+        this.errorMessage = (typeof err?.error === 'string' && err.error)
+          || err?.error?.message
+          || err?.message
+          || 'Failed to load ride history';
+        this.rides = [];
+        this.filteredRides = [];
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

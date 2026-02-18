@@ -43,8 +43,15 @@ export class NavbarComponent {
 
   logout(): void {
     this.authService.logout().subscribe({
-      next: () => this.router.navigate(['/login']),
-      error: () => this.router.navigate(['/login'])
+      next: () => {
+        console.log('[Navbar] Logout successful');
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        console.error('[Navbar] Logout error:', err);
+        const errorMessage = err?.error?.message || err?.message || 'Cannot logout';
+        alert(errorMessage);
+      }
     });
   }
 }

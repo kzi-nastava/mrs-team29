@@ -53,19 +53,19 @@
     </div>
 
     <!-- Error Message -->
-    <div *ngIf="errorMessage" class="alert alert-danger">
+    <div *ngIf="errorMessage && filteredRides.length === 0" class="alert alert-danger">
       {{ errorMessage }}
     </div>
 
     <!-- No Rides Message -->
-    <div *ngIf="!loading && !errorMessage && filteredRides.length === 0" class="no-rides">
+    <div *ngIf="!loading && filteredRides.length === 0 && !errorMessage" class="no-rides">
       <div class="no-rides-icon">📋</div>
       <h2>No Rides Found</h2>
       <p>You don't have any completed rides yet.</p>
     </div>
 
     <!-- Rides Table -->
-    <div *ngIf="!loading && !errorMessage && filteredRides.length > 0">
+    <div *ngIf="!loading && filteredRides.length > 0">
       <div class="summary">
         <strong>Total Rides:</strong> {{ filteredRides.length }} &nbsp;&nbsp;|&nbsp;&nbsp;
         <strong>Total Earnings:</strong> {{ formatPrice(getTotalEarnings()) }}
@@ -87,12 +87,15 @@
             <td>{{ formatDate(ride.finishedAt || ride.createdAt) }}</td>
             <td class="address-cell">{{ ride.pickupAddress }}</td>
             <td class="address-cell">{{ ride.destinationAddress }}</td>
-            <td class="center">{{ ride.passengerIds.length || 0 }}</td>
+            <td class="center">{{ ride.passengerIds?.length || 0 }}</td>
             <td class="price-cell">{{ formatPrice(ride.price) }}</td>
             <td><span class="status completed">✓ Finished</span></td>
           </tr>
         </tbody>
       </table>
     </div>
+
+  </div>
+</div>
 
 

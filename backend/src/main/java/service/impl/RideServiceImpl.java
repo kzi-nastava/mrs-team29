@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -133,6 +134,10 @@ public class RideServiceImpl implements RideService {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
 
+        if (ride.getDriver() == null) {
+            throw new RuntimeException("Ride has no assigned driver");
+        }
+
         if (!ride.getDriver().getId().equals(driverId)) {
             throw new RuntimeException("Driver not assigned to this ride");
         }
@@ -142,7 +147,9 @@ public class RideServiceImpl implements RideService {
         }
 
         ride.setStatus(RideStatus.IN_PROGRESS);
-        List<LocalDateTime> timestamps = new ArrayList<>(ride.getTimestamps());
+        List<LocalDateTime> timestamps = ride.getTimestamps() == null
+            ? new ArrayList<>()
+            : new ArrayList<>(ride.getTimestamps());
         timestamps.add(LocalDateTime.now());
         ride.setTimestamps(timestamps);
 
@@ -162,6 +169,10 @@ public class RideServiceImpl implements RideService {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
 
+        if (ride.getDriver() == null) {
+            throw new RuntimeException("Ride has no assigned driver");
+        }
+
         if (!ride.getDriver().getId().equals(driverId)) {
             throw new RuntimeException("Driver not assigned to this ride");
         }
@@ -171,7 +182,9 @@ public class RideServiceImpl implements RideService {
         }
 
         ride.setStatus(RideStatus.FINISHED);
-        List<LocalDateTime> timestamps = new ArrayList<>(ride.getTimestamps());
+        List<LocalDateTime> timestamps = ride.getTimestamps() == null
+            ? new ArrayList<>()
+            : new ArrayList<>(ride.getTimestamps());
         timestamps.add(LocalDateTime.now());
         ride.setTimestamps(timestamps);
 
@@ -217,16 +230,23 @@ public class RideServiceImpl implements RideService {
 
     @Override
     public RideResponseDTO getDriverCurrentRide(String driverId) {
-        Optional<Ride> currentRide = rideRepository.findFirstByDriver_IdAndStatusInOrderByTimestampsDesc(
-                driverId,
-                List.of(RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
+        List<Ride> activeRides = rideRepository.findByDriver_IdAndStatusIn(
+            driverId,
+            List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
         );
 
-        if (currentRide.isEmpty()) {
+        if (activeRides.isEmpty()) {
             throw new RuntimeException("No active ride found for driver");
         }
 
-        return RideResponseDTO.fromRide(currentRide.get());
+        Ride currentRide = activeRides.stream()
+            .max(Comparator.comparing(
+                Ride::getScheduledTime,
+                Comparator.nullsLast(Comparator.naturalOrder())
+            ))
+            .orElse(activeRides.get(0));
+
+        return RideResponseDTO.fromRide(currentRide);
     }
 
     @Override
@@ -236,27 +256,41 @@ public class RideServiceImpl implements RideService {
     
     @Override
     public List<RideResponseDTO> getDriverRideHistory(String driverId, java.time.LocalDate startDate, java.time.LocalDate endDate) {
-        java.time.LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
-        java.time.LocalDateTime endDateTime = endDate != null ? endDate.atTime(23, 59, 59) : null;
-        
-        List<Ride> history;
-        if (startDateTime == null && endDateTime == null) {
-            history = rideRepository.findByDriver_IdAndStatusOrderByTimestampsDesc(
-                    driverId,
-                    RideStatus.FINISHED
-            );
-        } else {
-            history = rideRepository.findDriverRideHistoryByDateRange(
-                    driverId,
-                    RideStatus.FINISHED,
-                    startDateTime,
-                    endDateTime
-            );
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            throw new RuntimeException("Start date cannot be after end date");
         }
 
+        java.time.LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+        java.time.LocalDateTime endDateTime = endDate != null ? endDate.atTime(23, 59, 59) : null;
+
+        List<Ride> history = rideRepository.findByDriver_IdAndStatusOrderByTimestampsDesc(
+                driverId,
+                RideStatus.FINISHED
+        );
+
         return history.stream()
+                .filter(ride -> {
+                    LocalDateTime finishedAt = getRideFinishedAt(ride);
+                    if (finishedAt == null) {
+                        return startDateTime == null && endDateTime == null;
+                    }
+                    if (startDateTime != null && finishedAt.isBefore(startDateTime)) {
+                        return false;
+                    }
+                    if (endDateTime != null && finishedAt.isAfter(endDateTime)) {
+                        return false;
+                    }
+                    return true;
+                })
                 .map(RideResponseDTO::fromRide)
                 .collect(Collectors.toList());
+    }
+
+    private LocalDateTime getRideFinishedAt(Ride ride) {
+        if (ride.getTimestamps() == null || ride.getTimestamps().isEmpty()) {
+            return null;
+        }
+        return ride.getTimestamps().get(ride.getTimestamps().size() - 1);
     }
 
     @Override

@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RideService } from '../../services/ride.service';
 import { AuthService } from '../../services/auth.service';
@@ -31,21 +31,25 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private rideService: RideService,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.driverId = this.authService.getUserId();
+    console.log('[DriverRide] Component initialized. driverId:', this.driverId);
+    
     if (!this.driverId) {
       this.errorMessage = 'Please log in as a driver.';
       this.loading = false;
+      console.error('[DriverRide] No driverId found');
       return;
     }
+    
     this.loadCurrentRide();
     
     // Poll for updates every 10 seconds
     this.pollSubscription = interval(10000).subscribe(() => {
+      console.log('[DriverRide] Polling for ride updates');
       this.loadCurrentRide(true);
     });
   }
@@ -85,37 +89,35 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
   loadCurrentRide(silent = false) {
     if (!silent) {
       this.loading = true;
+      console.log('[DriverRide] Loading ride for driverId:', this.driverId, 'silent:', silent);
     }
     
     this.rideService.getDriverCurrentRide(this.driverId).subscribe({
       next: (ride) => {
+        console.log('[DriverRide] Ride loaded successfully:', ride);
         this.currentRide = ride;
         this.errorMessage = '';
+        this.loading = false;
+        this.cdr.markForCheck();
         
-        // Use ngZone to prevent change detection errors during async operations
-        this.ngZone.run(() => {
-          this.loading = false;
-          this.cdr.markForCheck();
-          
-          // Initialize map after data loads and template has been rendered
-          setTimeout(() => {
-            if (!this.map && document.getElementById('driver-map')) {
-              this.initializeMap();
-              if (this.map) {
-                this.updateMapMarkers();
-              }
+        // Initialize map after data loads and template has been rendered
+        setTimeout(() => {
+          if (!this.map && document.getElementById('driver-map')) {
+            console.log('[DriverRide] Initializing map after ride load');
+            this.initializeMap();
+            if (this.map) {
+              this.updateMapMarkers();
             }
-          }, 0);
-        });
+          }
+        }, 100);
       },
       error: (err) => {
+        console.error('[DriverRide] Error loading ride:', err);
         if (!silent) {
           this.currentRide = undefined;
-          this.ngZone.run(() => {
-            this.loading = false;
-            this.errorMessage = err?.error?.message || 'Failed to load current ride';
-            this.cdr.markForCheck();
-          });
+          this.loading = false;
+          this.errorMessage = err?.error?.message || err?.message || 'Failed to load current ride';
+          this.cdr.markForCheck();
         }
       }
     });
@@ -151,7 +153,10 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
         setTimeout(() => this.successMessage = '', 3000);
       },
       error: (err) => {
-        this.errorMessage = err.error?.message || 'Failed to start ride. Please try again.';
+        this.errorMessage = (typeof err?.error === 'string' && err.error)
+          || err?.error?.message
+          || err?.message
+          || 'Failed to start ride. Please try again.';
         this.loading = false;
       }
     });
@@ -174,7 +179,10 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
         }, 3000);
       },
       error: (err) => {
-        this.errorMessage = err.error?.message || 'Failed to finish ride. Please try again.';
+        this.errorMessage = (typeof err?.error === 'string' && err.error)
+          || err?.error?.message
+          || err?.message
+          || 'Failed to finish ride. Please try again.';
         this.loading = false;
       }
     });

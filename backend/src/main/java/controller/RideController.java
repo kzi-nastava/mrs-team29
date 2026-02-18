@@ -61,7 +61,10 @@ public class RideController {
             RideResponseDTO response = rideService.getDriverCurrentRide(driverId);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.ok(null); // No active ride
+            if ("No active ride found for driver".equals(e.getMessage())) {
+                return ResponseEntity.ok(null);
+            }
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

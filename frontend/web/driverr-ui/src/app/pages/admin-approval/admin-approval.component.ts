@@ -35,7 +35,8 @@ export class AdminApprovalComponent implements OnInit {
         this.profileChangeRequests = requests.filter(
           (request) => request.status === 'PENDING' || !request.status
         );
-        console.log('Filtered requests:', this.profileChangeRequests);\n        this.loading = false;
+        console.log('Filtered requests:', this.profileChangeRequests);
+        this.loading = false;
       },
       error: (error) => {
         console.error('Error loading admin approval requests:', error);

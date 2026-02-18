@@ -19,6 +19,7 @@ public interface RideRepository extends JpaRepository<Ride, String> {
     
     // Find driver's current active ride
     Optional<Ride> findFirstByDriver_IdAndStatusInOrderByTimestampsDesc(String driverId, List<RideStatus> statuses);
+    List<Ride> findByDriver_IdAndStatusIn(String driverId, List<RideStatus> statuses);
     
     // Find driver's ride history (finished rides)
     List<Ride> findByDriver_IdAndStatusOrderByTimestampsDesc(String driverId, RideStatus status);
