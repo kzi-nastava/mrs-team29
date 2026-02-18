@@ -27,6 +27,8 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
   errorMessage = '';
   loading = false;
   hasActiveRide = false;
+  assignedDriverName = '';
+  assignedDriverId = '';
 
   // Map properties
   map!: L.Map;
@@ -159,6 +161,8 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
     this.loading = true;
     this.errorMessage = '';
     this.message = '';
+    this.assignedDriverName = '';
+    this.assignedDriverId = '';
 
     const passengerEmails = this.rideForm.get('passengerIds')?.value;
     const passengerIds = passengerEmails
@@ -192,6 +196,8 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
       next: (res) => {
         this.loading = false;
         this.message = `Ride ordered! Price: ${res.price} RSD. Driver will arrive shortly.`;
+        this.assignedDriverName = res?.driverName || '';
+        this.assignedDriverId = res?.driverId || '';
         this.resetToDefault(true);
         this.checkActiveRide(); // Refresh active ride status
       },
@@ -223,16 +229,25 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
     }
 
     this.loading = true;
+    this.assignedDriverName = '';
+    this.assignedDriverId = '';
     this.favoriteRouteService.orderFromFavorite(routeId, this.creatorId).subscribe({
       next: (res: any) => {
         this.loading = false;
         this.message = `Ride ordered from favorite! Price: ${res.price || 'TBD'} RSD`;
+        this.assignedDriverName = res?.driverName || '';
+        this.assignedDriverId = res?.driverId || '';
         this.showFavorites = false;
         this.checkActiveRide();
       },
       error: (err: any) => {
+        console.error('[OrderRide] orderFromFavorite error:', err);
         this.loading = false;
-        this.errorMessage = err.error?.message || 'Failed to order from favorite';
+        this.errorMessage = (typeof err?.error === 'string' && err.error)
+          || err?.error?.message
+          || err?.error?.details
+          || err?.message
+          || 'Failed to order from favorite';
       }
     });
   }
@@ -479,6 +494,8 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
 
     if (!keepMessage) {
       this.message = '';
+      this.assignedDriverName = '';
+      this.assignedDriverId = '';
     } else {
       this.message = existingMessage;
     }

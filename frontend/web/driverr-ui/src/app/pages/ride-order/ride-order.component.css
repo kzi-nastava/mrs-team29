@@ -50,6 +50,11 @@
   border-left-color: #28a745;
 }
 
+.assigned-driver-info {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
 /* Order Form */
 .order-form {
   background: white;

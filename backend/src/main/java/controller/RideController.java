@@ -40,12 +40,25 @@ public class RideController {
     }
 
     @PostMapping("/favorites/{favoriteRouteId}")
-    public ResponseEntity<RideResponseDTO> orderFromFavorite(
+    public ResponseEntity<?> orderFromFavorite(
             @PathVariable String favoriteRouteId,
             @Valid @RequestBody FavoriteRideOrderDTO dto
     ) {
-        RideResponseDTO response = rideService.orderRideFromFavorite(favoriteRouteId, dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        if (dto.getClientId() == null || dto.getClientId().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Client ID is required"));
+        }
+
+        if (rideService.hasActiveRide(dto.getClientId())) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("message", "You already have an active ride. Please finish it before ordering a new one."));
+        }
+
+        try {
+            RideResponseDTO response = rideService.orderRideFromFavorite(favoriteRouteId, dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @GetMapping("/user/{userId}/active")

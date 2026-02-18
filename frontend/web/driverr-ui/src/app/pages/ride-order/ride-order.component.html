@@ -16,6 +16,10 @@
     <!-- Success Message -->
     <div *ngIf="message" class="alert alert-success" data-testid="ride-order-success">
       {{ message }}
+      <div *ngIf="assignedDriverName || assignedDriverId" class="assigned-driver-info">
+        <strong>Assigned Driver:</strong>
+        <span>{{ assignedDriverName || assignedDriverId }}</span>
+      </div>
       <button type="button" class="secondary-btn" (click)="resetToDefault()" data-testid="ride-order-reset">Reset</button>
     </div>
 

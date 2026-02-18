@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FavoriteRouteService } from '../../services/favorite-route.service';
@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { RideService } from '../../services/ride.service';
 import * as L from 'leaflet';
 import { forkJoin } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-favorite-routes',
@@ -50,7 +51,8 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
     private favoriteRouteService: FavoriteRouteService,
     private mapService: MapService,
     private authService: AuthService,
-    private rideService: RideService
+    private rideService: RideService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -101,19 +103,33 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
     if (!this.userId) {
       return;
     }
+
+    if (this.loading) {
+      return;
+    }
+
     this.loading = true;
-    this.favoriteRouteService.getMyFavorites(this.userId).subscribe({
-      next: (routes) => {
-        console.log('Favorite routes loaded:', routes);
-        this.favoriteRoutes = routes;
+    this.errorMessage = '';
+
+    this.favoriteRouteService.getMyFavorites(this.userId)
+      .pipe(finalize(() => {
         this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading favorite routes:', error);
-        this.loading = false;
-        this.errorMessage = error?.error?.message || error?.message || 'Failed to load favorite routes';
-      }
-    });
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: (routes) => {
+          console.log('Favorite routes loaded:', routes);
+          this.favoriteRoutes = Array.isArray(routes) ? [...routes] : [];
+          this.errorMessage = '';
+        },
+        error: (error) => {
+          console.error('Error loading favorite routes:', error);
+          this.errorMessage = (typeof error?.error === 'string' && error.error)
+            || error?.error?.message
+            || error?.message
+            || 'Failed to load favorite routes';
+        }
+      });
   }
 
   checkActiveRide() {
@@ -229,16 +245,49 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
     this.ordering = true;
     this.errorMessage = '';
     this.message = '';
-    this.favoriteRouteService.orderFromFavorite(routeId, this.userId).subscribe({
-      next: () => {
-        this.ordering = false;
-        this.message = 'Ride ordered from favorite route!';
-        this.checkActiveRide();
-        setTimeout(() => this.message = '', 3000);
+
+    this.rideService.hasActiveRide(this.userId).subscribe({
+      next: (hasActive) => {
+        this.hasActiveRide = hasActive;
+        if (hasActive) {
+          this.ordering = false;
+          this.errorMessage = 'You already have an active ride. Please finish it before ordering a new one.';
+          return;
+        }
+
+        this.favoriteRouteService.orderFromFavorite(routeId, this.userId).subscribe({
+          next: () => {
+            this.ordering = false;
+            this.message = 'Ride ordered from favorite route!';
+            this.checkActiveRide();
+            setTimeout(() => this.message = '', 3000);
+          },
+          error: (error) => {
+            console.error('[FavoriteRoutes] orderFromFavorite error:', error);
+            this.ordering = false;
+            let parsedBodyMessage = '';
+            if (typeof error?.error === 'string') {
+              try {
+                const parsed = JSON.parse(error.error);
+                parsedBodyMessage = parsed?.message || parsed?.error || '';
+              } catch {
+                parsedBodyMessage = error.error;
+              }
+            }
+
+            this.errorMessage = parsedBodyMessage
+              || error?.error?.message
+              || error?.error?.details
+              || error?.error?.error
+              || error?.message
+              || 'Failed to order from favorite route';
+          }
+        });
       },
       error: (error) => {
+        console.error('[FavoriteRoutes] pre-check hasActiveRide error:', error);
         this.ordering = false;
-        this.errorMessage = error.error?.message || 'Failed to order from favorite route';
+        this.errorMessage = 'Could not verify active ride status. Please try again.';
       }
     });
   }
