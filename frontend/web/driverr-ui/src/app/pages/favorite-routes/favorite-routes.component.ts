@@ -104,12 +104,14 @@ export class FavoriteRoutesComponent implements OnInit, AfterViewInit {
     this.loading = true;
     this.favoriteRouteService.getMyFavorites(this.userId).subscribe({
       next: (routes) => {
+        console.log('Favorite routes loaded:', routes);
         this.favoriteRoutes = routes;
         this.loading = false;
       },
       error: (error) => {
+        console.error('Error loading favorite routes:', error);
         this.loading = false;
-        this.errorMessage = 'Failed to load favorite routes';
+        this.errorMessage = error?.error?.message || error?.message || 'Failed to load favorite routes';
       }
     });
   }

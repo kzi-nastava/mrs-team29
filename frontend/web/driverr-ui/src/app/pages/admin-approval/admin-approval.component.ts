@@ -27,14 +27,20 @@ export class AdminApprovalComponent implements OnInit {
     this.loading = true;
     this.profileService.getAllPendingProfileChangeRequests().subscribe({
       next: (requests) => {
+        console.log('Admin approval requests loaded:', requests);
+        console.log('Total requests:', requests.length);
+        if (requests.length > 0) {
+          console.log('First request structure:', JSON.stringify(requests[0], null, 2));
+        }
         this.profileChangeRequests = requests.filter(
           (request) => request.status === 'PENDING' || !request.status
         );
-        this.loading = false;
+        console.log('Filtered requests:', this.profileChangeRequests);\n        this.loading = false;
       },
       error: (error) => {
+        console.error('Error loading admin approval requests:', error);
         this.loading = false;
-        this.message = 'Failed to load requests';
+        this.message = error?.error?.message || error?.message || 'Failed to load requests';
         this.messageType = 'error';
       }
     });

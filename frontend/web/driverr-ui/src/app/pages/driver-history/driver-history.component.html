@@ -87,7 +87,7 @@
             <td>{{ formatDate(ride.finishedAt || ride.createdAt) }}</td>
             <td class="address-cell">{{ ride.pickupAddress }}</td>
             <td class="address-cell">{{ ride.destinationAddress }}</td>
-            <td class="center">{{ ride.passengerIds?.length || 0 }}</td>
+            <td class="center">{{ ride.passengerIds.length || 0 }}</td>
             <td class="price-cell">{{ formatPrice(ride.price) }}</td>
             <td><span class="status completed">✓ Finished</span></td>
           </tr>

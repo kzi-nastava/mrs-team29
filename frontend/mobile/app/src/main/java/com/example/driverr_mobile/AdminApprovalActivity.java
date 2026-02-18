@@ -14,15 +14,19 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.driverr_mobile.data.model.ProfileChangeRequest;
+import com.example.driverr_mobile.data.model.ApiResponse;
 import com.example.driverr_mobile.data.network.ApiClient;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AdminApprovalActivity extends AppCompatActivity {
 
     private final List<ProfileChangeRequest> requests = new ArrayList<>();
+    private final Set<String> processingRequestIds = new HashSet<>();
 
     private LinearLayout requestContainer;
     private TextView emptyState;
@@ -118,25 +122,35 @@ public class AdminApprovalActivity extends AppCompatActivity {
             return;
         }
 
-        retrofit2.Call<Object> call = approve
+        // Prevent duplicate requests if already processing this requestId
+        if (processingRequestIds.contains(requestId)) {
+            Toast.makeText(this, "Request in progress...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        processingRequestIds.add(requestId);
+
+        retrofit2.Call<ApiResponse<String>> call = approve
                 ? ApiClient.getAdminApi().approveProfileChangeRequest(requestId)
                 : ApiClient.getAdminApi().rejectProfileChangeRequest(requestId);
 
-        call.enqueue(new retrofit2.Callback<Object>() {
+        call.enqueue(new retrofit2.Callback<ApiResponse<String>>() {
             @Override
-            public void onResponse(retrofit2.Call<Object> call, retrofit2.Response<Object> response) {
-                if (response.isSuccessful()) {
-                    String message = approve ? "Request approved" : "Request rejected";
+            public void onResponse(retrofit2.Call<ApiResponse<String>> call, retrofit2.Response<ApiResponse<String>> response) {
+                processingRequestIds.remove(requestId);
+                if (response.isSuccessful() && response.body() != null) {
+                    String message = approve ? "Approved successfully" : "Rejected successfully";
                     Toast.makeText(AdminApprovalActivity.this, message, Toast.LENGTH_SHORT).show();
                     removeRequest(requestId);
                 } else {
-                    Toast.makeText(AdminApprovalActivity.this, "Action failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AdminApprovalActivity.this, "Failed to process request", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(retrofit2.Call<Object> call, Throwable t) {
-                Toast.makeText(AdminApprovalActivity.this, "Network error", Toast.LENGTH_SHORT).show();
+            public void onFailure(retrofit2.Call<ApiResponse<String>> call, Throwable t) {
+                processingRequestIds.remove(requestId);
+                Toast.makeText(AdminApprovalActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RideService } from '../../services/ride.service';
 import { AuthService } from '../../services/auth.service';
@@ -30,7 +30,9 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private rideService: RideService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit() {
@@ -49,7 +51,8 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.initializeMap();
+    // Map will be initialized after data loads in loadCurrentRide
+    // This prevents "Map container not found" error
   }
 
   ngOnDestroy() {
@@ -59,13 +62,24 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   initializeMap() {
-    // Default center: Novi Sad, Serbia
-    this.map = L.map('driver-map').setView([45.2671, 19.8335], 13);
+    // Guard: check if element exists
+    const mapElement = document.getElementById('driver-map');
+    if (!mapElement) {
+      console.error('Map container element not found');
+      return;
+    }
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19
-    }).addTo(this.map);
+    try {
+      // Default center: Novi Sad, Serbia
+      this.map = L.map('driver-map').setView([45.2671, 19.8335], 13);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(this.map);
+    } catch (error) {
+      console.error('Error initializing map:', error);
+    }
   }
 
   loadCurrentRide(silent = false) {
@@ -76,19 +90,32 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
     this.rideService.getDriverCurrentRide(this.driverId).subscribe({
       next: (ride) => {
         this.currentRide = ride;
-        this.loading = false;
         this.errorMessage = '';
         
-        // Update map markers if map is initialized
-        if (this.map) {
-          this.updateMapMarkers();
-        }
+        // Use ngZone to prevent change detection errors during async operations
+        this.ngZone.run(() => {
+          this.loading = false;
+          this.cdr.markForCheck();
+          
+          // Initialize map after data loads and template has been rendered
+          setTimeout(() => {
+            if (!this.map && document.getElementById('driver-map')) {
+              this.initializeMap();
+              if (this.map) {
+                this.updateMapMarkers();
+              }
+            }
+          }, 0);
+        });
       },
       error: (err) => {
         if (!silent) {
           this.currentRide = undefined;
-          this.loading = false;
-          this.errorMessage = '';
+          this.ngZone.run(() => {
+            this.loading = false;
+            this.errorMessage = err?.error?.message || 'Failed to load current ride';
+            this.cdr.markForCheck();
+          });
         }
       }
     });

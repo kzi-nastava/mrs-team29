@@ -46,12 +46,14 @@ export class DriverHistoryComponent implements OnInit {
       this.endDate || undefined
     ).subscribe({
       next: (rides) => {
+        console.log('Driver ride history loaded:', rides);
         this.rides = rides;
         this.filteredRides = rides;
         this.loading = false;
       },
       error: (err) => {
-        this.errorMessage = 'Failed to load ride history';
+        console.error('Error loading driver ride history:', err);
+        this.errorMessage = err?.error?.message || err?.message || 'Failed to load ride history';
         this.loading = false;
       }
     });

@@ -1,5 +1,6 @@
 package com.example.driverr_mobile.data.network;
 
+import com.example.driverr_mobile.data.model.ApiResponse;
 import com.example.driverr_mobile.data.model.ProfileChangeRequest;
 
 import java.util.List;
@@ -15,8 +16,8 @@ public interface AdminApi {
     Call<List<ProfileChangeRequest>> getPendingProfileChangeRequests();
 
     @POST("admin/profile-change-requests/{requestId}/approve")
-    Call<Object> approveProfileChangeRequest(@Path("requestId") String requestId);
+    Call<ApiResponse<String>> approveProfileChangeRequest(@Path("requestId") String requestId);
 
     @POST("admin/profile-change-requests/{requestId}/reject")
-    Call<Object> rejectProfileChangeRequest(@Path("requestId") String requestId);
+    Call<ApiResponse<String>> rejectProfileChangeRequest(@Path("requestId") String requestId);
 }

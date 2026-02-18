@@ -89,11 +89,11 @@ import {
   ɵɵdefineInjector,
   ɵɵinject
 } from "./chunk-2WTNAIY7.js";
-import "./chunk-D5HPMNDN.js";
 import {
   defer,
   isObservable
 } from "./chunk-53B2AV33.js";
+import "./chunk-D5HPMNDN.js";
 import {
   BehaviorSubject,
   EMPTY,
