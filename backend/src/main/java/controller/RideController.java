@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import service.RideService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/rides")
@@ -27,11 +28,15 @@ public class RideController {
         // Check if user already has an active ride
         if (rideService.hasActiveRide(dto.getCreatorId())) {
             return ResponseEntity.badRequest()
-                .body("You already have an active ride. Please finish it before ordering a new one.");
+                .body(Map.of("message", "You already have an active ride. Please finish it before ordering a new one."));
         }
-        
-        RideResponseDTO response = rideService.orderRide(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        try {
+            RideResponseDTO response = rideService.orderRide(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/favorites/{favoriteRouteId}")
@@ -77,7 +82,7 @@ public class RideController {
             RideResponseDTO response = rideService.startRide(rideId, driverId);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
         }
     }
 
@@ -90,7 +95,7 @@ public class RideController {
             RideResponseDTO response = rideService.finishRide(rideId, driverId);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
         }
     }
 

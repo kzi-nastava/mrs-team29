@@ -91,18 +91,20 @@
       <div class="action-buttons">
         <button 
           *ngIf="canStartRide()" 
+          type="button"
           class="btn btn-start"
           [disabled]="loading"
-          (click)="startRide()"
+          (click)="startRide($event)"
         >
           🚀 Start Ride
         </button>
 
         <button 
           *ngIf="canFinishRide()" 
+          type="button"
           class="btn btn-finish"
           [disabled]="loading"
-          (click)="finishRide()"
+          (click)="finishRide($event)"
         >
           ✅ Finish Ride
         </button>

@@ -2,6 +2,7 @@ package repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -32,4 +33,5 @@ public interface DriverRepository extends JpaRepository<Driver, String> {
     Optional<Driver> findActiveDriverById(@Param("driverId") String driverId);
 
     Optional<Driver> findFirstByStatusAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(DriverStatus status);
+    Optional<Driver> findFirstByStatusInAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(Collection<DriverStatus> statuses);
 }

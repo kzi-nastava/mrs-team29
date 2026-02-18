@@ -1,10 +1,12 @@
 package dto.ride;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import domain.enums.VehicleType;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RideOrderDTO {
 
     @NotBlank(message = "Creator ID is required")
@@ -22,6 +24,7 @@ public class RideOrderDTO {
     private VehicleType vehicleType;
     private boolean pets;
     private boolean baby;
+    private String notes;
     
     private LocalDateTime scheduledTime;  // null = immediate, otherwise future ride
 
@@ -35,6 +38,7 @@ public class RideOrderDTO {
     public VehicleType getVehicleType() { return vehicleType; }
     public boolean isPets() { return pets; }
     public boolean isBaby() { return baby; }
+    public String getNotes() { return notes; }
     public LocalDateTime getScheduledTime() { return scheduledTime; }
 
     public void setCreatorId(String creatorId) { this.creatorId = creatorId; }
@@ -45,5 +49,6 @@ public class RideOrderDTO {
     public void setVehicleType(VehicleType vehicleType) { this.vehicleType = vehicleType; }
     public void setPets(boolean pets) { this.pets = pets; }
     public void setBaby(boolean baby) { this.baby = baby; }
+    public void setNotes(String notes) { this.notes = notes; }
     public void setScheduledTime(LocalDateTime scheduledTime) { this.scheduledTime = scheduledTime; }
 }

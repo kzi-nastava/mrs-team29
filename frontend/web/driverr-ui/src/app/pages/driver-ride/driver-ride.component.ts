@@ -27,6 +27,7 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
   RideStatus = RideStatus;
   
   private pollSubscription?: Subscription;
+  private actionInProgress = false;
 
   constructor(
     private rideService: RideService,
@@ -49,6 +50,9 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
     
     // Poll for updates every 10 seconds
     this.pollSubscription = interval(10000).subscribe(() => {
+      if (this.actionInProgress) {
+        return;
+      }
       console.log('[DriverRide] Polling for ride updates');
       this.loadCurrentRide(true);
     });
@@ -139,9 +143,13 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
     // In a real implementation, you'd parse coordinates from the address
   }
 
-  startRide() {
+  startRide(event?: Event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+
     if (!this.currentRide) return;
-    
+
+    this.actionInProgress = true;
     this.loading = true;
     this.errorMessage = '';
     
@@ -150,21 +158,30 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
         this.currentRide = updatedRide;
         this.successMessage = 'Ride started! Drive safely.';
         this.loading = false;
+        this.actionInProgress = false;
         setTimeout(() => this.successMessage = '', 3000);
       },
       error: (err) => {
+        console.error('[DriverRide] startRide error:', err);
         this.errorMessage = (typeof err?.error === 'string' && err.error)
           || err?.error?.message
+          || err?.error?.details
+          || err?.error?.error
           || err?.message
           || 'Failed to start ride. Please try again.';
         this.loading = false;
+        this.actionInProgress = false;
       }
     });
   }
 
-  finishRide() {
+  finishRide(event?: Event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+
     if (!this.currentRide) return;
-    
+
+    this.actionInProgress = true;
     this.loading = true;
     this.errorMessage = '';
     
@@ -173,17 +190,22 @@ export class DriverRideComponent implements OnInit, AfterViewInit, OnDestroy {
         this.successMessage = 'Ride completed! Payment has been processed.';
         this.currentRide = undefined;
         this.loading = false;
+        this.actionInProgress = false;
         setTimeout(() => {
           this.successMessage = '';
           this.loadCurrentRide();
         }, 3000);
       },
       error: (err) => {
+        console.error('[DriverRide] finishRide error:', err);
         this.errorMessage = (typeof err?.error === 'string' && err.error)
           || err?.error?.message
+          || err?.error?.details
+          || err?.error?.error
           || err?.message
           || 'Failed to finish ride. Please try again.';
         this.loading = false;
+        this.actionInProgress = false;
       }
     });
   }

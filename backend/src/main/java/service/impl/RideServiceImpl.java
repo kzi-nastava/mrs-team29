@@ -3,6 +3,7 @@ package service.impl;
 import dto.ride.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,12 @@ import repository.*;
 @Service
 @SuppressWarnings("null")
 public class RideServiceImpl implements RideService {
+
+    private static final ZoneId APP_ZONE = ZoneId.of("Europe/Belgrade");
+
+    private LocalDateTime nowInAppZone() {
+        return LocalDateTime.now(APP_ZONE);
+    }
 
 	private final RideRepository rideRepository;
     private final UserRepository userRepository;
@@ -57,7 +64,7 @@ public class RideServiceImpl implements RideService {
         
         // Validate scheduled time (max 5 hours in future)
         if (dto.getScheduledTime() != null) {
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = nowInAppZone();
             LocalDateTime maxScheduleTime = now.plusHours(5);
             
             if (dto.getScheduledTime().isBefore(now)) {
@@ -85,13 +92,16 @@ public class RideServiceImpl implements RideService {
         
         if (dto.getPassengerIds() != null && !dto.getPassengerIds().isEmpty()) {
             List<User> linkedPassengers = dto.getPassengerIds().stream()
-                .map(id -> userRepository.findById(id).orElseThrow(() -> 
-                    new RuntimeException("Passenger not found: " + id)))
+                .map(ref -> userRepository.findById(ref)
+                    .or(() -> userRepository.findByEmail(ref))
+                    .orElseThrow(() -> new RuntimeException("Passenger not found: " + ref)))
                 .collect(Collectors.toList());
             passengers.addAll(linkedPassengers);
         }
 
-        Driver driver = driverRepository.findFirstByStatusAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(DriverStatus.AVAILABLE)
+        Driver driver = driverRepository.findFirstByStatusInAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(
+            List.of(DriverStatus.AVAILABLE, DriverStatus.ACTIVE)
+        )
                 .orElseThrow(() -> new RuntimeException("No available drivers"));
 
         // Assign driver and update their status
@@ -112,7 +122,7 @@ public class RideServiceImpl implements RideService {
         double distanceKm = calculateDistance(pickup, destination);
         ride.setPrice(basePrice + (distanceKm * 120));
         
-        ride.setTimestamps(List.of(LocalDateTime.now()));
+        ride.setTimestamps(List.of(nowInAppZone()));
 
         rideRepository.save(ride);
 
@@ -146,11 +156,16 @@ public class RideServiceImpl implements RideService {
             throw new RuntimeException("Ride cannot be started. Current status: " + ride.getStatus());
         }
 
+        LocalDateTime now = nowInAppZone();
+        if (ride.getScheduledTime() != null && now.isBefore(ride.getScheduledTime().minusMinutes(1))) {
+            throw new RuntimeException("Ride cannot be started before scheduled time");
+        }
+
         ride.setStatus(RideStatus.IN_PROGRESS);
         List<LocalDateTime> timestamps = ride.getTimestamps() == null
             ? new ArrayList<>()
             : new ArrayList<>(ride.getTimestamps());
-        timestamps.add(LocalDateTime.now());
+        timestamps.add(nowInAppZone());
         ride.setTimestamps(timestamps);
 
         // Update driver status
@@ -185,7 +200,7 @@ public class RideServiceImpl implements RideService {
         List<LocalDateTime> timestamps = ride.getTimestamps() == null
             ? new ArrayList<>()
             : new ArrayList<>(ride.getTimestamps());
-        timestamps.add(LocalDateTime.now());
+        timestamps.add(nowInAppZone());
         ride.setTimestamps(timestamps);
 
         Driver driver = ride.getDriver();
@@ -206,7 +221,9 @@ public class RideServiceImpl implements RideService {
         User creator = userRepository.findById(dto.getClientId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Driver driver = driverRepository.findFirstByStatusAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(DriverStatus.AVAILABLE)
+        Driver driver = driverRepository.findFirstByStatusInAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(
+            List.of(DriverStatus.AVAILABLE, DriverStatus.ACTIVE)
+        )
                 .orElseThrow(() -> new RuntimeException("No available drivers"));
 
         // Assign driver and update their status
@@ -221,7 +238,7 @@ public class RideServiceImpl implements RideService {
         ride.setDriver(driver);
         ride.setStatus(RideStatus.ASSIGNED);
         ride.setPrice(700);
-        ride.setTimestamps(List.of(LocalDateTime.now()));
+        ride.setTimestamps(List.of(nowInAppZone()));
 
         rideRepository.save(ride);
 
@@ -235,16 +252,32 @@ public class RideServiceImpl implements RideService {
             List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
         );
 
-        if (activeRides.isEmpty()) {
+        LocalDateTime now = nowInAppZone();
+
+        List<Ride> visibleRides = activeRides.stream()
+            .filter(ride -> {
+                if (ride.getStatus() == RideStatus.IN_PROGRESS) {
+                    return true;
+                }
+
+                if (ride.getScheduledTime() == null) {
+                    return true;
+                }
+
+                return !ride.getScheduledTime().isAfter(now.plusMinutes(1));
+            })
+            .collect(Collectors.toList());
+
+        if (visibleRides.isEmpty()) {
             throw new RuntimeException("No active ride found for driver");
         }
 
-        Ride currentRide = activeRides.stream()
+        Ride currentRide = visibleRides.stream()
             .max(Comparator.comparing(
                 Ride::getScheduledTime,
                 Comparator.nullsLast(Comparator.naturalOrder())
             ))
-            .orElse(activeRides.get(0));
+            .orElse(visibleRides.get(0));
 
         return RideResponseDTO.fromRide(currentRide);
     }

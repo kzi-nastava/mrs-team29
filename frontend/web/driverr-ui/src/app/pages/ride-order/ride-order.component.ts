@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { RideService } from '../../services/ride.service';
 import { FavoriteRouteService } from '../../services/favorite-route.service';
 import { MapService, AddressResponse, RouteResult } from '../../services/map.service';
@@ -52,7 +52,8 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
     private rideService: RideService,
     private favoriteRouteService: FavoriteRouteService,
     private mapService: MapService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -160,7 +161,17 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
     this.message = '';
 
     const passengerEmails = this.rideForm.get('passengerIds')?.value;
-    const passengerIds = passengerEmails ? passengerEmails.split(',').map((e: string) => e.trim()) : [];
+    const passengerIds = passengerEmails
+      ? passengerEmails
+          .split(',')
+          .map((entry: string) => entry.trim())
+          .filter((entry: string) => entry.length > 0)
+      : [];
+
+    const rawScheduledTime = this.rideForm.get('scheduledTime')?.value as string | null;
+    const scheduledTime = rawScheduledTime
+      ? (rawScheduledTime.length === 16 ? `${rawScheduledTime}:00` : rawScheduledTime)
+      : null;
 
     const dto = {
       creatorId: this.creatorId,
@@ -168,12 +179,14 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
       destinationAddressId: this.rideForm.get('destinationAddressId')?.value,
       stopAddressIds: [],
       vehicleType: this.rideForm.get('vehicleType')?.value,
-      scheduledTime: this.rideForm.get('scheduledTime')?.value || null,
+      scheduledTime,
       passengerIds: passengerIds,
       pets: this.rideForm.get('pets')?.value,
       baby: this.rideForm.get('baby')?.value,
       notes: this.rideForm.get('notes')?.value
     };
+
+    console.log('[OrderRide] request payload:', dto);
 
     this.rideService.orderRide(dto).subscribe({
       next: (res) => {
@@ -183,8 +196,18 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
         this.checkActiveRide(); // Refresh active ride status
       },
       error: (err) => {
+        console.error('[OrderRide] orderRide error:', err);
         this.loading = false;
-        this.errorMessage = err.error?.message || 'Failed to order ride';
+        const validationErrors = err?.error?.errors
+          ? Object.values(err.error.errors).join(' | ')
+          : '';
+
+        this.errorMessage = (typeof err?.error === 'string' && err.error)
+          || err?.error?.message
+          || err?.error?.details
+          || validationErrors
+          || err?.message
+          || 'Failed to order ride';
       }
     });
   }
@@ -265,16 +288,19 @@ export class OrderRideComponent implements OnInit, AfterViewInit {
     const target = this.resolveSelectionTarget();
     this.mapService.reverseGeocodeAndSave(lat, lng).subscribe({
       next: (address) => {
-        this.loading = false;
+        setTimeout(() => {
+          this.loading = false;
 
-        if (target === 'pickup') {
-          this.setPickupAddress(address);
-        } else {
-          this.setDestinationAddress(address);
-        }
+          if (target === 'pickup') {
+            this.setPickupAddress(address);
+          } else {
+            this.setDestinationAddress(address);
+          }
 
-        this.clearSelectingForDeferred();
-        this.clearErrorMessageDeferred();
+          this.clearSelectingForDeferred();
+          this.clearErrorMessageDeferred();
+          this.cdr.detectChanges();
+        }, 0);
       },
       error: (err) => {
         this.loading = false;
