@@ -266,7 +266,7 @@ public class DriverRideActivity extends AppCompatActivity implements OnMapReadyC
                         noRideMessage.setVisibility(View.VISIBLE);
                         
                         // Reload after 2 seconds
-                        new Handler(Looper.getMainLooper()).postDelayed(this::loadCurrentRide, 2000);
+                        new Handler(Looper.getMainLooper()).postDelayed(DriverRideActivity.this::loadCurrentRide, 2000);
                     } else {
                         Toast.makeText(DriverRideActivity.this, "Failed to finish ride", Toast.LENGTH_SHORT).show();
                         finishRideBtn.setEnabled(true);

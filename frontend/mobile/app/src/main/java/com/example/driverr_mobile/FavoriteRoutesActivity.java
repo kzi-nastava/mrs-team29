@@ -298,16 +298,13 @@ public class FavoriteRoutesActivity extends AppCompatActivity implements OnMapRe
 
     private void geocodeAddress(boolean pickup) {
         TextInputEditText sourceInput = pickup ? pickupInput : destinationInput;
-        String query = textOf(sourAddressData = address;
-                            pickupSelected.setText(display);
-                            addPickupMarker(new LatLng(address.getLatitude(), address.getLongitude()), display);
-                        } else {
-                            destinationAddressId = address.getId();
-                            destinationAddressData = address;
-                            destinationSelected.setText(display);
-                            addDestinationMarker(new LatLng(address.getLatitude(), address.getLongitude()), 
+        String query = textOf(sourceInput);
+        if (query.isEmpty()) {
+            showError((pickup ? "Pickup" : "Destination") + " address is required");
+            return;
         }
 
+        hideMessages();
         setSaving(true);
         ApiClient.getAddressApi().geocodeAndSave(new GeocodeRequest(query))
                 .enqueue(new retrofit2.Callback<AddressResponse>() {
@@ -324,12 +321,17 @@ public class FavoriteRoutesActivity extends AppCompatActivity implements OnMapRe
                         if (display == null || display.isBlank()) {
                             display = address.getStreet() + " " + address.getStreetNumber();
                         }
+                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
                         if (pickup) {
                             pickupAddressId = address.getId();
+                            pickupAddressData = address;
                             pickupSelected.setText(display);
+                            addPickupMarker(latLng, display);
                         } else {
                             destinationAddressId = address.getId();
+                            destinationAddressData = address;
                             destinationSelected.setText(display);
+                            addDestinationMarker(latLng, display);
                         }
                     }
 

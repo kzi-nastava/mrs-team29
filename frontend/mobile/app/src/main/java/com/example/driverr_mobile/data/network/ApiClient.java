@@ -19,6 +19,10 @@ public final class ApiClient {
 
     private ApiClient() {}
 
+    public static Retrofit getInstance() {
+        return getRetrofit();
+    }
+
     public static AuthApi getAuthApi() {
         if (authApi == null) {
             authApi = getRetrofit().create(AuthApi.class);

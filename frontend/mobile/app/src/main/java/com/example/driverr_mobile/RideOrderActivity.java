@@ -143,6 +143,57 @@ public class RideOrderActivity extends AppCompatActivity implements OnMapReadyCa
                 });
     }
 
+    private void geocodeAddress(boolean pickup) {
+        TextInputEditText sourceInput = pickup ? pickupInput : destinationInput;
+        String query = textOf(sourceInput);
+
+        if (query.isEmpty()) {
+            Toast.makeText(this,
+                    (pickup ? "Pickup" : "Destination") + " address is required",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        setLoading(true);
+        ApiClient.getAddressApi().geocodeAndSave(new GeocodeRequest(query))
+                .enqueue(new retrofit2.Callback<AddressResponse>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<AddressResponse> call,
+                                           retrofit2.Response<AddressResponse> response) {
+                        setLoading(false);
+                        if (!response.isSuccessful() || response.body() == null) {
+                            Toast.makeText(RideOrderActivity.this, "Address not found", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        AddressResponse address = response.body();
+                        String display = address.getDisplayName();
+                        if (display == null || display.isBlank()) {
+                            display = address.getStreet() + " " + address.getStreetNumber();
+                        }
+
+                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+                        if (pickup) {
+                            pickupAddressId = address.getId();
+                            pickupAddressData = address;
+                            pickupSelected.setText(display);
+                            addPickupMarker(latLng, display);
+                        } else {
+                            destinationAddressId = address.getId();
+                            destinationAddressData = address;
+                            destinationSelected.setText(display);
+                            addDestinationMarker(latLng, display);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<AddressResponse> call, Throwable t) {
+                        setLoading(false);
+                        Toast.makeText(RideOrderActivity.this, "Network error while searching address", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
     private void reverseGeocodeLocation(LatLng latLng) {
         // Reverse geocode using Nominatim API
         // Format: reverse geocode by lat/lng to get address
