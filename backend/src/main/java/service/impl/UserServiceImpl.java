@@ -15,6 +15,7 @@ import service.UserService;
 import service.EmailService;
 import repository.*;
 import utils.AddressParser;
+import utils.JwtService;
 
 @Service
 @SuppressWarnings("null")
@@ -27,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final ActivationTokenRepository activationTokenRepository;
     private final RideRepository rideRepository;
     private final EmailService emailService;
+    private final JwtService jwtService;
     
     private static final String DEFAULT_PROFILE_PICTURE = "https://via.placeholder.com/150";
 
@@ -36,7 +38,8 @@ public class UserServiceImpl implements UserService {
                            AddressRepository addressRepository,
                            ActivationTokenRepository activationTokenRepository,
                            RideRepository rideRepository,
-                           EmailService emailService) {
+                           EmailService emailService,
+                           JwtService jwtService) {
         this.userRepository = userRepository;
         this.profileChangeRequestRepository = profileChangeRequestRepository;
         this.driverRepository = driverRepository;
@@ -44,6 +47,7 @@ public class UserServiceImpl implements UserService {
         this.activationTokenRepository = activationTokenRepository;
         this.rideRepository = rideRepository;
         this.emailService = emailService;
+        this.jwtService = jwtService;
     }
     
     // ==================== Authentication Methods ====================
@@ -85,8 +89,9 @@ public class UserServiceImpl implements UserService {
         response.setEmail(user.getEmail());
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
-        response.setRole(user.getUserType() != null ? user.getUserType().name() : "USER");
-        response.setToken("mock-jwt-token-" + UUID.randomUUID());
+        String role = user.getUserType() != null ? user.getUserType().name() : "USER";
+        response.setRole(role);
+        response.setToken(jwtService.generateToken(user.getId(), role));
         
         if (driver != null) {
             response.setDriver(true);

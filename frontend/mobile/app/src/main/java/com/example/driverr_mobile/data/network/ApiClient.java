@@ -74,6 +74,7 @@ public final class ApiClient {
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
             OkHttpClient client = new OkHttpClient.Builder()
+                    .addInterceptor(new AuthTokenInterceptor())
                     .addInterceptor(logging)
                     .build();
 

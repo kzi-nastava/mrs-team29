@@ -6,6 +6,7 @@ import domain.enums.*;
 import repository.*;
 import service.AuthService;
 import service.EmailService;
+import utils.JwtService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class AuthServiceImpl implements AuthService {
     private final ActivationTokenRepository activationTokenRepository;
     private final RideRepository rideRepository;
     private final EmailService emailService;
+    private final JwtService jwtService;
     
     private static final String DEFAULT_PROFILE_PICTURE = "https://via.placeholder.com/150";
     
@@ -31,12 +33,14 @@ public class AuthServiceImpl implements AuthService {
             DriverRepository driverRepository,
             ActivationTokenRepository activationTokenRepository,
             RideRepository rideRepository,
-            EmailService emailService) {
+            EmailService emailService,
+            JwtService jwtService) {
         this.userRepository = userRepository;
         this.driverRepository = driverRepository;
         this.activationTokenRepository = activationTokenRepository;
         this.rideRepository = rideRepository;
         this.emailService = emailService;
+        this.jwtService = jwtService;
     }
     
     @Override
@@ -77,8 +81,9 @@ public class AuthServiceImpl implements AuthService {
         response.setEmail(user.getEmail());
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
-        response.setRole(user.getUserType() != null ? user.getUserType().name() : "USER");
-        response.setToken("mock-jwt-token-" + UUID.randomUUID()); // Mock token for now
+        String role = user.getUserType() != null ? user.getUserType().name() : "USER";
+        response.setRole(role);
+        response.setToken(jwtService.generateToken(user.getId(), role));
         
         if (driver != null) {
             response.setDriver(true);
