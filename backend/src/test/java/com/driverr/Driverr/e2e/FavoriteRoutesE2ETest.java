@@ -49,7 +49,7 @@ class FavoriteRoutesE2ETest {
 
         // Navigate to login page
         driver.get(baseUrl + "/login");
-        System.out.println("✓ Navigated to login page");
+        System.out.println("Navigated to login page");
         
         try {
             // Wait for and fill email field
@@ -110,10 +110,10 @@ class FavoriteRoutesE2ETest {
         }
     }
     
-    /**
-     * Creates a favorite route for the test user if one doesn't already exist.
-     * Creates pickup and destination addresses, then creates the favorite route.
-     */
+    
+    //Creates a favorite route for the test user if one doesn't already exist.
+    //Creates pickup and destination addresses, then creates the favorite route.
+    
     private void ensureFavoriteRouteExists(String userId) {
         try {
             // Create pickup address
@@ -135,9 +135,9 @@ class FavoriteRoutesE2ETest {
         }
     }
     
-    /**
-     * Creates a test address via API and returns its ID.
-     */
+    
+    //Creates a test address via API and returns its ID.
+    
     @SuppressWarnings("unchecked")
     private String createTestAddress(String street, String streetNumber, String city, 
                                      String postalCode, String country, double lat, double lon) {
@@ -163,9 +163,9 @@ class FavoriteRoutesE2ETest {
         return (String) response.get("id");
     }
     
-    /**
-     * Creates a favorite route via API.
-     */
+    
+    //Creates a favorite route via API.
+     
     private void createFavoriteRoute(String userId, String name, String pickupId, String destId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
