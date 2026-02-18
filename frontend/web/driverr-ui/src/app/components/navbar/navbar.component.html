@@ -8,6 +8,7 @@
       <li><a routerLink="/main-page">Main Page</a></li>
       <li *ngIf="isClient"><a routerLink="/order-ride">Order Ride</a></li>
       <li *ngIf="isClient"><a routerLink="/favorite-routes">Favorites</a></li>
+      <li *ngIf="isDriver"><a routerLink="/driver-ride">Current Ride</a></li>
       <li *ngIf="isDriver"><a routerLink="/driver/history">My Rides</a></li>
       <li *ngIf="isAdmin"><a routerLink="/admin/driver-register">Register Driver</a></li>
       <li *ngIf="isAdmin"><a routerLink="/admin/approvals">Approvals</a></li>

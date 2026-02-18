@@ -10,8 +10,8 @@
         android:id="@+id/nav_favorites"
         android:title="Favorite Rides" />
     <item
-        android:id="@+id/nav_ride"
-        android:title="Ride" />
+        android:id="@+id/nav_current_ride"
+        android:title="Current Ride" />
     <item
         android:id="@+id/nav_driver_history"
         android:title="Driver History" />
