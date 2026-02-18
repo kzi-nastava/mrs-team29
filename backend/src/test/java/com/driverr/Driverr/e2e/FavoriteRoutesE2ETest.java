@@ -1,4 +1,4 @@
-package e2e;
+package com.driverr.Driverr.e2e;
 
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.By;

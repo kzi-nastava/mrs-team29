@@ -1,4 +1,4 @@
-package service.impl;
+package com.driverr.Driverr.service.impl;
 
 import dto.ride.RideOrderDTO;
 import domain.entities.*;
@@ -13,7 +13,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
-import org.mockito.ArgumentCaptor;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -21,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import repository.*;
+import service.impl.RideServiceImpl;
 
 @SuppressWarnings("null")
 @ExtendWith(MockitoExtension.class)

@@ -1,4 +1,4 @@
-package repository;
+package com.driverr.Driverr.repository;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import domain.entities.*;
 import domain.enums.*;
+import repository.DriverRepository;
+
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;

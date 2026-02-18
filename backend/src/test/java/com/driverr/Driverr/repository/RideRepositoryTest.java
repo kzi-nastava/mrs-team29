@@ -1,33 +1,30 @@
-package controller;
+package com.driverr.Driverr.repository;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import dto.ride.RideOrderDTO;
 import domain.entities.*;
 import domain.enums.*;
-import java.time.LocalDateTime;
+import repository.AddressRepository;
+import repository.DriverRepository;
+import repository.RideRepository;
+import repository.UserRepository;
+
 import java.util.List;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import repository.*;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-@SpringBootTest
-@AutoConfigureMockMvc
 @SuppressWarnings("null")
-class RideControllerIT {
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+class RideRepositoryTest {
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    private RideRepository rideRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -38,19 +35,16 @@ class RideControllerIT {
     @Autowired
     private AddressRepository addressRepository;
 
-    @Autowired
-    private RideRepository rideRepository;
-
-    private String creatorId;
+    private String userId;
+    private String driverId;
     private String pickupId;
     private String destinationId;
-    private String driverId;
 
     @BeforeEach
     void setUp() {
-        User creator = buildUser("creator-" + UUID.randomUUID(), "creator@test.com");
-        creator = userRepository.save(creator);
-        creatorId = creator.getId();
+        User user = buildUser("user-" + UUID.randomUUID(), "user@test.com");
+        user = userRepository.save(user);
+        userId = user.getId();
 
         Address pickup = buildAddress("Pickup", "1");
         Address destination = buildAddress("Destination", "2");
@@ -62,20 +56,19 @@ class RideControllerIT {
         Driver driver = buildDriver("driver-" + UUID.randomUUID(), "driver@test.com");
         driver = driverRepository.save(driver);
         driverId = driver.getId();
+
+        Ride assigned = buildRide(RideStatus.ASSIGNED, LocalDateTime.now().minusMinutes(5));
+        Ride finished = buildRide(RideStatus.FINISHED, LocalDateTime.now().minusMinutes(1));
+        rideRepository.saveAll(List.of(assigned, finished));
     }
 
-     @AfterEach
+    @AfterEach
     void tearDown() {
-        List<RideStatus> statuses = List.of(
-            RideStatus.REQUESTED,
-            RideStatus.ASSIGNED,
-            RideStatus.IN_PROGRESS,
-            RideStatus.FINISHED
-        );
-        for (RideStatus status : statuses) {
-            rideRepository.findByPassengers_IdAndStatus(creatorId, status)
-                .forEach(ride -> rideRepository.deleteById(ride.getId()));
-        }
+        rideRepository.findByPassengers_IdAndStatus(userId, RideStatus.ASSIGNED)
+            .forEach(ride -> rideRepository.deleteById(ride.getId()));
+        rideRepository.findByPassengers_IdAndStatus(userId, RideStatus.FINISHED)
+            .forEach(ride -> rideRepository.deleteById(ride.getId()));
+
         if (driverId != null) {
             driverRepository.deleteById(driverId);
         }
@@ -85,67 +78,58 @@ class RideControllerIT {
         if (destinationId != null) {
             addressRepository.deleteById(destinationId);
         }
-        if (creatorId != null) {
-            userRepository.deleteById(creatorId);
+        if (userId != null) {
+            userRepository.deleteById(userId);
         }
     }
 
     @Test
-    void orderRide_success_returnsCreated() throws Exception {
-        RideOrderDTO dto = buildOrderDto();
+    void existsByPassengers_IdAndStatusIn_returnsTrueForActiveRide() {
+        boolean exists = rideRepository.existsByPassengers_IdAndStatusIn(
+            userId,
+            List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
+        );
+        assertTrue(exists);
+    }
 
-        mockMvc.perform(post("/api/rides")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(status().isCreated());
+    @Test
+    void findFirstByDriver_IdAndStatusInOrderByTimestampsDesc_returnsLatestRide() {
+        var result = rideRepository.findFirstByDriver_IdAndStatusInOrderByTimestampsDesc(
+            driverId,
+            List.of(RideStatus.ASSIGNED, RideStatus.FINISHED)
+        );
+
+        assertTrue(result.isPresent());
+        assertEquals(RideStatus.FINISHED, result.get().getStatus());
+    }
+
+    @Test
+    void findUserRideHistory_returnsOnlyFinishedRides() {
+        var history = rideRepository.findUserRideHistory(userId, RideStatus.FINISHED);
+        assertEquals(1, history.size());
+        assertEquals(RideStatus.FINISHED, history.get(0).getStatus());
+    }
+    
+    @Test
+    void findByPassengers_IdAndStatus_returnsCorrectRides() {
+        var assignedRides = rideRepository.findByPassengers_IdAndStatus(userId, RideStatus.ASSIGNED);
+        assertEquals(1, assignedRides.size());
+        assertEquals(RideStatus.ASSIGNED, assignedRides.get(0).getStatus());
         
-        // Verify a ride was created
-        List<Ride> createdRides = rideRepository.findByPassengers_IdAndStatus(creatorId, RideStatus.ASSIGNED);
-        assertTrue(createdRides.size() > 0, "Ride should be created");
+        var finishedRides = rideRepository.findByPassengers_IdAndStatus(userId, RideStatus.FINISHED);
+        assertEquals(1, finishedRides.size());
+        assertEquals(RideStatus.FINISHED, finishedRides.get(0).getStatus());
     }
 
-    @Test
-    void orderRide_activeRide_returnsBadRequest() throws Exception {
-        Ride existing = buildRide(RideStatus.ASSIGNED);
-        rideRepository.save(existing);
-
-        RideOrderDTO dto = buildOrderDto();
-
-        mockMvc.perform(post("/api/rides")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void orderRide_scheduledTimeInPast_returnsBadRequest() throws Exception {
-        RideOrderDTO dto = buildOrderDto();
-        dto.setScheduledTime(LocalDateTime.now().minusMinutes(10));
-
-        mockMvc.perform(post("/api/rides")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(status().isBadRequest());
-    }
-
-    private RideOrderDTO buildOrderDto() {
-        RideOrderDTO dto = new RideOrderDTO();
-        dto.setCreatorId(creatorId);
-        dto.setPickupAddressId(pickupId);
-        dto.setDestinationAddressId(destinationId);
-        dto.setVehicleType(VehicleType.STANDARD);
-        return dto;
-    }
-
-    private Ride buildRide(RideStatus status) {
+    private Ride buildRide(RideStatus status, LocalDateTime timestamp) {
         Ride ride = new Ride();
         ride.setPickupAddress(addressRepository.findById(pickupId).orElseThrow());
         ride.setDestinationAddress(addressRepository.findById(destinationId).orElseThrow());
-        ride.setPassengers(List.of(userRepository.findById(creatorId).orElseThrow()));
+        ride.setPassengers(List.of(userRepository.findById(userId).orElseThrow()));
         ride.setDriver(driverRepository.findById(driverId).orElseThrow());
         ride.setStatus(status);
         ride.setPrice(500);
-        ride.setTimestamps(List.of(LocalDateTime.now()));
+        ride.setTimestamps(List.of(timestamp));
         return ride;
     }
 
