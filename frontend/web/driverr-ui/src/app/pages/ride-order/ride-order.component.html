@@ -1,26 +1,26 @@
 <div class="order-ride-page">
-  <div class="order-container">
+  <div class="order-container" data-testid="ride-order-container">
     <h1 class="title">Order a Ride</h1>
     <p class="subtitle">Select locations on the map or search for addresses</p>
 
     <!-- Active Ride Warning -->
-    <div *ngIf="hasActiveRide" class="alert alert-warning">
+    <div *ngIf="hasActiveRide" class="alert alert-warning" data-testid="ride-order-active-warning">
       <strong>You have an active ride.</strong> Please complete or cancel it before ordering another.
     </div>
 
     <!-- Error Messages -->
-    <div *ngIf="errorMessage" class="alert alert-danger">
+    <div *ngIf="errorMessage" class="alert alert-danger" data-testid="ride-order-error">
       {{ errorMessage }}
     </div>
 
     <!-- Success Message -->
-    <div *ngIf="message" class="alert alert-success">
+    <div *ngIf="message" class="alert alert-success" data-testid="ride-order-success">
       {{ message }}
-      <button type="button" class="secondary-btn" (click)="resetToDefault()">Reset</button>
+      <button type="button" class="secondary-btn" (click)="resetToDefault()" data-testid="ride-order-reset">Reset</button>
     </div>
 
     <!-- Map Section -->
-    <div class="map-section">
+    <div class="map-section" data-testid="ride-order-map-section">
       <div class="map-controls">
         <div class="search-bar">
           <input 
@@ -29,8 +29,9 @@
             [ngModelOptions]="{ standalone: true }"
             placeholder="Search for an address..."
             (keyup.enter)="searchAddress()"
+            data-testid="ride-order-search-input"
           />
-          <button type="button" class="search-btn" (click)="searchAddress()">Search</button>
+          <button type="button" class="search-btn" (click)="searchAddress()" data-testid="ride-order-search-button">Search</button>
         </div>
         
         <div class="location-buttons">
@@ -39,6 +40,7 @@
             class="map-btn pickup-btn" 
             [class.active]="selectingFor === 'pickup'"
             (click)="startSelectingPickup()"
+            data-testid="ride-order-pickup-button"
           >
             📍 Set Pickup
           </button>
@@ -47,34 +49,35 @@
             class="map-btn destination-btn"
             [class.active]="selectingFor === 'destination'"
             (click)="startSelectingDestination()"
+            data-testid="ride-order-destination-button"
           >
             🎯 Set Destination
           </button>
         </div>
       </div>
 
-      <div id="map" class="map-container"></div>
+      <div id="map" class="map-container" data-testid="ride-order-map"></div>
 
       <!-- Selected Addresses Display -->
-      <div class="selected-addresses">
+      <div class="selected-addresses" data-testid="ride-order-selected-addresses">
         <div class="address-item">
           <span class="address-label">Pickup:</span>
           <span class="address-text" [class.placeholder]="!pickupAddress">
             {{ pickupAddress?.displayName || pickupAddress?.street || 'Not selected' }}
           </span>
-          <button type="button" class="clear-btn" (click)="clearPickup()" *ngIf="pickupAddress">✕</button>
+          <button type="button" class="clear-btn" (click)="clearPickup()" *ngIf="pickupAddress" data-testid="ride-order-clear-pickup">✕</button>
         </div>
         <div class="address-item">
           <span class="address-label">Destination:</span>
           <span class="address-text" [class.placeholder]="!destinationAddress">
             {{ destinationAddress?.displayName || destinationAddress?.street || 'Not selected' }}
           </span>
-          <button type="button" class="clear-btn" (click)="clearDestination()" *ngIf="destinationAddress">✕</button>
+          <button type="button" class="clear-btn" (click)="clearDestination()" *ngIf="destinationAddress" data-testid="ride-order-clear-destination">✕</button>
         </div>
       </div>
 
       <!-- Route Info -->
-      <div class="route-info-box" *ngIf="routeInfo">
+      <div class="route-info-box" *ngIf="routeInfo" data-testid="ride-order-route-info">
         <div class="info-item">
           <span class="info-label">Distance:</span>
           <span class="info-value">{{ formatDistance(routeInfo.distanceMeters) }}</span>
@@ -91,7 +94,7 @@
     </div>
 
     <!-- Order Form -->
-    <form [formGroup]="rideForm" (ngSubmit)="orderRide()" class="order-form">
+    <form [formGroup]="rideForm" (ngSubmit)="orderRide()" class="order-form" data-testid="ride-order-form">
 
       <div class="form-section">
         <h3>Ride Details</h3>
@@ -99,7 +102,7 @@
         <div class="form-row">
           <div class="form-group">
             <label for="vehicleType">Vehicle Type</label>
-            <select id="vehicleType" formControlName="vehicleType">
+            <select id="vehicleType" formControlName="vehicleType" data-testid="ride-order-vehicle-type">
               <option *ngFor="let type of vehicleTypes" [value]="type.value">
                 {{ type.label }}
               </option>
@@ -112,6 +115,7 @@
               id="scheduledTime" 
               type="datetime-local" 
               formControlName="scheduledTime"
+              data-testid="ride-order-scheduled-time"
             />
             <small>Leave empty for immediate ride (max 5 hours in future)</small>
           </div>
@@ -124,6 +128,7 @@
             type="text" 
             formControlName="passengerIds"
             placeholder="Enter passenger emails separated by commas"
+            data-testid="ride-order-passengers"
           />
           <small>Add other users' emails to invite them</small>
         </div>
@@ -135,17 +140,18 @@
             formControlName="notes"
             placeholder="Any special requests? (e.g., gentle driving, quiet ride)"
             rows="3"
+            data-testid="ride-order-notes"
           ></textarea>
         </div>
 
         <div class="checkboxes">
           <div class="checkbox-group">
-            <input id="pets" type="checkbox" formControlName="pets" />
+            <input id="pets" type="checkbox" formControlName="pets" data-testid="ride-order-pets" />
             <label for="pets">I have pets</label>
           </div>
 
           <div class="checkbox-group">
-            <input id="baby" type="checkbox" formControlName="baby" />
+            <input id="baby" type="checkbox" formControlName="baby" data-testid="ride-order-baby" />
             <label for="baby">I have a baby</label>
           </div>
         </div>
@@ -155,16 +161,17 @@
         type="submit" 
         class="primary-btn" 
         [disabled]="rideForm.invalid || loading || hasActiveRide"
+        data-testid="ride-order-submit"
       >
         {{ loading ? 'Ordering...' : 'Order Ride' }}
       </button>
     </form>
 
     <!-- Favorites Section -->
-    <div class="favorites-section" *ngIf="favoriteRoutes.length > 0">
+    <div class="favorites-section" *ngIf="favoriteRoutes.length > 0" data-testid="ride-order-favorites-section">
       <h3>Quick Order from Favorites</h3>
-      <div class="favorites-grid">
-        <div *ngFor="let route of favoriteRoutes" class="favorite-card">
+      <div class="favorites-grid" data-testid="ride-order-favorites-grid">
+        <div *ngFor="let route of favoriteRoutes" class="favorite-card" data-testid="ride-order-favorite-card">
           <h4>{{ route.name }}</h4>
           <p class="route-info">{{ route.pickupAddressId }} → {{ route.destinationAddressId }}</p>
           <button 
@@ -172,6 +179,7 @@
             class="secondary-btn"
             (click)="orderFromFavorite(route.id)"
             [disabled]="loading || hasActiveRide"
+            data-testid="ride-order-favorite-order"
           >
             Order Now
           </button>

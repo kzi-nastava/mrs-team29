@@ -16,6 +16,7 @@ import service.RideService;
 import repository.*;
 
 @Service
+@SuppressWarnings("null")
 public class RideServiceImpl implements RideService {
 
 	private final RideRepository rideRepository;
@@ -106,9 +107,8 @@ public class RideServiceImpl implements RideService {
         ride.setScheduledTime(dto.getScheduledTime());
         
         // Calculate price: base price by vehicle type + 120 per km
-        // TODO: Calculate actual distance - using mock value for now
         double basePrice = calculateBasePriceByVehicleType(dto.getVehicleType());
-        double distanceKm = 10; // Mock distance
+        double distanceKm = calculateDistance(pickup, destination);
         ride.setPrice(basePrice + (distanceKm * 120));
         
         ride.setTimestamps(List.of(LocalDateTime.now()));
@@ -231,10 +231,28 @@ public class RideServiceImpl implements RideService {
 
     @Override
     public List<RideResponseDTO> getDriverRideHistory(String driverId) {
-        List<Ride> history = rideRepository.findByDriver_IdAndStatusOrderByTimestampsDesc(
-                driverId,
-                RideStatus.FINISHED
-        );
+        return getDriverRideHistory(driverId, null, null);
+    }
+    
+    @Override
+    public List<RideResponseDTO> getDriverRideHistory(String driverId, java.time.LocalDate startDate, java.time.LocalDate endDate) {
+        java.time.LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+        java.time.LocalDateTime endDateTime = endDate != null ? endDate.atTime(23, 59, 59) : null;
+        
+        List<Ride> history;
+        if (startDateTime == null && endDateTime == null) {
+            history = rideRepository.findByDriver_IdAndStatusOrderByTimestampsDesc(
+                    driverId,
+                    RideStatus.FINISHED
+            );
+        } else {
+            history = rideRepository.findDriverRideHistoryByDateRange(
+                    driverId,
+                    RideStatus.FINISHED,
+                    startDateTime,
+                    endDateTime
+            );
+        }
 
         return history.stream()
                 .map(RideResponseDTO::fromRide)
@@ -370,6 +388,32 @@ public class RideServiceImpl implements RideService {
 	    }
 	    
 	    return dto;
+	}
+	
+	/**
+	 * Calculate distance between two addresses using Haversine formula
+	 * @param from Starting address
+	 * @param to Destination address
+	 * @return Distance in kilometers
+	 */
+	private double calculateDistance(Address from, Address to) {
+	    final double EARTH_RADIUS_KM = 6371.0;
+	    
+	    double lat1 = Math.toRadians(from.getLatitude());
+	    double lon1 = Math.toRadians(from.getLongitude());
+	    double lat2 = Math.toRadians(to.getLatitude());
+	    double lon2 = Math.toRadians(to.getLongitude());
+	    
+	    double dLat = lat2 - lat1;
+	    double dLon = lon2 - lon1;
+	    
+	    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+	               Math.cos(lat1) * Math.cos(lat2) *
+	               Math.sin(dLon / 2) * Math.sin(dLon / 2);
+	    
+	    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	    
+	    return EARTH_RADIUS_KM * c;
 	}
 
 }

@@ -1,43 +1,98 @@
 <div class="history-page">
   <div class="history-card">
-    <h1 class="title">Ride history</h1>
+    <h1 class="title">Ride History</h1>
     <p class="subtitle">Overview of your completed rides</p>
 
-    <table class="history-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>From</th>
-          <th>To</th>
-          <th>Price</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>18 Dec 2025</td>
-          <td>Downtown</td>
-          <td>Airport</td>
-          <td>€15.00</td>
-          <td><span class="status completed">Completed</span></td>
-        </tr>
-        <tr>
-          <td>15 Dec 2025</td>
-          <td>Main station</td>
-          <td>City center</td>
-          <td>€8.50</td>
-          <td><span class="status completed">Completed</span></td>
-        </tr>
-        <tr>
-          <td>10 Dec 2025</td>
-          <td>University</td>
-          <td>Mall</td>
-          <td>€6.00</td>
-          <td><span class="status canceled">Canceled</span></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+    <!-- Date Filter -->
+    <div class="filter-section">
+      <div class="date-inputs">
+        <div class="input-group">
+          <label for="startDate">From Date:</label>
+          <input 
+            type="date" 
+            id="startDate"
+            [(ngModel)]="startDate"
+            class="date-input"
+          />
+        </div>
+        
+        <div class="input-group">
+          <label for="endDate">To Date:</label>
+          <input 
+            type="date" 
+            id="endDate"
+            [(ngModel)]="endDate"
+            class="date-input"
+          />
+        </div>
+        
+        <button 
+          type="button" 
+          class="btn btn-filter"
+          (click)="applyDateFilter()"
+          [disabled]="loading"
+        >
+          🔍 Filter
+        </button>
+        
+        <button 
+          type="button" 
+          class="btn btn-clear"
+          (click)="clearDateFilter()"
+          [disabled]="loading"
+        >
+          ✖ Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading ride history...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <!-- No Rides Message -->
+    <div *ngIf="!loading && !errorMessage && filteredRides.length === 0" class="no-rides">
+      <div class="no-rides-icon">📋</div>
+      <h2>No Rides Found</h2>
+      <p>You don't have any completed rides yet.</p>
+    </div>
+
+    <!-- Rides Table -->
+    <div *ngIf="!loading && !errorMessage && filteredRides.length > 0">
+      <div class="summary">
+        <strong>Total Rides:</strong> {{ filteredRides.length }} &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>Total Earnings:</strong> {{ formatPrice(getTotalEarnings()) }}
+      </div>
+
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Passengers</th>
+            <th>Earned</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ride of filteredRides">
+            <td>{{ formatDate(ride.finishedAt || ride.createdAt) }}</td>
+            <td class="address-cell">{{ ride.pickupAddress }}</td>
+            <td class="address-cell">{{ ride.destinationAddress }}</td>
+            <td class="center">{{ ride.passengerIds?.length || 0 }}</td>
+            <td class="price-cell">{{ formatPrice(ride.price) }}</td>
+            <td><span class="status completed">✓ Finished</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
 

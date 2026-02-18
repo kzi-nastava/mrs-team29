@@ -35,5 +35,9 @@ public interface RideApi {
     Call<RideResponse> finishRide(@Path("rideId") String rideId, @Query("driverId") String driverId);
 
     @GET("rides/driver/{driverId}/history")
-    Call<List<RideResponse>> getDriverRideHistory(@Path("driverId") String driverId);
+    Call<List<RideResponse>> getDriverRideHistory(
+        @Path("driverId") String driverId,
+        @Query("startDate") String startDate,
+        @Query("endDate") String endDate
+    );
 }

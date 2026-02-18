@@ -43,8 +43,22 @@ export class RideService {
   }
 
   // Get driver's ride history
-  getDriverRideHistory(driverId: string): Observable<Ride[]> {
-    return this.http.get<Ride[]>(`${this.api}/driver/${driverId}/history`);
+  getDriverRideHistory(driverId: string, startDate?: string, endDate?: string): Observable<Ride[]> {
+    let url = `${this.api}/driver/${driverId}/history`;
+    const params: string[] = [];
+    
+    if (startDate) {
+      params.push(`startDate=${startDate}`);
+    }
+    if (endDate) {
+      params.push(`endDate=${endDate}`);
+    }
+    
+    if (params.length > 0) {
+      url += '?' + params.join('&');
+    }
+    
+    return this.http.get<Ride[]>(url);
   }
 
   // ============ FAVORITE ROUTES ============

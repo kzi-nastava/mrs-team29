@@ -11,6 +11,7 @@ import service.AddressService;
 import service.MapService;
 
 @Service
+@SuppressWarnings("null")
 public class AddressServiceImpl implements AddressService {
 
     private final AddressRepository addressRepository;

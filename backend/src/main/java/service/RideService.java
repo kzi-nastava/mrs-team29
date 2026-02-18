@@ -18,6 +18,7 @@ public interface RideService {
 	
 	// Ride history
 	List<RideResponseDTO> getDriverRideHistory(String driverId);
+	List<RideResponseDTO> getDriverRideHistory(String driverId, java.time.LocalDate startDate, java.time.LocalDate endDate);
 	List<RideResponseDTO> getUserRideHistory(String userId);
 	
 	// Favorite routes management
