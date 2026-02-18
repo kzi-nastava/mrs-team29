@@ -39,8 +39,10 @@ class FavoriteRoutesE2ETest {
     @Test
     void orderRideFromFavorite_routeCardVisible_ordersRide() throws InterruptedException {
         String baseUrl = "http://localhost:4200";
-        String email = "njevremovic01@gmail.com";
+        //String email = "njevremovic01@gmail.com";
         String password = "password123";
+        String email = "test@test.com";
+
 
         // Set up waits
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
@@ -55,26 +57,26 @@ class FavoriteRoutesE2ETest {
                 ExpectedConditions.presenceOfElementLocated(By.name("email"))
             );
             emailField.sendKeys(email);
-            System.out.println("✓ Email entered: " + email);
+            System.out.println("Email entered: " + email);
             
             // Fill password field
             WebElement passwordField = driver.findElement(By.name("password"));
             passwordField.sendKeys(password);
-            System.out.println("✓ Password entered");
+            System.out.println("Password entered");
             
             // Find and click login button
             WebElement loginBtn = driver.findElement(By.cssSelector("button[type='submit']"));
             loginBtn.click();
-            System.out.println("✓ Login button clicked");
+            System.out.println("Login button clicked");
             
             // Wait for navigation to complete after login
             Thread.sleep(5000);
             String currentUrl = driver.getCurrentUrl();
-            System.out.println("✓ Currently at URL: " + currentUrl);
+            System.out.println("Currently at URL: " + currentUrl);
             
             // Navigate to order-ride page
             driver.get(baseUrl + "/order-ride");
-            System.out.println("✓ Navigated to order-ride page");
+            System.out.println("Navigated to order-ride page");
             
             // Wait for the main ride order container to load
             WebElement rideOrderContainer = wait.until(
@@ -82,27 +84,27 @@ class FavoriteRoutesE2ETest {
                     By.cssSelector("[data-testid='ride-order-container']")
                 )
             );
-            System.out.println("✓ Ride order container loaded successfully!");
+            System.out.println("Ride order container loaded successfully!");
             
             // Verify form exists
             WebElement rideForm = driver.findElement(By.cssSelector("[data-testid='ride-order-form']"));
-            System.out.println("✓ Order form found");
+            System.out.println("Order form found");
             
             // Check for favorites section
             try {
                 WebElement favoritesSection = driver.findElement(
                     By.cssSelector("[data-testid='ride-order-favorites-section']")
                 );
-                System.out.println("✓ Favorites section visible");
+                System.out.println("Favorites section visible");
             } catch (Exception e) {
                 System.out.println("ℹ Favorites section not currently visible (may need to add favorites)");
             }
             
-            System.out.println("✓✓✓ E2E TEST PASSED - User logged in and order-ride page fully loaded! ✓✓✓");
+            System.out.println("E2E TEST PASSED - User logged in and order-ride page fully loaded! ✓✓✓");
             
         } catch (Exception e) {
-            System.out.println("✗ Test failed: " + e.getMessage());
-            System.out.println("✗ Current URL: " + driver.getCurrentUrl());
+            System.out.println("Test failed: " + e.getMessage());
+            System.out.println("Current URL: " + driver.getCurrentUrl());
             e.printStackTrace();
             throw new AssertionError("E2E test failed: " + e.getMessage(), e);
         }
