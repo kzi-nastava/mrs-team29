@@ -40,7 +40,7 @@ public class DriverRideActivity extends AppCompatActivity implements OnMapReadyC
     private ScrollView contentScroll;
     private ProgressBar progressBar;
     private TextView errorMessage;
-    private TextView noRideMessage;
+    private LinearLayout noRideMessage;
     private LinearLayout rideDetailsContainer;
     
     private TextView rideStatus;

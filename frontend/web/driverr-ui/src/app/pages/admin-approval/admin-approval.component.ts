@@ -15,6 +15,7 @@ export class AdminApprovalComponent implements OnInit {
   loading = false;
   message = '';
   messageType = '';
+  processingRequestIds = new Set<string>();
 
   constructor(private profileService: ProfileService) {}
 
@@ -40,6 +41,11 @@ export class AdminApprovalComponent implements OnInit {
   }
 
   approveRequest(requestId: string) {
+    if (this.processingRequestIds.has(requestId)) {
+      return;
+    }
+    this.processingRequestIds.add(requestId);
+    
     this.profileService.approveProfileChangeRequest(requestId).subscribe({
       next: () => {
         this.message = 'Request approved successfully!';
@@ -47,16 +53,23 @@ export class AdminApprovalComponent implements OnInit {
         this.profileChangeRequests = this.profileChangeRequests.filter(
           (request) => request.id !== requestId
         );
+        this.processingRequestIds.delete(requestId);
         setTimeout(() => this.message = '', 3000);
       },
       error: (error) => {
         this.message = error.error?.message || 'Failed to approve request';
         this.messageType = 'error';
+        this.processingRequestIds.delete(requestId);
       }
     });
   }
 
   rejectRequest(requestId: string) {
+    if (this.processingRequestIds.has(requestId)) {
+      return;
+    }
+    this.processingRequestIds.add(requestId);
+    
     this.profileService.rejectProfileChangeRequest(requestId).subscribe({
       next: () => {
         this.message = 'Request rejected successfully!';
@@ -64,11 +77,13 @@ export class AdminApprovalComponent implements OnInit {
         this.profileChangeRequests = this.profileChangeRequests.filter(
           (request) => request.id !== requestId
         );
+        this.processingRequestIds.delete(requestId);
         setTimeout(() => this.message = '', 3000);
       },
       error: (error) => {
         this.message = error.error?.message || 'Failed to reject request';
         this.messageType = 'error';
+        this.processingRequestIds.delete(requestId);
       }
     });
   }
