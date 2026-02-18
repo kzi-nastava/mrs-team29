@@ -13,7 +13,7 @@ import org.springframework.http.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 
-@Disabled("Requires running frontend/backend and local ChromeDriver")
+//@Disabled("Requires running frontend/backend and local ChromeDriver")
 class FavoriteRoutesE2ETest {
 
     private WebDriver driver;
