@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import domain.entities.*;
 import domain.enums.*;
+import main.DriverrApplication;
 import repository.DriverRepository;
 
 import java.util.List;
@@ -15,11 +16,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest(classes = main.DriverrApplication.class)
 class DriverRepositoryTest {
+    // Note: Spring will use application.properties configuration for test DB
 
     @Autowired
     private DriverRepository driverRepository;

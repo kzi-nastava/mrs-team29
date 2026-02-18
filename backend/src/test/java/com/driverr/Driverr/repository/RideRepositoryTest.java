@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import domain.entities.*;
 import domain.enums.*;
+import main.DriverrApplication;
 import repository.AddressRepository;
 import repository.DriverRepository;
 import repository.RideRepository;
@@ -17,12 +18,12 @@ import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 
 @SuppressWarnings("null")
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest(classes = main.DriverrApplication.class)
 class RideRepositoryTest {
+    // Note: Spring will use application.properties configuration for test DB
     @Autowired
     private RideRepository rideRepository;
 

@@ -34,7 +34,7 @@ public interface RideRepository extends JpaRepository<Ride, String> {
                                                  java.time.LocalDateTime endDate);
     
     // Find user's ride history
-    @Query("SELECT r FROM Ride r JOIN r.passengers p WHERE p.id = :userId AND r.status = :status ORDER BY r.timestamps DESC")
+    @Query("SELECT r FROM Ride r JOIN r.passengers p WHERE p.id = :userId AND r.status = :status ORDER BY r.scheduledTime DESC")
     List<Ride> findUserRideHistory(String userId, RideStatus status);
     
     // Check if driver has active ride

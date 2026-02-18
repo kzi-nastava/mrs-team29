@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dto.ride.RideOrderDTO;
 import domain.entities.*;
 import domain.enums.*;
+import main.DriverrApplication;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import repository.*;
 
-@SpringBootTest
+@SpringBootTest(classes = main.DriverrApplication.class)
 @AutoConfigureMockMvc
 @SuppressWarnings("null")
 class RideControllerIT {
