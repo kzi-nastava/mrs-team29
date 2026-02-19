@@ -28,4 +28,10 @@ public interface UserService {
     void resetPasswordWithToken(PasswordResetTokenDTO dto);
     void setDriverStatus(String driverId, boolean active);
     boolean canDriverLogout(String driverId);
+    
+    // Blocking methods
+    void blockUser(String userId, String blockNote);
+    void unblockUser(String userId);
+    UserBlockStatusDTO getUserBlockStatus(String userId);
+    List<UserBlockStatusDTO> getAllUsersBlockStatus();
 }

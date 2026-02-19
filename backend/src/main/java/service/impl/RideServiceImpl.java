@@ -52,6 +52,15 @@ public class RideServiceImpl implements RideService {
 
         User creator = userRepository.findById(dto.getCreatorId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Check if user is blocked
+        if (creator.getIsBlocked()) {
+            String message = "Your account has been blocked";
+            if (creator.getBlockNote() != null && !creator.getBlockNote().isBlank()) {
+                message += ": " + creator.getBlockNote();
+            }
+            throw new RuntimeException(message);
+        }
 
         boolean hasActiveRide = rideRepository.existsByPassengers_IdAndStatusIn(
                 creator.getId(),
@@ -220,6 +229,15 @@ public class RideServiceImpl implements RideService {
 
         User creator = userRepository.findById(dto.getClientId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Check if user is blocked
+        if (creator.getIsBlocked()) {
+            String message = "Your account has been blocked";
+            if (creator.getBlockNote() != null && !creator.getBlockNote().isBlank()) {
+                message += ": " + creator.getBlockNote();
+            }
+            throw new RuntimeException(message);
+        }
 
         Driver driver = driverRepository.findFirstByStatusInAndIsActiveTrueAndIsBlockedFalseOrderByIdAsc(
             List.of(DriverStatus.AVAILABLE, DriverStatus.ACTIVE)

@@ -115,6 +115,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(new Intent(this, AdminApprovalActivity.class));
             return;
         }
+        if (item.getItemId() == R.id.nav_user_management) {
+            startActivity(new Intent(this, UserManagementActivity.class));
+            return;
+        }
         if (item.getItemId() == R.id.nav_logout) {
             SessionManager sessionManager = new SessionManager(this);
             sessionManager.clear();

@@ -518,4 +518,68 @@ public class UserServiceImpl implements UserService {
     public List<User> getAll() {
         return null;
     }
+    
+    // ==================== Blocking Methods ====================
+    
+    @Override
+    @Transactional
+    public void blockUser(String userId, String blockNote) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        user.setIsBlocked(true);
+        user.setBlockNote(blockNote);
+        userRepository.save(user);
+        
+        // If user is a driver, set status to inactive
+        if (user instanceof Driver) {
+            Driver driver = (Driver) user;
+            driver.setStatus(DriverStatus.INACTIVE);
+            driverRepository.save(driver);
+        }
+    }
+    
+    @Override
+    @Transactional
+    public void unblockUser(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        user.setIsBlocked(false);
+        user.setBlockNote(null);
+        userRepository.save(user);
+    }
+    
+    @Override
+    public UserBlockStatusDTO getUserBlockStatus(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        return new UserBlockStatusDTO(
+                user.getId(),
+                user.getUserName(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getIsBlocked(),
+                user.getBlockNote(),
+                user.getUserType().name()
+        );
+    }
+    
+    @Override
+    public List<UserBlockStatusDTO> getAllUsersBlockStatus() {
+        return userRepository.findAll().stream()
+                .map(user -> new UserBlockStatusDTO(
+                        user.getId(),
+                        user.getUserName(),
+                        user.getEmail(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getIsBlocked(),
+                        user.getBlockNote(),
+                        user.getUserType().name()
+                ))
+                .toList();
+    }
 }

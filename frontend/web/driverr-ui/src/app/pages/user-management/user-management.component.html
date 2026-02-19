@@ -1,0 +1,92 @@
+<div class="history-page">
+  <div class="history-card">
+    <h1 class="title">User Management</h1>
+    <p class="subtitle">Block or unblock users and drivers</p>
+
+    <div *ngIf="message" [class.alert]="true" [class.alert-success]="messageType === 'success'" [class.alert-danger]="messageType === 'error'">
+      {{ message }}
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      <p>Loading users...</p>
+    </div>
+
+    <div *ngIf="!loading && users.length === 0" class="empty-state">
+      <p>No users found</p>
+    </div>
+
+    <table *ngIf="!loading && users.length > 0" class="history-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Username</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Block Note</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users" [class.blocked-row]="user.blocked">
+          <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.userName }}</td>
+          <td>{{ getUserTypeDisplay(user.userType) }}</td>
+          <td>
+            <span [class.status-badge]="true" [class.blocked]="user.blocked" [class.active]="!user.blocked">
+              {{ user.blocked ? 'Blocked' : 'Active' }}
+            </span>
+          </td>
+          <td class="note-cell">{{ user.blockNote || '-' }}</td>
+          <td class="actions-cell">
+            <button
+              *ngIf="!user.blocked"
+              class="block-btn"
+              type="button"
+              (click)="openBlockModal(user)"
+            >
+              Block
+            </button>
+            <button
+              *ngIf="user.blocked"
+              class="unblock-btn"
+              type="button"
+              (click)="unblockUser(user)"
+            >
+              Unblock
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Block User Modal -->
+<div *ngIf="showBlockModal" class="modal-overlay" (click)="closeBlockModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h2>Block User</h2>
+    <p *ngIf="selectedUser">
+      You are about to block <strong>{{ selectedUser.firstName }} {{ selectedUser.lastName }}</strong>
+    </p>
+    <div class="form-group">
+      <label for="blockNote">Reason for blocking (required):</label>
+      <textarea
+        id="blockNote"
+        [(ngModel)]="blockNote"
+        rows="4"
+        placeholder="Enter the reason why this user is being blocked..."
+        class="form-control"
+      ></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="cancel-btn" type="button" (click)="closeBlockModal()">
+        Cancel
+      </button>
+      <button class="block-btn" type="button" (click)="blockUser()">
+        Block User
+      </button>
+    </div>
+  </div>
+</div>

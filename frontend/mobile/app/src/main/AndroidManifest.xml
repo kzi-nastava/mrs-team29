@@ -48,6 +48,9 @@
             android:name=".AdminApprovalActivity"
             android:exported="false" />
         <activity
+            android:name=".UserManagementActivity"
+            android:exported="false" />
+        <activity
             android:name=".RideOrderActivity"
             android:exported="false" />
         <activity

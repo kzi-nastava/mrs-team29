@@ -53,6 +53,9 @@ public class User {
 	@Column(name = "is_blocked")
 	private Boolean isBlocked;
 	
+	@Column(name = "block_note", length = 500)
+	private String blockNote;
+	
 	@Column(name = "is_active")
 	private Boolean isActive;
 	
@@ -90,6 +93,7 @@ public class User {
 	public Address getAddress() {return address;}
 	public String getProfilePictureUrl() {return profilePictureUrl;}
 	public boolean getIsBlocked() {return Boolean.TRUE.equals(isBlocked);}
+	public String getBlockNote() {return blockNote;}
 	public boolean getIsActive() { return Boolean.TRUE.equals(isActive);}
 	public boolean isActivated() { return Boolean.TRUE.equals(isActivated);}
 	
@@ -105,6 +109,7 @@ public class User {
 	public void setAddress(Address address) {this.address = address;}
 	public void setProfilePictureUrl(String profilePictureUrl) {this.profilePictureUrl = profilePictureUrl;}
 	public void setIsActive(boolean isActive) {this.isActive = isActive;}
+	public void setBlockNote(String blockNote) {this.blockNote = blockNote;}
 	public void setIsBlocked(boolean isBlocked) {this.isBlocked = isBlocked;}
 	public void setActivated(boolean isActivated) {this.isActivated = isActivated;}
 }

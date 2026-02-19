@@ -23,6 +23,7 @@ export class ProfileComponent implements OnInit {
   passwordError = '';
   profileMessage = '';
   profileDefaults: any = null;
+  userProfile: any = null;
   
   workingHours: number = 0;
   isDriver = false;
@@ -74,6 +75,7 @@ export class ProfileComponent implements OnInit {
     this.profileService.getProfile(this.userId)
       .subscribe({
         next: (profile) => {
+          this.userProfile = profile;
           const profileValues = {
             firstName: profile.firstName,
             lastName: profile.lastName,

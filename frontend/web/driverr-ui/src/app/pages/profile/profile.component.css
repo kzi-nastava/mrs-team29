@@ -79,6 +79,31 @@
   font-size: 16px;
 }
 
+/* Block Status Section */
+.block-status-section {
+  margin-bottom: 30px;
+}
+
+.block-warning {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.block-warning h3 {
+  color: #856404;
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.block-note {
+  color: #856404;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .working-hours-display {
   display: flex;
   align-items: baseline;

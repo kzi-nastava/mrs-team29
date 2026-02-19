@@ -17,6 +17,8 @@ public class UserProfileDTO {
     private Address address;
     private String profilePictureUrl;
     private UserType userType;
+    private boolean isBlocked;
+    private String blockNote;
 
     public UserProfileDTO() {}
 
@@ -31,6 +33,8 @@ public class UserProfileDTO {
     public Address getAddress() { return address; }
     public String getProfilePictureUrl() { return profilePictureUrl; }
     public UserType getUserType() { return userType; }
+    public boolean isBlocked() { return isBlocked; }
+    public String getBlockNote() { return blockNote; }
 
     // SETTERS
     public void setId(String id) { this.id = id; }
@@ -41,6 +45,8 @@ public class UserProfileDTO {
     public void setEmail(String email) { this.email = email; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
     public void setAddress(Address address) { this.address = address; }
+    public void setBlocked(boolean blocked) { this.isBlocked = blocked; }
+    public void setBlockNote(String blockNote) { this.blockNote = blockNote; }
     public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
     public void setUserType(UserType userType) { this.userType = userType; }
 
@@ -54,6 +60,8 @@ public class UserProfileDTO {
         dto.email = user.getEmail();
         dto.phoneNumber = user.getPhoneNumber();
         dto.address = user.getAddress();
+        dto.isBlocked = user.getIsBlocked();
+        dto.blockNote = user.getBlockNote();
         dto.profilePictureUrl = user.getProfilePictureUrl();
         dto.userType = user.getUserType();
         return dto;

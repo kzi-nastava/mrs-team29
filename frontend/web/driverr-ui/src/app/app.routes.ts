@@ -8,6 +8,7 @@ import { DriverRideComponent } from './pages/driver-ride/driver-ride.component';
 import { OrderRideComponent } from './pages/ride-order/ride-order.component';
 import { DriverActivationComponent } from './pages/driver-activation/driver-activation.component';
 import { AdminApprovalComponent } from './pages/admin-approval/admin-approval.component';
+import { UserManagementComponent } from './pages/user-management/user-management.component';
 import { FavoriteRoutesComponent } from './pages/favorite-routes/favorite-routes.component';
 import { MainPageComponent } from './pages/main-page/main-page.component';
 import { ActivateComponent } from './pages/activate/activate.component';
@@ -25,6 +26,7 @@ export const routes: Routes = [
   { path: 'driver-activate', component: DriverActivationComponent }, // 2.2.3
   { path: 'admin/driver-register', component: AdminDriverRegisterComponent, canActivate: [authGuard] },
   { path: 'admin/approvals', component: AdminApprovalComponent, canActivate: [authGuard] }, // 2.3 Admin dashboard
+  { path: 'admin/users', component: UserManagementComponent, canActivate: [authGuard] }, // User blocking management
   { path: 'main-page', component: MainPageComponent, canActivate: [authGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] }, // 2.3 with password change
   { path: 'driver-history', component: DriverHistoryComponent, canActivate: [authGuard] },

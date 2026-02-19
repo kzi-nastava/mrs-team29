@@ -17,6 +17,14 @@
       </div>
     </div>
 
+    <!-- Block Status Section (for drivers and users) -->
+    <div *ngIf="userProfile?.blocked" class="block-status-section">
+      <div class="block-warning">
+        <h3>⚠️ Account Blocked</h3>
+        <p class="block-note">{{ userProfile?.blockNote || 'Your account has been blocked. Please contact support.' }}</p>
+      </div>
+    </div>
+
     <!-- Profile Information Form -->
     <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
       <h3>Basic Information</h3>

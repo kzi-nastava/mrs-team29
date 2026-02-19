@@ -1,6 +1,8 @@
 package controller;
 
+import dto.user.BlockUserDTO;
 import dto.user.ProfileChangeRequestDTO;
+import dto.user.UserBlockStatusDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import service.UserService;
@@ -35,5 +37,30 @@ public class AdminController {
     public ResponseEntity<?> rejectRequest(@PathVariable String requestId) {
         userService.rejectProfileChangeRequest(requestId);
         return ResponseEntity.ok(Map.of("message", "Request rejected successfully", "status", "success"));
+    }
+    
+    // Blocking endpoints
+    @PostMapping("/users/{userId}/block")
+    public ResponseEntity<?> blockUser(@PathVariable String userId, @RequestBody BlockUserDTO dto) {
+        userService.blockUser(userId, dto.blockNote());
+        return ResponseEntity.ok(Map.of("message", "User blocked successfully", "status", "success"));
+    }
+    
+    @PostMapping("/users/{userId}/unblock")
+    public ResponseEntity<?> unblockUser(@PathVariable String userId) {
+        userService.unblockUser(userId);
+        return ResponseEntity.ok(Map.of("message", "User unblocked successfully", "status", "success"));
+    }
+    
+    @GetMapping("/users/{userId}/block-status")
+    public ResponseEntity<UserBlockStatusDTO> getUserBlockStatus(@PathVariable String userId) {
+        UserBlockStatusDTO status = userService.getUserBlockStatus(userId);
+        return ResponseEntity.ok(status);
+    }
+    
+    @GetMapping("/users/block-status")
+    public ResponseEntity<List<UserBlockStatusDTO>> getAllUsersBlockStatus() {
+        List<UserBlockStatusDTO> statuses = userService.getAllUsersBlockStatus();
+        return ResponseEntity.ok(statuses);
     }
 }

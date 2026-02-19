@@ -12,6 +12,7 @@
       <li *ngIf="isDriver"><a routerLink="/driver/history">Ride History</a></li>
       <li *ngIf="isAdmin"><a routerLink="/admin/driver-register">Register Driver</a></li>
       <li *ngIf="isAdmin"><a routerLink="/admin/approvals">Approvals</a></li>
+      <li *ngIf="isAdmin"><a routerLink="/admin/users">User Management</a></li>
       <li *ngIf="!isAdmin"><a routerLink="/profile">Profile</a></li>
       <li><button class="logout-btn" type="button" (click)="logout()">Logout</button></li>
     </ng-container>

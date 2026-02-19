@@ -11,6 +11,8 @@ public class UserProfile {
     private Object address;
     private String profilePictureUrl;
     private String userType;
+    private boolean blocked;
+    private String blockNote;
 
     public String getId() { return id; }
     public String getFirstName() { return firstName; }
@@ -22,4 +24,6 @@ public class UserProfile {
     public Object getAddress() { return address; }
     public String getProfilePictureUrl() { return profilePictureUrl; }
     public String getUserType() { return userType; }
+    public boolean isBlocked() { return blocked; }
+    public String getBlockNote() { return blockNote; }
 }

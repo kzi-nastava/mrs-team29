@@ -26,6 +26,8 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView avatarText;
     private TextView workingHoursValue;
     private View workingHoursSection;
+    private View blockStatusSection;
+    private TextView blockNoteText;
     private View passwordSection;
 
     private TextInputEditText firstNameInput;
@@ -64,6 +66,8 @@ public class ProfileActivity extends AppCompatActivity {
         avatarText = findViewById(R.id.profile_avatar_text);
         workingHoursValue = findViewById(R.id.profile_working_hours_value);
         workingHoursSection = findViewById(R.id.profile_working_hours_section);
+        blockStatusSection = findViewById(R.id.profile_block_status_section);
+        blockNoteText = findViewById(R.id.profile_block_note);
         passwordSection = findViewById(R.id.profile_password_section);
 
         firstNameInput = findViewById(R.id.profile_first_name);
@@ -99,6 +103,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         passwordSection.setVisibility(View.GONE);
         workingHoursSection.setVisibility(View.GONE);
+        blockStatusSection.setVisibility(View.GONE);
 
         loadProfile();
     }
@@ -131,6 +136,15 @@ public class ProfileActivity extends AppCompatActivity {
                 isDriver = "DRIVER".equalsIgnoreCase(profile.getUserType());
                 if (isDriver) {
                     loadWorkingHours();
+                
+                // Show block status if blocked
+                if (profile.isBlocked()) {
+                    blockStatusSection.setVisibility(View.VISIBLE);
+                    String note = profile.getBlockNote();
+                    blockNoteText.setText(note != null && !note.isBlank() 
+                        ? note 
+                        : "Your account has been blocked. Please contact support.");
+                }
                 }
             }
 
