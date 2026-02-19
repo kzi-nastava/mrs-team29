@@ -16,6 +16,7 @@ import com.example.driverr_mobile.data.model.UpdateUserProfileRequest;
 import com.example.driverr_mobile.data.model.UserProfile;
 import com.example.driverr_mobile.data.network.ApiClient;
 import com.example.driverr_mobile.data.prefs.SessionManager;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
@@ -23,6 +24,7 @@ import com.google.gson.Gson;
 
 public class ProfileActivity extends AppCompatActivity {
 
+    private MaterialToolbar toolbar;
     private TextView avatarText;
     private TextView workingHoursValue;
     private View workingHoursSection;
@@ -36,7 +38,6 @@ public class ProfileActivity extends AppCompatActivity {
     private TextInputEditText emailInput;
     private TextInputEditText usernameInput;
     private TextInputEditText phoneInput;
-    private TextInputEditText profilePictureInput;
 
     private TextInputEditText oldPasswordInput;
     private TextInputEditText newPasswordInput;
@@ -63,6 +64,13 @@ public class ProfileActivity extends AppCompatActivity {
             return insets;
         });
 
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
+
         avatarText = findViewById(R.id.profile_avatar_text);
         workingHoursValue = findViewById(R.id.profile_working_hours_value);
         workingHoursSection = findViewById(R.id.profile_working_hours_section);
@@ -76,7 +84,6 @@ public class ProfileActivity extends AppCompatActivity {
         emailInput = findViewById(R.id.profile_email);
         usernameInput = findViewById(R.id.profile_username);
         phoneInput = findViewById(R.id.profile_phone);
-        profilePictureInput = findViewById(R.id.profile_picture_url);
 
         oldPasswordInput = findViewById(R.id.profile_old_password);
         newPasswordInput = findViewById(R.id.profile_new_password);
@@ -126,7 +133,6 @@ public class ProfileActivity extends AppCompatActivity {
                 emailInput.setText(nullToEmpty(profile.getEmail()));
                 usernameInput.setText(nullToEmpty(profile.getUsername()));
                 phoneInput.setText(nullToEmpty(profile.getPhoneNumber()));
-                profilePictureInput.setText(nullToEmpty(profile.getProfilePictureUrl()));
 
                 String firstLetter = profile.getFirstName() != null && !profile.getFirstName().isBlank()
                         ? profile.getFirstName().substring(0, 1).toUpperCase()
@@ -180,7 +186,6 @@ public class ProfileActivity extends AppCompatActivity {
         String gender = textOf(genderInput);
         String username = textOf(usernameInput);
         String phone = textOf(phoneInput);
-        String profilePictureUrl = textOf(profilePictureInput);
         Object address = profileDefaults == null ? null : profileDefaults.getAddress();
 
         if (firstName.isEmpty() || lastName.isEmpty()) {
@@ -198,7 +203,7 @@ public class ProfileActivity extends AppCompatActivity {
                 username.isEmpty() ? null : username,
                 phone.isEmpty() ? null : phone,
             address,
-                profilePictureUrl.isEmpty() ? null : profilePictureUrl
+                null
         );
 
         ApiClient.getUserApi().updateProfile(userId, request)
@@ -246,7 +251,6 @@ public class ProfileActivity extends AppCompatActivity {
         emailInput.setText(nullToEmpty(profileDefaults.getEmail()));
         usernameInput.setText(nullToEmpty(profileDefaults.getUsername()));
         phoneInput.setText(nullToEmpty(profileDefaults.getPhoneNumber()));
-        profilePictureInput.setText(nullToEmpty(profileDefaults.getProfilePictureUrl()));
     }
 
     private void togglePasswordSection() {

@@ -113,6 +113,10 @@ public class DriverRideActivity extends AppCompatActivity implements OnMapReadyC
         finishRideBtn = findViewById(R.id.finish_ride_btn);
         
         setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
         
         startRideBtn.setOnClickListener(v -> onStartRideClicked());
         finishRideBtn.setOnClickListener(v -> onFinishRideClicked());

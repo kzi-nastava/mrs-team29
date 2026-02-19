@@ -16,6 +16,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.driverr_mobile.data.model.ProfileChangeRequest;
 import com.example.driverr_mobile.data.model.ApiResponse;
 import com.example.driverr_mobile.data.network.ApiClient;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class AdminApprovalActivity extends AppCompatActivity {
     private final List<ProfileChangeRequest> requests = new ArrayList<>();
     private final Set<String> processingRequestIds = new HashSet<>();
 
+    private MaterialToolbar toolbar;
     private LinearLayout requestContainer;
     private TextView emptyState;
     private TextView loadingText;
@@ -42,6 +44,13 @@ public class AdminApprovalActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         requestContainer = findViewById(R.id.admin_request_container);
         emptyState = findViewById(R.id.admin_empty_state);

@@ -22,6 +22,8 @@ public class EmailService {
 
     public void sendActivationEmail(String toEmail, String fullName, String activationToken) {
         // Backend activation endpoint - works for both web and mobile
+        // Mobile testing: http://192.168.0.12:8081/api/auth/activate?token=xxx
+        // Web testing: http://localhost:8081/api/auth/activate?token=xxx
         String activationLink = backendUrl + "/api/auth/activate?token=" + activationToken;
         
         String subject = "Activate Your Driverr Account";
@@ -39,6 +41,8 @@ public class EmailService {
 
     public void sendPasswordResetEmail(String toEmail, String fullName, String resetToken) {
         // Backend reset endpoint - works for both web and mobile
+        // Mobile testing: http://192.168.0.12:8081/api/auth/password-reset/reset?token=xxx
+        // Web testing: http://localhost:8081/api/auth/password-reset/reset?token=xxx
         String resetLink = backendUrl + "/api/auth/password-reset/reset?token=" + resetToken;
         
         String subject = "Reset Your Driverr Password";

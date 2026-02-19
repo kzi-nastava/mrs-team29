@@ -94,6 +94,10 @@ public class DriverHistoryActivity extends AppCompatActivity {
         clearBtn = findViewById(R.id.clear_btn);
         
         setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
         
         startDateBtn.setOnClickListener(v -> showStartDatePicker());
         endDateBtn.setOnClickListener(v -> showEndDatePicker());
@@ -236,6 +240,16 @@ public class DriverHistoryActivity extends AppCompatActivity {
         routeView.setTextSize(14);
         routeView.setPadding(0, 8, 0, 0);
         itemLayout.addView(routeView);
+        
+        // Driver name (if available)
+        if (ride.getDriverName() != null && !ride.getDriverName().isEmpty()) {
+            TextView driverView = new TextView(this);
+            driverView.setText("👤 Driver: " + ride.getDriverName());
+            driverView.setTextColor(getResources().getColor(android.R.color.darker_gray, getTheme()));
+            driverView.setTextSize(12);
+            driverView.setPadding(0, 4, 0, 0);
+            itemLayout.addView(driverView);
+        }
         
         // Price, Passengers and Status
         LinearLayout infoLayout = new LinearLayout(this);

@@ -22,6 +22,9 @@
         android:id="@+id/nav_admin_approvals"
         android:title="Driver Approval" />
     <item
+        android:id="@+id/nav_driver_registration"
+        android:title="Driver Registration" />
+    <item
         android:id="@+id/nav_user_management"
         android:title="User Management" />
     <item

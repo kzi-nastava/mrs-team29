@@ -20,6 +20,7 @@ import com.example.driverr_mobile.data.model.ApiResponse;
 import com.example.driverr_mobile.data.model.BlockUserRequest;
 import com.example.driverr_mobile.data.model.UserBlockStatus;
 import com.example.driverr_mobile.data.network.ApiClient;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class UserManagementActivity extends AppCompatActivity {
 
     private final List<UserBlockStatus> users = new ArrayList<>();
 
+    private MaterialToolbar toolbar;
     private LinearLayout userContainer;
     private TextView emptyState;
     private TextView loadingText;
@@ -47,6 +49,13 @@ public class UserManagementActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         userContainer = findViewById(R.id.user_container);
         emptyState = findViewById(R.id.empty_state);
