@@ -11,6 +11,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import android.widget.ArrayAdapter;
+
 import com.example.driverr_mobile.data.model.ChangePasswordRequest;
 import com.example.driverr_mobile.data.model.UpdateUserProfileRequest;
 import com.example.driverr_mobile.data.model.UserProfile;
@@ -84,6 +86,11 @@ public class ProfileActivity extends AppCompatActivity {
         emailInput = findViewById(R.id.profile_email);
         usernameInput = findViewById(R.id.profile_username);
         phoneInput = findViewById(R.id.profile_phone);
+
+        // Set up gender dropdown
+        String[] genderOptions = getResources().getStringArray(R.array.gender_options);
+        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, genderOptions);
+        genderInput.setAdapter(genderAdapter);
 
         oldPasswordInput = findViewById(R.id.profile_old_password);
         newPasswordInput = findViewById(R.id.profile_new_password);

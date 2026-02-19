@@ -1,6 +1,7 @@
 package com.example.driverr_mobile;
 
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
@@ -46,6 +47,16 @@ public class DriverRegisterActivity extends AppCompatActivity {
         MaterialCheckBox allowsPetsInput = findViewById(R.id.driver_register_allows_pets);
         MaterialCheckBox allowsBabiesInput = findViewById(R.id.driver_register_allows_babies);
         MaterialButton registerButton = findViewById(R.id.driver_register_button);
+
+        // Set up gender dropdown
+        String[] genderOptions = getResources().getStringArray(R.array.gender_options);
+        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, genderOptions);
+        genderInput.setAdapter(genderAdapter);
+
+        // Set up vehicle type dropdown
+        String[] vehicleTypeOptions = getResources().getStringArray(R.array.vehicle_type_options);
+        ArrayAdapter<String> vehicleTypeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, vehicleTypeOptions);
+        vehicleTypeInput.setAdapter(vehicleTypeAdapter);
 
         registerButton.setOnClickListener(v -> {
             String firstName = textOf(firstNameInput);

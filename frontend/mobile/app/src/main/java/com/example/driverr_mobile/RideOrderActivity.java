@@ -2,6 +2,7 @@ package com.example.driverr_mobile;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -91,6 +92,11 @@ public class RideOrderActivity extends AppCompatActivity implements OnMapReadyCa
             finish();
             return;
         }
+
+        // Set up vehicle type dropdown
+        String[] vehicleTypeOptions = getResources().getStringArray(R.array.vehicle_type_options);
+        ArrayAdapter<String> vehicleTypeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, vehicleTypeOptions);
+        vehicleTypeInput.setAdapter(vehicleTypeAdapter);
 
         // Initialize map
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()

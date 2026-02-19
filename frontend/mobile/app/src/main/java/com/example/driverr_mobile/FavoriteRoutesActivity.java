@@ -134,6 +134,8 @@ public class FavoriteRoutesActivity extends AppCompatActivity implements OnMapRe
         findViewById(R.id.favorite_save_button).setOnClickListener(v -> saveFavoriteRoute());
         findViewById(R.id.favorite_pickup_find).setOnClickListener(v -> geocodeAddress(true));
         findViewById(R.id.favorite_destination_find).setOnClickListener(v -> geocodeAddress(false));
+        toggleButton.setOnClickListener(v -> toggleForm());
+        cancelButton.setOnClickListener(v -> closeForm());
 
         formContainer.setVisibility(View.GONE);
         loadFavoriteRoutes();

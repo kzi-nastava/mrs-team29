@@ -2,6 +2,7 @@ package com.example.driverr_mobile;
 
 import android.os.Bundle;
 import android.content.Intent;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -41,6 +42,11 @@ public class RegisterActivity extends AppCompatActivity {
         TextInputEditText passwordInput = findViewById(R.id.register_password);
         TextInputEditText confirmPasswordInput = findViewById(R.id.register_confirm_password);
         MaterialButton registerButton = findViewById(R.id.register_button);
+
+        // Set up gender dropdown
+        String[] genderOptions = getResources().getStringArray(R.array.gender_options);
+        ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, genderOptions);
+        genderInput.setAdapter(genderAdapter);
 
         registerButton.setOnClickListener(v -> {
             String firstName = textOf(firstNameInput);
