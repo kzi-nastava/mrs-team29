@@ -40,6 +40,13 @@ public class ProfileActivity extends AppCompatActivity {
     private TextInputEditText emailInput;
     private TextInputEditText usernameInput;
     private TextInputEditText phoneInput;
+    private View vehicleSection;
+    private TextInputEditText vehicleModelInput;
+    private MaterialAutoCompleteTextView vehicleTypeInput;
+    private TextInputEditText registrationPlateInput;
+    private TextInputEditText vehicleSeatsInput;
+    private MaterialAutoCompleteTextView petsAllowedInput;
+    private MaterialAutoCompleteTextView babiesAllowedInput;
 
     private TextInputEditText oldPasswordInput;
     private TextInputEditText newPasswordInput;
@@ -86,11 +93,27 @@ public class ProfileActivity extends AppCompatActivity {
         emailInput = findViewById(R.id.profile_email);
         usernameInput = findViewById(R.id.profile_username);
         phoneInput = findViewById(R.id.profile_phone);
+        vehicleSection = findViewById(R.id.profile_vehicle_section);
+        vehicleModelInput = findViewById(R.id.profile_vehicle_model);
+        vehicleTypeInput = findViewById(R.id.profile_vehicle_type);
+        registrationPlateInput = findViewById(R.id.profile_registration_plate);
+        vehicleSeatsInput = findViewById(R.id.profile_vehicle_seats);
+        petsAllowedInput = findViewById(R.id.profile_pets_allowed);
+        babiesAllowedInput = findViewById(R.id.profile_babies_allowed);
 
         // Set up gender dropdown
         String[] genderOptions = getResources().getStringArray(R.array.gender_options);
         ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, genderOptions);
         genderInput.setAdapter(genderAdapter);
+
+        String[] vehicleTypeOptions = getResources().getStringArray(R.array.vehicle_type_options);
+        ArrayAdapter<String> vehicleTypeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, vehicleTypeOptions);
+        vehicleTypeInput.setAdapter(vehicleTypeAdapter);
+
+        String[] booleanOptions = getResources().getStringArray(R.array.boolean_options);
+        ArrayAdapter<String> booleanAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, booleanOptions);
+        petsAllowedInput.setAdapter(booleanAdapter);
+        babiesAllowedInput.setAdapter(booleanAdapter);
 
         oldPasswordInput = findViewById(R.id.profile_old_password);
         newPasswordInput = findViewById(R.id.profile_new_password);
@@ -149,6 +172,13 @@ public class ProfileActivity extends AppCompatActivity {
                 isDriver = "DRIVER".equalsIgnoreCase(profile.getUserType());
                 if (isDriver) {
                     loadWorkingHours();
+                    vehicleSection.setVisibility(View.VISIBLE);
+                    vehicleModelInput.setText(nullToEmpty(profile.getVehicleModel()));
+                    vehicleTypeInput.setText(nullToEmpty(profile.getVehicleType()), false);
+                    registrationPlateInput.setText(nullToEmpty(profile.getRegistrationPlate()));
+                    vehicleSeatsInput.setText(profile.getVehicleSeats() == null ? "" : String.valueOf(profile.getVehicleSeats()));
+                    petsAllowedInput.setText(profile.getPetsAllowed() == null ? "" : String.valueOf(profile.getPetsAllowed()), false);
+                    babiesAllowedInput.setText(profile.getBabiesAllowed() == null ? "" : String.valueOf(profile.getBabiesAllowed()), false);
                 
                 // Show block status if blocked
                 if (profile.isBlocked()) {
@@ -193,11 +223,40 @@ public class ProfileActivity extends AppCompatActivity {
         String gender = textOf(genderInput);
         String username = textOf(usernameInput);
         String phone = textOf(phoneInput);
+        String vehicleModel = textOf(vehicleModelInput);
+        String vehicleType = textOf(vehicleTypeInput);
+        String registrationPlate = textOf(registrationPlateInput);
+        String vehicleSeatsRaw = textOf(vehicleSeatsInput);
+        String petsAllowedRaw = textOf(petsAllowedInput);
+        String babiesAllowedRaw = textOf(babiesAllowedInput);
         Object address = profileDefaults == null ? null : profileDefaults.getAddress();
 
         if (firstName.isEmpty() || lastName.isEmpty()) {
             Toast.makeText(this, "First name and last name are required", Toast.LENGTH_SHORT).show();
             return;
+        }
+
+        Integer vehicleSeats = null;
+        Boolean petsAllowed = null;
+        Boolean babiesAllowed = null;
+        if (isDriver) {
+            if (vehicleModel.isEmpty() || vehicleType.isEmpty() || registrationPlate.isEmpty() || vehicleSeatsRaw.isEmpty()
+                || petsAllowedRaw.isEmpty() || babiesAllowedRaw.isEmpty()) {
+                Toast.makeText(this, "All vehicle fields are required for drivers", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            try {
+                vehicleSeats = Integer.parseInt(vehicleSeatsRaw);
+                if (vehicleSeats <= 0) {
+                    Toast.makeText(this, "Vehicle seats must be greater than 0", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Vehicle seats must be a valid number", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            petsAllowed = Boolean.parseBoolean(petsAllowedRaw);
+            babiesAllowed = Boolean.parseBoolean(babiesAllowedRaw);
         }
 
         saveButton.setEnabled(false);
@@ -209,8 +268,14 @@ public class ProfileActivity extends AppCompatActivity {
                 gender.isEmpty() ? null : gender,
                 username.isEmpty() ? null : username,
                 phone.isEmpty() ? null : phone,
-            address,
-                null
+                address,
+                null,
+                isDriver ? vehicleModel : null,
+                isDriver ? vehicleType : null,
+                isDriver ? registrationPlate : null,
+                isDriver ? vehicleSeats : null,
+                isDriver ? petsAllowed : null,
+                isDriver ? babiesAllowed : null
         );
 
         ApiClient.getUserApi().updateProfile(userId, request)
@@ -258,6 +323,14 @@ public class ProfileActivity extends AppCompatActivity {
         emailInput.setText(nullToEmpty(profileDefaults.getEmail()));
         usernameInput.setText(nullToEmpty(profileDefaults.getUsername()));
         phoneInput.setText(nullToEmpty(profileDefaults.getPhoneNumber()));
+        if (isDriver) {
+            vehicleModelInput.setText(nullToEmpty(profileDefaults.getVehicleModel()));
+            vehicleTypeInput.setText(nullToEmpty(profileDefaults.getVehicleType()), false);
+            registrationPlateInput.setText(nullToEmpty(profileDefaults.getRegistrationPlate()));
+            vehicleSeatsInput.setText(profileDefaults.getVehicleSeats() == null ? "" : String.valueOf(profileDefaults.getVehicleSeats()));
+            petsAllowedInput.setText(profileDefaults.getPetsAllowed() == null ? "" : String.valueOf(profileDefaults.getPetsAllowed()), false);
+            babiesAllowedInput.setText(profileDefaults.getBabiesAllowed() == null ? "" : String.valueOf(profileDefaults.getBabiesAllowed()), false);
+        }
     }
 
     private void togglePasswordSection() {

@@ -1,9 +1,12 @@
 package dto.user;
 
 import domain.entities.Address;
+import domain.entities.Driver;
 import domain.entities.User;
+import domain.entities.Vehicle;
 import domain.enums.Gender;
 import domain.enums.UserType;
+import domain.enums.VehicleType;
 
 public class UserProfileDTO {
 
@@ -19,6 +22,12 @@ public class UserProfileDTO {
     private UserType userType;
     private boolean isBlocked;
     private String blockNote;
+    private String vehicleModel;
+    private VehicleType vehicleType;
+    private String registrationPlate;
+    private Integer vehicleSeats;
+    private Boolean petsAllowed;
+    private Boolean babiesAllowed;
 
     public UserProfileDTO() {}
 
@@ -35,6 +44,12 @@ public class UserProfileDTO {
     public UserType getUserType() { return userType; }
     public boolean isBlocked() { return isBlocked; }
     public String getBlockNote() { return blockNote; }
+    public String getVehicleModel() { return vehicleModel; }
+    public VehicleType getVehicleType() { return vehicleType; }
+    public String getRegistrationPlate() { return registrationPlate; }
+    public Integer getVehicleSeats() { return vehicleSeats; }
+    public Boolean getPetsAllowed() { return petsAllowed; }
+    public Boolean getBabiesAllowed() { return babiesAllowed; }
 
     // SETTERS
     public void setId(String id) { this.id = id; }
@@ -49,6 +64,12 @@ public class UserProfileDTO {
     public void setBlockNote(String blockNote) { this.blockNote = blockNote; }
     public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
     public void setUserType(UserType userType) { this.userType = userType; }
+    public void setVehicleModel(String vehicleModel) { this.vehicleModel = vehicleModel; }
+    public void setVehicleType(VehicleType vehicleType) { this.vehicleType = vehicleType; }
+    public void setRegistrationPlate(String registrationPlate) { this.registrationPlate = registrationPlate; }
+    public void setVehicleSeats(Integer vehicleSeats) { this.vehicleSeats = vehicleSeats; }
+    public void setPetsAllowed(Boolean petsAllowed) { this.petsAllowed = petsAllowed; }
+    public void setBabiesAllowed(Boolean babiesAllowed) { this.babiesAllowed = babiesAllowed; }
 
     public static UserProfileDTO fromUser(User user) {
         UserProfileDTO dto = new UserProfileDTO();
@@ -64,6 +85,17 @@ public class UserProfileDTO {
         dto.blockNote = user.getBlockNote();
         dto.profilePictureUrl = user.getProfilePictureUrl();
         dto.userType = user.getUserType();
+
+        if (user instanceof Driver driver && driver.getVehicle() != null) {
+            Vehicle vehicle = driver.getVehicle();
+            dto.vehicleModel = vehicle.getVehicleModel();
+            dto.vehicleType = vehicle.getType();
+            dto.registrationPlate = vehicle.getRegistrationPlate();
+            dto.vehicleSeats = vehicle.getSeats();
+            dto.petsAllowed = vehicle.isPetsAllowed();
+            dto.babiesAllowed = vehicle.isBabiesAllowed();
+        }
+
         return dto;
     }
 }

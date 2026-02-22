@@ -344,6 +344,50 @@ public class UserServiceImpl implements UserService {
                 dto.getProfilePictureUrl()
             );
 
+            Driver driver = driverRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+            Vehicle vehicle = driver.getVehicle();
+            if (vehicle == null) {
+                throw new RuntimeException("Driver vehicle not found");
+            }
+
+            created |= createProfileChangeRequestIfChanged(
+                user,
+                "vehicleModel",
+                vehicle.getVehicleModel(),
+                dto.getVehicleModel()
+            );
+            created |= createProfileChangeRequestIfChanged(
+                user,
+                "vehicleType",
+                vehicle.getType() == null ? null : vehicle.getType().name(),
+                dto.getVehicleType() == null ? null : dto.getVehicleType().name()
+            );
+            created |= createProfileChangeRequestIfChanged(
+                user,
+                "registrationPlate",
+                vehicle.getRegistrationPlate(),
+                dto.getRegistrationPlate()
+            );
+            created |= createProfileChangeRequestIfChanged(
+                user,
+                "vehicleSeats",
+                String.valueOf(vehicle.getSeats()),
+                dto.getVehicleSeats() == null ? null : String.valueOf(dto.getVehicleSeats())
+            );
+            created |= createProfileChangeRequestIfChanged(
+                user,
+                "petsAllowed",
+                String.valueOf(vehicle.isPetsAllowed()),
+                dto.getPetsAllowed() == null ? null : String.valueOf(dto.getPetsAllowed())
+            );
+            created |= createProfileChangeRequestIfChanged(
+                user,
+                "babiesAllowed",
+                String.valueOf(vehicle.isBabiesAllowed()),
+                dto.getBabiesAllowed() == null ? null : String.valueOf(dto.getBabiesAllowed())
+            );
+
             if (!created) {
             return UserProfileDTO.fromUser(user);
             }
@@ -425,7 +469,13 @@ public class UserServiceImpl implements UserService {
 
         User user = request.getUser();
         applyProfileChange(user, request.getFieldName(), request.getNewValue());
-        userRepository.save(user);
+        if (user.getUserType() == UserType.DRIVER) {
+            Driver driver = driverRepository.findById(user.getId())
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+            userRepository.save(driver);
+        } else {
+            userRepository.save(user);
+        }
         request.setStatus(ChangeRequestStatus.APPROVED);
         profileChangeRequestRepository.save(request);
     }
@@ -478,8 +528,51 @@ public class UserServiceImpl implements UserService {
                 break;
             case "phoneNumber": user.setPhoneNumber(newValue); break;
             case "profilePictureUrl": user.setProfilePictureUrl(newValue); break;
+            case "vehicleModel":
+                getDriverVehicle(user).setVehicleModel(newValue);
+                break;
+            case "vehicleType":
+                if (newValue == null || newValue.isBlank()) {
+                    throw new RuntimeException("Vehicle type cannot be empty");
+                }
+                getDriverVehicle(user).setType(VehicleType.valueOf(newValue));
+                break;
+            case "registrationPlate":
+                getDriverVehicle(user).setRegistrationPlate(newValue);
+                break;
+            case "vehicleSeats":
+                if (newValue == null || newValue.isBlank()) {
+                    throw new RuntimeException("Vehicle seats cannot be empty");
+                }
+                int seats = Integer.parseInt(newValue);
+                if (seats <= 0) {
+                    throw new RuntimeException("Vehicle seats must be greater than 0");
+                }
+                getDriverVehicle(user).setSeats(seats);
+                break;
+            case "petsAllowed":
+                if (newValue == null || newValue.isBlank()) {
+                    throw new RuntimeException("Pets allowed value cannot be empty");
+                }
+                getDriverVehicle(user).setPetsAllowed(Boolean.parseBoolean(newValue));
+                break;
+            case "babiesAllowed":
+                if (newValue == null || newValue.isBlank()) {
+                    throw new RuntimeException("Babies allowed value cannot be empty");
+                }
+                getDriverVehicle(user).setBabiesAllowed(Boolean.parseBoolean(newValue));
+                break;
             default: throw new RuntimeException("Unknown field: " + fieldName);
         }
+    }
+
+    private Vehicle getDriverVehicle(User user) {
+        Driver driver = driverRepository.findById(user.getId())
+            .orElseThrow(() -> new RuntimeException("Driver not found"));
+        if (driver.getVehicle() == null) {
+            throw new RuntimeException("Driver vehicle not found");
+        }
+        return driver.getVehicle();
     }
 
     private boolean createProfileChangeRequestIfChanged(

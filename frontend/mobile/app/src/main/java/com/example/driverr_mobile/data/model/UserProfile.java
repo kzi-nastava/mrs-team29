@@ -13,6 +13,12 @@ public class UserProfile {
     private String userType;
     private boolean blocked;
     private String blockNote;
+    private String vehicleModel;
+    private String vehicleType;
+    private String registrationPlate;
+    private Integer vehicleSeats;
+    private Boolean petsAllowed;
+    private Boolean babiesAllowed;
 
     public String getId() { return id; }
     public String getFirstName() { return firstName; }
@@ -26,4 +32,10 @@ public class UserProfile {
     public String getUserType() { return userType; }
     public boolean isBlocked() { return blocked; }
     public String getBlockNote() { return blockNote; }
+    public String getVehicleModel() { return vehicleModel; }
+    public String getVehicleType() { return vehicleType; }
+    public String getRegistrationPlate() { return registrationPlate; }
+    public Integer getVehicleSeats() { return vehicleSeats; }
+    public Boolean getPetsAllowed() { return petsAllowed; }
+    public Boolean getBabiesAllowed() { return babiesAllowed; }
 }
