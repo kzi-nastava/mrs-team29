@@ -1,6 +1,7 @@
 package service.impl;
 
 import dto.ride.*;
+import dto.admin.AdminRideStateDTO;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -615,6 +617,81 @@ public class RideServiceImpl implements RideService {
 	            ))
 	            .collect(Collectors.toList());
 	}
+
+    @Override
+    public List<AdminRideStateDTO> getAdminActiveRideStates(String driverName) {
+        List<Ride> activeRides = rideRepository.findByStatusIn(
+                List.of(RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
+        );
+
+        String normalizedDriverName = driverName == null ? "" : driverName.trim().toLowerCase(Locale.ROOT);
+
+        return activeRides.stream()
+                .filter(ride -> ride.getDriver() != null)
+                .filter(ride -> {
+                    if (normalizedDriverName.isBlank()) {
+                        return true;
+                    }
+                    String firstName = ride.getDriver().getFirstName() == null ? "" : ride.getDriver().getFirstName();
+                    String lastName = ride.getDriver().getLastName() == null ? "" : ride.getDriver().getLastName();
+                    String fullName = (firstName + " " + lastName).trim().toLowerCase(Locale.ROOT);
+                    return fullName.contains(normalizedDriverName)
+                            || firstName.toLowerCase(Locale.ROOT).contains(normalizedDriverName)
+                            || lastName.toLowerCase(Locale.ROOT).contains(normalizedDriverName);
+                })
+                .map(this::mapToAdminRideState)
+                .collect(Collectors.toList());
+    }
+
+    private AdminRideStateDTO mapToAdminRideState(Ride ride) {
+        AdminRideStateDTO dto = new AdminRideStateDTO();
+        dto.setRideId(ride.getId());
+        dto.setStatus(ride.getStatus());
+
+        Driver driver = ride.getDriver();
+        if (driver != null) {
+            dto.setDriverId(driver.getId());
+            dto.setDriverName((driver.getFirstName() + " " + driver.getLastName()).trim());
+        }
+
+        if (ride.getPickupAddress() != null) {
+            dto.setPickupAddress(formatAddress(ride.getPickupAddress()));
+        }
+        if (ride.getDestinationAddress() != null) {
+            dto.setDestinationAddress(formatAddress(ride.getDestinationAddress()));
+        }
+
+        dto.setScheduledTime(ride.getScheduledTime());
+        dto.setStartedAt(getRideStartedAt(ride));
+        if (dto.getStartedAt() != null) {
+            dto.setEstimatedArrival(dto.getStartedAt().plusMinutes(15));
+        }
+
+        if (ride.getStatus() == RideStatus.IN_PROGRESS && ride.getPickupAddress() != null && ride.getDestinationAddress() != null) {
+            double midLat = (ride.getPickupAddress().getLatitude() + ride.getDestinationAddress().getLatitude()) / 2.0;
+            double midLon = (ride.getPickupAddress().getLongitude() + ride.getDestinationAddress().getLongitude()) / 2.0;
+            dto.setCurrentLatitude(midLat);
+            dto.setCurrentLongitude(midLon);
+            dto.setCurrentLocationDescription("Estimated position between pickup and destination");
+        } else if (ride.getPickupAddress() != null) {
+            dto.setCurrentLatitude(ride.getPickupAddress().getLatitude());
+            dto.setCurrentLongitude(ride.getPickupAddress().getLongitude());
+            dto.setCurrentLocationDescription("Pickup location");
+        }
+
+        return dto;
+    }
+
+    private LocalDateTime getRideStartedAt(Ride ride) {
+        if (ride.getTimestamps() == null || ride.getTimestamps().size() < 2) {
+            return null;
+        }
+        return ride.getTimestamps().get(1);
+    }
+
+    private String formatAddress(Address address) {
+        return address.getStreet() + " " + address.getStreetNumber() + ", " + address.getCity();
+    }
 
 }
 

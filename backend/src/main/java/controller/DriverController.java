@@ -65,6 +65,11 @@ public class DriverController {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
+
+    @GetMapping("/{driverId}")
+    public ResponseEntity<DriverDetailsDTO> getDriverById(@PathVariable String driverId) {
+        return ResponseEntity.ok(DriverDetailsDTO.fromDriver(driverService.getDriverById(driverId)));
+    }
     
     @GetMapping("/{driverId}/working-hours")
     public ResponseEntity<Double> getWorkingHours(@PathVariable String driverId) {

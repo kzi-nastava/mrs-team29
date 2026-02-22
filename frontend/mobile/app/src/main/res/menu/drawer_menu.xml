@@ -37,6 +37,9 @@
         android:id="@+id/nav_admin_pricing"
         android:title="Ride Pricing" />
     <item
+        android:id="@+id/nav_admin_ride_monitor"
+        android:title="Ride Monitor" />
+    <item
         android:id="@+id/nav_logout"
         android:title="Logout" />
 </menu>

@@ -3,6 +3,7 @@ package controller;
 import domain.enums.VehicleType;
 import dto.admin.UpdateVehiclePricingDTO;
 import dto.admin.VehiclePricingDTO;
+import dto.admin.AdminRideStateDTO;
 import dto.user.BlockUserDTO;
 import dto.user.ProfileChangeRequestDTO;
 import dto.user.UserBlockStatusDTO;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import service.RidePricingService;
+import service.RideService;
 import service.UserService;
 
 import java.util.List;
@@ -22,10 +24,12 @@ public class AdminController {
 
     private final UserService userService;
     private final RidePricingService ridePricingService;
+    private final RideService rideService;
 
-    public AdminController(UserService userService, RidePricingService ridePricingService) {
+    public AdminController(UserService userService, RidePricingService ridePricingService, RideService rideService) {
         this.userService = userService;
         this.ridePricingService = ridePricingService;
+        this.rideService = rideService;
     }
 
     @GetMapping("/profile-change-requests")
@@ -86,5 +90,12 @@ public class AdminController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
+    }
+
+    @GetMapping("/rides/active-monitor")
+    public ResponseEntity<List<AdminRideStateDTO>> getActiveRideMonitor(
+            @RequestParam(required = false) String driverName
+    ) {
+        return ResponseEntity.ok(rideService.getAdminActiveRideStates(driverName));
     }
 }

@@ -26,6 +26,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 
+import org.json.JSONObject;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -174,6 +176,8 @@ public class RideReportsActivity extends AppCompatActivity {
             String selectedUserEmail = textOf(userEmailInput);
             if (selectedUserEmail.isBlank()) {
                 selectedUserEmail = null;
+            } else {
+                selectedUserEmail = selectedUserEmail.toLowerCase(Locale.ROOT);
             }
 
             ApiClient.getReportApi()
@@ -185,7 +189,7 @@ public class RideReportsActivity extends AppCompatActivity {
                             if (response.isSuccessful() && response.body() != null) {
                                 renderReport(response.body());
                             } else {
-                                Toast.makeText(RideReportsActivity.this, "Failed to load admin report", Toast.LENGTH_SHORT).show();
+                                showApiError(response, "Failed to load admin report");
                             }
                         }
 
@@ -208,7 +212,7 @@ public class RideReportsActivity extends AppCompatActivity {
                         if (response.isSuccessful() && response.body() != null) {
                             renderReport(response.body());
                         } else {
-                            Toast.makeText(RideReportsActivity.this, "Failed to load report", Toast.LENGTH_SHORT).show();
+                            showApiError(response, "Failed to load report");
                         }
                     }
 
@@ -310,5 +314,20 @@ public class RideReportsActivity extends AppCompatActivity {
 
     private String formatMoney(double value) {
         return "$" + String.format(Locale.US, "%.2f", value);
+    }
+
+    private void showApiError(Response<RideReportResponse> response, String fallbackMessage) {
+        String message = fallbackMessage;
+        try {
+            if (response.errorBody() != null) {
+                String raw = response.errorBody().string();
+                JSONObject obj = new JSONObject(raw);
+                if (obj.has("message")) {
+                    message = obj.getString("message");
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

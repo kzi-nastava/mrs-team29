@@ -95,6 +95,12 @@ public class DriverServiceImpl implements DriverService {
         return driver;
     }
 
+    @Override
+    public Driver getDriverById(String driverId) {
+        return driverRepository.findById(driverId)
+                .orElseThrow(() -> new RuntimeException("Driver not found"));
+    }
+
     
     @Override
     public List<ActiveDriverDTO> getActiveDrivers() {

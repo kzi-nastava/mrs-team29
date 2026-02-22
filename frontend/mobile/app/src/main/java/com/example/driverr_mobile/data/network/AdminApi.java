@@ -1,6 +1,7 @@
 package com.example.driverr_mobile.data.network;
 
 import com.example.driverr_mobile.data.model.ApiResponse;
+import com.example.driverr_mobile.data.model.AdminRideState;
 import com.example.driverr_mobile.data.model.BlockUserRequest;
 import com.example.driverr_mobile.data.model.ProfileChangeRequest;
 import com.example.driverr_mobile.data.model.UpdateVehiclePricingRequest;
@@ -47,4 +48,7 @@ public interface AdminApi {
         @Path("vehicleType") String vehicleType,
         @Body UpdateVehiclePricingRequest request
     );
+
+    @GET("admin/rides/active-monitor")
+    Call<List<AdminRideState>> getActiveRideMonitor(@retrofit2.http.Query("driverName") String driverName);
 }

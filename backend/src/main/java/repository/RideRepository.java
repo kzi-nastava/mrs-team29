@@ -13,6 +13,7 @@ import domain.enums.*;
 @Repository
 public interface RideRepository extends JpaRepository<Ride, String> {
     List<Ride> findByStatus(RideStatus status);
+    List<Ride> findByStatusIn(List<RideStatus> statuses);
     List<Ride> findByStatusOrderByTimestampsDesc(RideStatus status);
     List<Ride> findByDriver_IdAndStatus(String driverId, RideStatus status);
     List<Ride> findByPassengers_IdAndStatus(String passengerId, RideStatus status);
