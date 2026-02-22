@@ -13,6 +13,12 @@ public class EmailService {
     @Value("${app.backend.url:http://localhost:8081}")
     private String backendUrl;
 
+    @Value("${app.web.url:http://localhost:4200}")
+    private String webUrl;
+
+    @Value("${app.mobile.deepLink:driverr://driver-activate}")
+    private String mobileDeepLink;
+
     @Value("${spring.mail.username:}")
     private String mailFrom;
 
@@ -39,6 +45,24 @@ public class EmailService {
         sendEmail(toEmail, subject, body);
     }
 
+    public void sendDriverActivationEmail(String toEmail, String fullName, String activationToken) {
+        String webActivationLink = webUrl + "/driver-activate?token=" + activationToken;
+        String mobileActivationLink = mobileDeepLink + "?token=" + activationToken;
+
+        String subject = "Set Your Driverr Driver Password";
+        String body = "Dear " + fullName + ",\n\n"
+            + "Your driver account is ready for activation. Please set your initial password using one of the links below.\n\n"
+            + "Web activation link: " + webActivationLink + "\n"
+            + "Mobile activation link: " + mobileActivationLink + "\n\n"
+                + "After successful password setup, this activation link becomes invalid.\n"
+                + "This link will expire in 24 hours.\n\n"
+                + "If you did not expect this invitation, please ignore this email.\n\n"
+                + "Best regards,\n"
+                + "Driverr Team";
+
+        sendEmail(toEmail, subject, body);
+    }
+
     public void sendPasswordResetEmail(String toEmail, String fullName, String resetToken) {
         // Backend reset endpoint - works for both web and mobile
         // Mobile testing: http://192.168.0.12:8081/api/auth/password-reset/reset?token=xxx
@@ -52,6 +76,25 @@ public class EmailService {
                 + "Reset Link: " + resetLink + "\n\n"
                 + "This link will expire in 1 hour.\n\n"
                 + "If you did not request a password reset, please ignore this email.\n\n"
+                + "Best regards,\n"
+                + "Driverr Team";
+
+        sendEmail(toEmail, subject, body);
+    }
+
+    public void sendRideFinishedEmail(String toEmail, String fullName, String rideId, 
+                                      String pickupAddress, String destinationAddress, 
+                                      Double price) {
+        String subject = "Your Ride Has Been Completed";
+        String body = "Dear " + fullName + ",\n\n"
+                + "Your ride has been successfully completed!\n\n"
+                + "Ride Details:\n"
+                + "Ride ID: " + rideId + "\n"
+                + "From: " + pickupAddress + "\n"
+                + "To: " + destinationAddress + "\n"
+                + "Total Price: $" + String.format("%.2f", price) + "\n\n"
+                + "Thank you for choosing Driverr! We hope you had a pleasant journey.\n\n"
+                + "You can rate your ride experience by logging into your account.\n\n"
                 + "Best regards,\n"
                 + "Driverr Team";
 

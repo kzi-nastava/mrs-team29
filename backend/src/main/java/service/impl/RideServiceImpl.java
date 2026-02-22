@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import domain.entities.*;
 import domain.enums.*;
+import service.EmailService;
 import service.RidePricingService;
 import service.RideService;
 import repository.*;
@@ -34,6 +35,8 @@ public class RideServiceImpl implements RideService {
     private final FavoriteRouteRepository favoriteRouteRepository;
     private final AddressRepository addressRepository;
     private final RidePricingService ridePricingService;
+    private final DriverInconsistencyNoteRepository inconsistencyNoteRepository;
+    private final EmailService emailService;
 	
     public RideServiceImpl(
             RideRepository rideRepository,
@@ -41,7 +44,9 @@ public class RideServiceImpl implements RideService {
             DriverRepository driverRepository,
             AddressRepository addressRepository,
             FavoriteRouteRepository favoriteRouteRepository,
-            RidePricingService ridePricingService
+            RidePricingService ridePricingService,
+            DriverInconsistencyNoteRepository inconsistencyNoteRepository,
+            EmailService emailService
     ) {
         this.rideRepository = rideRepository;
         this.userRepository = userRepository;
@@ -49,6 +54,8 @@ public class RideServiceImpl implements RideService {
         this.addressRepository = addressRepository;
         this.favoriteRouteRepository = favoriteRouteRepository;
         this.ridePricingService = ridePricingService;
+        this.inconsistencyNoteRepository = inconsistencyNoteRepository;
+        this.emailService = emailService;
     }
     	
     @Override
@@ -154,7 +161,7 @@ public class RideServiceImpl implements RideService {
             throw new RuntimeException("Driver not assigned to this ride");
         }
 
-        if (ride.getStatus() != RideStatus.ASSIGNED) {
+        if (ride.getStatus() != RideStatus.ASSIGNED && ride.getStatus() != RideStatus.SCHEDULED) {
             throw new RuntimeException("Ride cannot be started. Current status: " + ride.getStatus());
         }
 
@@ -211,6 +218,29 @@ public class RideServiceImpl implements RideService {
         rideRepository.save(ride);
         driverRepository.save(driver);
 
+        // Send email notifications to all passengers
+        for (User passenger : ride.getPassengers()) {
+            try {
+                String pickupAddr = ride.getPickupAddress().getStreet() + " " + 
+                                    ride.getPickupAddress().getStreetNumber() + ", " + 
+                                    ride.getPickupAddress().getCity();
+                String destAddr = ride.getDestinationAddress().getStreet() + " " + 
+                                  ride.getDestinationAddress().getStreetNumber() + ", " + 
+                                  ride.getDestinationAddress().getCity();
+                
+                emailService.sendRideFinishedEmail(
+                    passenger.getEmail(),
+                    passenger.getFirstName() + " " + passenger.getLastName(),
+                    ride.getId(),
+                    pickupAddr,
+                    destAddr,
+                    ride.getPrice()
+                );
+            } catch (Exception e) {
+                System.err.println("Failed to send ride finished email to " + passenger.getEmail() + ": " + e.getMessage());
+            }
+        }
+
         return RideResponseDTO.fromRide(ride);
     }
     
@@ -262,6 +292,7 @@ public class RideServiceImpl implements RideService {
 
     @Override
     public RideResponseDTO getDriverCurrentRide(String driverId) {
+        // First check for active rides (IN_PROGRESS, ASSIGNED, REQUESTED)
         List<Ride> activeRides = rideRepository.findByDriver_IdAndStatusIn(
             driverId,
             List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
@@ -283,6 +314,21 @@ public class RideServiceImpl implements RideService {
             })
             .collect(Collectors.toList());
 
+        // If no active rides, check for upcoming scheduled rides
+        if (visibleRides.isEmpty()) {
+            List<Ride> scheduledRides = rideRepository.findByDriver_IdAndStatusIn(
+                driverId,
+                List.of(RideStatus.SCHEDULED)
+            );
+
+            // Show scheduled rides that are within the next 2 hours
+            visibleRides = scheduledRides.stream()
+                .filter(ride -> ride.getScheduledTime() != null 
+                    && ride.getScheduledTime().isAfter(now)
+                    && ride.getScheduledTime().isBefore(now.plusHours(2)))
+                .collect(Collectors.toList());
+        }
+
         if (visibleRides.isEmpty()) {
             throw new RuntimeException("No active ride found for driver");
         }
@@ -293,6 +339,28 @@ public class RideServiceImpl implements RideService {
                 Comparator.nullsLast(Comparator.naturalOrder())
             ))
             .orElse(visibleRides.get(0));
+
+        return RideResponseDTO.fromRide(currentRide);
+    }
+
+    @Override
+    public RideResponseDTO getUserCurrentRide(String userId) {
+        List<Ride> activeRides = rideRepository.findByPassengers_IdAndStatusIn(
+            userId,
+            List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
+        );
+
+        if (activeRides.isEmpty()) {
+            throw new RuntimeException("No active ride found for user");
+        }
+
+        // Return the most recent active ride (most likely there should only be one)
+        Ride currentRide = activeRides.stream()
+            .max(Comparator.comparing(
+                Ride::getScheduledTime,
+                Comparator.nullsLast(Comparator.naturalOrder())
+            ))
+            .orElse(activeRides.get(0));
 
         return RideResponseDTO.fromRide(currentRide);
     }
@@ -496,6 +564,56 @@ public class RideServiceImpl implements RideService {
 	    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	    
 	    return EARTH_RADIUS_KM * c;
+	}
+
+	@Override
+	public InconsistencyNoteResponseDTO reportDriverInconsistency(InconsistencyNoteDTO dto, String passengerId) {
+	    Ride ride = rideRepository.findById(dto.getRideId())
+	            .orElseThrow(() -> new RuntimeException("Ride not found"));
+	    
+	    User passenger = userRepository.findById(passengerId)
+	            .orElseThrow(() -> new RuntimeException("Passenger not found"));
+	    
+	    // Verify passenger is part of this ride
+	    boolean isPassenger = ride.getPassengers().stream()
+	            .anyMatch(p -> p.getId().equals(passengerId));
+	    
+	    if (!isPassenger) {
+	        throw new RuntimeException("You are not a passenger on this ride");
+	    }
+	    
+	    // Verify ride is in progress
+	    if (ride.getStatus() != RideStatus.IN_PROGRESS) {
+	        throw new RuntimeException("Can only report inconsistencies during active rides");
+	    }
+	    
+	    DriverInconsistencyNote note = new DriverInconsistencyNote(ride, passenger, dto.getNoteText());
+	    note = inconsistencyNoteRepository.save(note);
+	    
+	    return new InconsistencyNoteResponseDTO(
+	            note.getId(),
+	            ride.getId(),
+	            passenger.getId(),
+	            passenger.getFirstName() + " " + passenger.getLastName(),
+	            note.getNoteText(),
+	            note.getTimestamp()
+	    );
+	}
+
+	@Override
+	public List<InconsistencyNoteResponseDTO> getRideInconsistencyNotes(String rideId) {
+	    List<DriverInconsistencyNote> notes = inconsistencyNoteRepository.findByRideId(rideId);
+	    
+	    return notes.stream()
+	            .map(note -> new InconsistencyNoteResponseDTO(
+	                    note.getId(),
+	                    note.getRide().getId(),
+	                    note.getPassenger().getId(),
+	                    note.getPassenger().getFirstName() + " " + note.getPassenger().getLastName(),
+	                    note.getNoteText(),
+	                    note.getTimestamp()
+	            ))
+	            .collect(Collectors.toList());
 	}
 
 }

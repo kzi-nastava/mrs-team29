@@ -6,7 +6,6 @@ public class DriverRegisterRequest {
     private String gender;
     private String username;
     private String email;
-    private String password;
     private String phoneNumber;
     private String vehicleModel;
     private String vehicleType;
@@ -23,7 +22,6 @@ public class DriverRegisterRequest {
             String gender,
             String username,
             String email,
-            String password,
             String phoneNumber,
             String vehicleModel,
             String vehicleType,
@@ -37,7 +35,6 @@ public class DriverRegisterRequest {
         this.gender = gender;
         this.username = username;
         this.email = email;
-        this.password = password;
         this.phoneNumber = phoneNumber;
         this.vehicleModel = vehicleModel;
         this.vehicleType = vehicleType;
@@ -52,7 +49,6 @@ public class DriverRegisterRequest {
     public String getGender() { return gender; }
     public String getUsername() { return username; }
     public String getEmail() { return email; }
-    public String getPassword() { return password; }
     public String getPhoneNumber() { return phoneNumber; }
     public String getVehicleModel() { return vehicleModel; }
     public String getVehicleType() { return vehicleType; }

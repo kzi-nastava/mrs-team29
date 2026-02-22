@@ -10,6 +10,7 @@ public interface RideService {
 	RideResponseDTO orderRide(RideOrderDTO dto);
 	RideResponseDTO orderRideFromFavorite(String favoriteRouteId, FavoriteRideOrderDTO dto);
 	boolean hasActiveRide(String userId);
+	RideResponseDTO getUserCurrentRide(String userId);
 	
 	// Driver side - manage current ride
 	RideResponseDTO getDriverCurrentRide(String driverId);
@@ -32,4 +33,8 @@ public interface RideService {
 	void cancelRide(String rideId);
 	Ride getRidebyId(String rideId);
 	List<Ride> getActiveRides();
+	
+	// Inconsistency notes (2.6.2)
+	InconsistencyNoteResponseDTO reportDriverInconsistency(InconsistencyNoteDTO dto, String passengerId);
+	List<InconsistencyNoteResponseDTO> getRideInconsistencyNotes(String rideId);
 }

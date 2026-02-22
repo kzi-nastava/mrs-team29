@@ -1,5 +1,8 @@
 package com.example.driverr_mobile.data.network;
 
+import com.example.driverr_mobile.data.model.ApiResponse;
+import com.example.driverr_mobile.data.model.InconsistencyNoteRequest;
+import com.example.driverr_mobile.data.model.InconsistencyNoteResponse;
 import com.example.driverr_mobile.data.model.RideOrderRequest;
 import com.example.driverr_mobile.data.model.RideResponse;
 
@@ -19,6 +22,9 @@ public interface RideApi {
 
     @GET("rides/user/{userId}/active")
     Call<Boolean> hasActiveRide(@Path("userId") String userId);
+
+    @GET("rides/user/{userId}/current")
+    Call<RideResponse> getUserCurrentRide(@Path("userId") String userId);
 
     @GET("rides/user/{userId}/history")
     Call<List<RideResponse>> getUserRideHistory(@Path("userId") String userId);
@@ -40,4 +46,12 @@ public interface RideApi {
         @Query("startDate") String startDate,
         @Query("endDate") String endDate
     );
+
+    // ============ INCONSISTENCY NOTES (2.6.2) ============
+
+    @POST("rides/inconsistency-notes")
+    Call<InconsistencyNoteResponse> reportInconsistency(@Body InconsistencyNoteRequest request);
+
+    @GET("rides/inconsistency-notes/ride/{rideId}")
+    Call<List<InconsistencyNoteResponse>> getRideInconsistencyNotes(@Path("rideId") String rideId);
 }

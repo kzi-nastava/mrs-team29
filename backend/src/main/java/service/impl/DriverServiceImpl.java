@@ -51,7 +51,10 @@ public class DriverServiceImpl implements DriverService {
         driver.setGender(dto.getGender());
         driver.setUserName(dto.getUsername());
         driver.setEmail(dto.getEmail());
-        driver.setPassword(dto.getPassword());
+        String initialPassword = (dto.getPassword() == null || dto.getPassword().isBlank())
+            ? UUID.randomUUID().toString()
+            : dto.getPassword();
+        driver.setPassword(initialPassword);
         driver.setPhoneNumber(dto.getPhoneNumber());
         if (dto.getAddress() != null) {
             Address address = dto.getAddress();
@@ -85,7 +88,7 @@ public class DriverServiceImpl implements DriverService {
 
         // Send activation email to driver
         String fullName = driver.getFirstName() + " " + driver.getLastName();
-        emailService.sendActivationEmail(driver.getEmail(), fullName, token.getToken());
+        emailService.sendDriverActivationEmail(driver.getEmail(), fullName, token.getToken());
 
         System.out.println("Driver activation email sent to " + driver.getEmail());
 
@@ -124,6 +127,10 @@ public class DriverServiceImpl implements DriverService {
         ActivationToken token = activationTokenRepository.findByToken(tokenValue)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
 
+        if (token.isUsed()) {
+            throw new RuntimeException("Token already used");
+        }
+
         if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Token expired");
         }
@@ -136,6 +143,9 @@ public class DriverServiceImpl implements DriverService {
         driver.setStatus(DriverStatus.AVAILABLE);
 
         driverRepository.save(driver);
+
+        token.setUsed(true);
+        activationTokenRepository.save(token);
         activationTokenRepository.delete(token);
     }
     

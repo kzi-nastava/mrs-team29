@@ -60,32 +60,5 @@ export class RideService {
     
     return this.http.get<Ride[]>(url);
   }
-
-  // ============ FAVORITE ROUTES ============
-
-  // 2.4.3 – Favorite Routes
-  getFavoriteRoutes(userId: string) {
-    return this.http.get<any[]>(`${this.api}/favorite-routes/user/${userId}`);
-  }
-
-  createFavoriteRoute(dto: any) {
-    return this.http.post<any>(`${this.api}/favorite-routes`, dto);
-  }
-
-  updateFavoriteRoute(routeId: string, dto: any) {
-    return this.http.put<any>(`${this.api}/favorite-routes/${routeId}`, dto);
-  }
-
-  deleteFavoriteRoute(routeId: string) {
-    return this.http.delete(`${this.api}/favorite-routes/${routeId}`);
-  }
-
-  // Order Ride from Favorite Route
-  orderRideFromFavorite(favoriteRouteId: string, clientId: string) {
-    return this.http.post<any>(
-      `${this.api}/favorites/${favoriteRouteId}`,
-      { clientId }
-    );
-  }
 }
 
