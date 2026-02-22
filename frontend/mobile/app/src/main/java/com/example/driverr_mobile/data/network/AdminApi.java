@@ -3,7 +3,9 @@ package com.example.driverr_mobile.data.network;
 import com.example.driverr_mobile.data.model.ApiResponse;
 import com.example.driverr_mobile.data.model.BlockUserRequest;
 import com.example.driverr_mobile.data.model.ProfileChangeRequest;
+import com.example.driverr_mobile.data.model.UpdateVehiclePricingRequest;
 import com.example.driverr_mobile.data.model.UserBlockStatus;
+import com.example.driverr_mobile.data.model.VehiclePricing;
 
 import java.util.List;
 
@@ -11,6 +13,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface AdminApi {
@@ -35,4 +38,13 @@ public interface AdminApi {
 
     @POST("admin/users/{userId}/unblock")
     Call<ApiResponse<String>> unblockUser(@Path("userId") String userId);
+
+    @GET("admin/pricing")
+    Call<List<VehiclePricing>> getAllVehiclePricing();
+
+    @PUT("admin/pricing/{vehicleType}")
+    Call<VehiclePricing> updateVehiclePricing(
+        @Path("vehicleType") String vehicleType,
+        @Body UpdateVehiclePricingRequest request
+    );
 }

@@ -1,10 +1,15 @@
 package controller;
 
+import domain.enums.VehicleType;
+import dto.admin.UpdateVehiclePricingDTO;
+import dto.admin.VehiclePricingDTO;
 import dto.user.BlockUserDTO;
 import dto.user.ProfileChangeRequestDTO;
 import dto.user.UserBlockStatusDTO;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import service.RidePricingService;
 import service.UserService;
 
 import java.util.List;
@@ -16,9 +21,11 @@ import java.util.Map;
 public class AdminController {
 
     private final UserService userService;
+    private final RidePricingService ridePricingService;
 
-    public AdminController(UserService userService) {
+    public AdminController(UserService userService, RidePricingService ridePricingService) {
         this.userService = userService;
+        this.ridePricingService = ridePricingService;
     }
 
     @GetMapping("/profile-change-requests")
@@ -62,5 +69,22 @@ public class AdminController {
     public ResponseEntity<List<UserBlockStatusDTO>> getAllUsersBlockStatus() {
         List<UserBlockStatusDTO> statuses = userService.getAllUsersBlockStatus();
         return ResponseEntity.ok(statuses);
+    }
+
+    @GetMapping("/pricing")
+    public ResponseEntity<List<VehiclePricingDTO>> getAllPricing() {
+        return ResponseEntity.ok(ridePricingService.getAllPricing());
+    }
+
+    @PutMapping("/pricing/{vehicleType}")
+    public ResponseEntity<?> updatePricing(
+        @PathVariable VehicleType vehicleType,
+        @Valid @RequestBody UpdateVehiclePricingDTO dto
+    ) {
+        try {
+            return ResponseEntity.ok(ridePricingService.updatePricing(vehicleType, dto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 }
