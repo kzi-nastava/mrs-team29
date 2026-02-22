@@ -34,6 +34,7 @@ public class RideServiceImpl implements RideService {
     private final FavoriteRouteRepository favoriteRouteRepository;
     private final AddressRepository addressRepository;
     private final RidePricingService ridePricingService;
+    private final DriverInconsistencyNoteRepository inconsistencyNoteRepository;
 	
     public RideServiceImpl(
             RideRepository rideRepository,
@@ -41,7 +42,8 @@ public class RideServiceImpl implements RideService {
             DriverRepository driverRepository,
             AddressRepository addressRepository,
             FavoriteRouteRepository favoriteRouteRepository,
-            RidePricingService ridePricingService
+            RidePricingService ridePricingService,
+            DriverInconsistencyNoteRepository inconsistencyNoteRepository
     ) {
         this.rideRepository = rideRepository;
         this.userRepository = userRepository;
@@ -49,6 +51,7 @@ public class RideServiceImpl implements RideService {
         this.addressRepository = addressRepository;
         this.favoriteRouteRepository = favoriteRouteRepository;
         this.ridePricingService = ridePricingService;
+        this.inconsistencyNoteRepository = inconsistencyNoteRepository;
     }
     	
     @Override
@@ -298,6 +301,28 @@ public class RideServiceImpl implements RideService {
     }
 
     @Override
+    public RideResponseDTO getUserCurrentRide(String userId) {
+        List<Ride> activeRides = rideRepository.findByPassengers_IdAndStatusIn(
+            userId,
+            List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
+        );
+
+        if (activeRides.isEmpty()) {
+            throw new RuntimeException("No active ride found for user");
+        }
+
+        // Return the most recent active ride (most likely there should only be one)
+        Ride currentRide = activeRides.stream()
+            .max(Comparator.comparing(
+                Ride::getScheduledTime,
+                Comparator.nullsLast(Comparator.naturalOrder())
+            ))
+            .orElse(activeRides.get(0));
+
+        return RideResponseDTO.fromRide(currentRide);
+    }
+
+    @Override
     public List<RideResponseDTO> getDriverRideHistory(String driverId) {
         return getDriverRideHistory(driverId, null, null);
     }
@@ -496,6 +521,56 @@ public class RideServiceImpl implements RideService {
 	    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	    
 	    return EARTH_RADIUS_KM * c;
+	}
+
+	@Override
+	public InconsistencyNoteResponseDTO reportDriverInconsistency(InconsistencyNoteDTO dto, String passengerId) {
+	    Ride ride = rideRepository.findById(dto.getRideId())
+	            .orElseThrow(() -> new RuntimeException("Ride not found"));
+	    
+	    User passenger = userRepository.findById(passengerId)
+	            .orElseThrow(() -> new RuntimeException("Passenger not found"));
+	    
+	    // Verify passenger is part of this ride
+	    boolean isPassenger = ride.getPassengers().stream()
+	            .anyMatch(p -> p.getId().equals(passengerId));
+	    
+	    if (!isPassenger) {
+	        throw new RuntimeException("You are not a passenger on this ride");
+	    }
+	    
+	    // Verify ride is in progress
+	    if (ride.getStatus() != RideStatus.IN_PROGRESS) {
+	        throw new RuntimeException("Can only report inconsistencies during active rides");
+	    }
+	    
+	    DriverInconsistencyNote note = new DriverInconsistencyNote(ride, passenger, dto.getNoteText());
+	    note = inconsistencyNoteRepository.save(note);
+	    
+	    return new InconsistencyNoteResponseDTO(
+	            note.getId(),
+	            ride.getId(),
+	            passenger.getId(),
+	            passenger.getFirstName() + " " + passenger.getLastName(),
+	            note.getNoteText(),
+	            note.getTimestamp()
+	    );
+	}
+
+	@Override
+	public List<InconsistencyNoteResponseDTO> getRideInconsistencyNotes(String rideId) {
+	    List<DriverInconsistencyNote> notes = inconsistencyNoteRepository.findByRideId(rideId);
+	    
+	    return notes.stream()
+	            .map(note -> new InconsistencyNoteResponseDTO(
+	                    note.getId(),
+	                    note.getRide().getId(),
+	                    note.getPassenger().getId(),
+	                    note.getPassenger().getFirstName() + " " + note.getPassenger().getLastName(),
+	                    note.getNoteText(),
+	                    note.getTimestamp()
+	            ))
+	            .collect(Collectors.toList());
 	}
 
 }

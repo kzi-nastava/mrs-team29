@@ -54,6 +54,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".PassengerRideTrackingActivity"
+            android:exported="false" />
+        <activity
             android:name=".ProfileActivity"
             android:exported="false" />
         <activity
