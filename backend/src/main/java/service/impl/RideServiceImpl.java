@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import domain.entities.*;
 import domain.enums.*;
+import service.EmailService;
 import service.RidePricingService;
 import service.RideService;
 import repository.*;
@@ -35,6 +36,7 @@ public class RideServiceImpl implements RideService {
     private final AddressRepository addressRepository;
     private final RidePricingService ridePricingService;
     private final DriverInconsistencyNoteRepository inconsistencyNoteRepository;
+    private final EmailService emailService;
 	
     public RideServiceImpl(
             RideRepository rideRepository,
@@ -43,7 +45,8 @@ public class RideServiceImpl implements RideService {
             AddressRepository addressRepository,
             FavoriteRouteRepository favoriteRouteRepository,
             RidePricingService ridePricingService,
-            DriverInconsistencyNoteRepository inconsistencyNoteRepository
+            DriverInconsistencyNoteRepository inconsistencyNoteRepository,
+            EmailService emailService
     ) {
         this.rideRepository = rideRepository;
         this.userRepository = userRepository;
@@ -52,6 +55,7 @@ public class RideServiceImpl implements RideService {
         this.favoriteRouteRepository = favoriteRouteRepository;
         this.ridePricingService = ridePricingService;
         this.inconsistencyNoteRepository = inconsistencyNoteRepository;
+        this.emailService = emailService;
     }
     	
     @Override
@@ -157,7 +161,7 @@ public class RideServiceImpl implements RideService {
             throw new RuntimeException("Driver not assigned to this ride");
         }
 
-        if (ride.getStatus() != RideStatus.ASSIGNED) {
+        if (ride.getStatus() != RideStatus.ASSIGNED && ride.getStatus() != RideStatus.SCHEDULED) {
             throw new RuntimeException("Ride cannot be started. Current status: " + ride.getStatus());
         }
 
@@ -214,6 +218,29 @@ public class RideServiceImpl implements RideService {
         rideRepository.save(ride);
         driverRepository.save(driver);
 
+        // Send email notifications to all passengers
+        for (User passenger : ride.getPassengers()) {
+            try {
+                String pickupAddr = ride.getPickupAddress().getStreet() + " " + 
+                                    ride.getPickupAddress().getStreetNumber() + ", " + 
+                                    ride.getPickupAddress().getCity();
+                String destAddr = ride.getDestinationAddress().getStreet() + " " + 
+                                  ride.getDestinationAddress().getStreetNumber() + ", " + 
+                                  ride.getDestinationAddress().getCity();
+                
+                emailService.sendRideFinishedEmail(
+                    passenger.getEmail(),
+                    passenger.getFirstName() + " " + passenger.getLastName(),
+                    ride.getId(),
+                    pickupAddr,
+                    destAddr,
+                    ride.getPrice()
+                );
+            } catch (Exception e) {
+                System.err.println("Failed to send ride finished email to " + passenger.getEmail() + ": " + e.getMessage());
+            }
+        }
+
         return RideResponseDTO.fromRide(ride);
     }
     
@@ -265,6 +292,7 @@ public class RideServiceImpl implements RideService {
 
     @Override
     public RideResponseDTO getDriverCurrentRide(String driverId) {
+        // First check for active rides (IN_PROGRESS, ASSIGNED, REQUESTED)
         List<Ride> activeRides = rideRepository.findByDriver_IdAndStatusIn(
             driverId,
             List.of(RideStatus.REQUESTED, RideStatus.ASSIGNED, RideStatus.IN_PROGRESS)
@@ -285,6 +313,21 @@ public class RideServiceImpl implements RideService {
                 return !ride.getScheduledTime().isAfter(now.plusMinutes(1));
             })
             .collect(Collectors.toList());
+
+        // If no active rides, check for upcoming scheduled rides
+        if (visibleRides.isEmpty()) {
+            List<Ride> scheduledRides = rideRepository.findByDriver_IdAndStatusIn(
+                driverId,
+                List.of(RideStatus.SCHEDULED)
+            );
+
+            // Show scheduled rides that are within the next 2 hours
+            visibleRides = scheduledRides.stream()
+                .filter(ride -> ride.getScheduledTime() != null 
+                    && ride.getScheduledTime().isAfter(now)
+                    && ride.getScheduledTime().isBefore(now.plusHours(2)))
+                .collect(Collectors.toList());
+        }
 
         if (visibleRides.isEmpty()) {
             throw new RuntimeException("No active ride found for driver");

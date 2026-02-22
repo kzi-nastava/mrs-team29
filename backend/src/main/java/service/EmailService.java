@@ -82,6 +82,25 @@ public class EmailService {
         sendEmail(toEmail, subject, body);
     }
 
+    public void sendRideFinishedEmail(String toEmail, String fullName, String rideId, 
+                                      String pickupAddress, String destinationAddress, 
+                                      Double price) {
+        String subject = "Your Ride Has Been Completed";
+        String body = "Dear " + fullName + ",\n\n"
+                + "Your ride has been successfully completed!\n\n"
+                + "Ride Details:\n"
+                + "Ride ID: " + rideId + "\n"
+                + "From: " + pickupAddress + "\n"
+                + "To: " + destinationAddress + "\n"
+                + "Total Price: $" + String.format("%.2f", price) + "\n\n"
+                + "Thank you for choosing Driverr! We hope you had a pleasant journey.\n\n"
+                + "You can rate your ride experience by logging into your account.\n\n"
+                + "Best regards,\n"
+                + "Driverr Team";
+
+        sendEmail(toEmail, subject, body);
+    }
+
     private void sendEmail(String to, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
