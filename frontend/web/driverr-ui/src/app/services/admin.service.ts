@@ -29,4 +29,14 @@ export class AdminService {
   unblockUser(userId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/users/${userId}/unblock`, {});
   }
+
+  // ============ PRICING MANAGEMENT (2.14) ============
+
+  getAllPricing(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/pricing`);
+  }
+
+  updatePricing(vehicleType: string, pricingData: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/pricing/${vehicleType}`, pricingData);
+  }
 }
