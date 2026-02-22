@@ -81,6 +81,9 @@
             android:name=".DriverHistoryActivity"
             android:exported="false" />
         <activity
+            android:name=".RideReportsActivity"
+            android:exported="false" />
+        <activity
             android:name=".ChangePasswordActivity"
             android:exported="false" />
     </application>

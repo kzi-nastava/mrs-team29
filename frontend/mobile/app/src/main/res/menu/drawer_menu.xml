@@ -19,6 +19,9 @@
         android:id="@+id/nav_driver_history"
         android:title="Driver History" />
     <item
+        android:id="@+id/nav_reports"
+        android:title="Ride Reports" />
+    <item
         android:id="@+id/nav_profile"
         android:title="Profile" />
     <item
