@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import domain.entities.*;
 import domain.enums.*;
+import service.RidePricingService;
 import service.RideService;
 import repository.*;
 
@@ -32,19 +33,22 @@ public class RideServiceImpl implements RideService {
     private final DriverRepository driverRepository;
     private final FavoriteRouteRepository favoriteRouteRepository;
     private final AddressRepository addressRepository;
+    private final RidePricingService ridePricingService;
 	
     public RideServiceImpl(
             RideRepository rideRepository,
             UserRepository userRepository,
             DriverRepository driverRepository,
             AddressRepository addressRepository,
-            FavoriteRouteRepository favoriteRouteRepository
+            FavoriteRouteRepository favoriteRouteRepository,
+            RidePricingService ridePricingService
     ) {
         this.rideRepository = rideRepository;
         this.userRepository = userRepository;
         this.driverRepository = driverRepository;
         this.addressRepository = addressRepository;
         this.favoriteRouteRepository = favoriteRouteRepository;
+        this.ridePricingService = ridePricingService;
     }
     	
     @Override
@@ -126,25 +130,14 @@ public class RideServiceImpl implements RideService {
         ride.setStatus(RideStatus.ASSIGNED);
         ride.setScheduledTime(dto.getScheduledTime());
         
-        // Calculate price: base price by vehicle type + 120 per km
-        double basePrice = calculateBasePriceByVehicleType(dto.getVehicleType());
         double distanceKm = calculateDistance(pickup, destination);
-        ride.setPrice(basePrice + (distanceKm * 120));
+        ride.setPrice(ridePricingService.calculateRidePrice(dto.getVehicleType(), distanceKm));
         
         ride.setTimestamps(List.of(nowInAppZone()));
 
         rideRepository.save(ride);
 
         return RideResponseDTO.fromRide(ride);
-    }
-    
-    private double calculateBasePriceByVehicleType(VehicleType type) {
-        if (type == null) return 300; // Standard
-        switch (type) {
-            case LUXURY: return 500;
-            case VAN: return 400;
-            default: return 300; // STANDARD
-        }
     }
     
     @Override
@@ -255,7 +248,11 @@ public class RideServiceImpl implements RideService {
         ride.setPassengers(List.of(creator));
         ride.setDriver(driver);
         ride.setStatus(RideStatus.ASSIGNED);
-        ride.setPrice(700);
+        VehicleType vehicleType = (driver.getVehicle() != null && driver.getVehicle().getType() != null)
+            ? driver.getVehicle().getType()
+            : VehicleType.STANDARD;
+        double distanceKm = calculateDistance(route.getPickupAddress(), route.getDestinationAddress());
+        ride.setPrice(ridePricingService.calculateRidePrice(vehicleType, distanceKm));
         ride.setTimestamps(List.of(nowInAppZone()));
 
         rideRepository.save(ride);

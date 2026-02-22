@@ -123,6 +123,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(new Intent(this, UserManagementActivity.class));
             return;
         }
+        if (item.getItemId() == R.id.nav_admin_pricing) {
+            startActivity(new Intent(this, AdminPricingActivity.class));
+            return;
+        }
         if (item.getItemId() == R.id.nav_logout) {
             SessionManager sessionManager = new SessionManager(this);
             sessionManager.clear();
@@ -158,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setVisible(menu, R.id.nav_admin_approvals, isAdmin);
         setVisible(menu, R.id.nav_driver_registration, isAdmin);
         setVisible(menu, R.id.nav_user_management, isAdmin);
+        setVisible(menu, R.id.nav_admin_pricing, isAdmin);
     }
 
     private void setVisible(Menu menu, int itemId, boolean visible) {

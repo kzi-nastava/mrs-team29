@@ -51,6 +51,9 @@
             android:name=".UserManagementActivity"
             android:exported="false" />
         <activity
+            android:name=".AdminPricingActivity"
+            android:exported="false" />
+        <activity
             android:name=".RideOrderActivity"
             android:exported="false" />
         <activity
