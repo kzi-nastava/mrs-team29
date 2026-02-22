@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+val mobileBaseUrl = (project.findProperty("MOBILE_BASE_URL") as String?)
+    ?: "http://192.168.0.12:8081/api/"
+
 android {
     namespace = "com.example.driverr_mobile"
     compileSdk {
@@ -10,10 +13,12 @@ android {
 
     defaultConfig {
         applicationId = "com.example.driverr_mobile"
-        minSdk = 30
+        minSdk = 27
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "BASE_URL", "\"$mobileBaseUrl\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -26,6 +31,9 @@ android {
                 "proguard-rules.pro"
             )
         }
+    }
+    buildFeatures {
+        buildConfig = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

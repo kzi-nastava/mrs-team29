@@ -41,6 +41,22 @@ The Driverr mobile app now includes Google Maps integration in three activities:
 
 ### 3. Build and Run
 
+Before installing on a physical phone, pass your laptop LAN IP as the mobile backend URL:
+
+Windows:
+```bash
+cd frontend\mobile
+.\gradlew.bat installDebug -PMOBILE_BASE_URL=http://YOUR_LAPTOP_IP:8081/api/
+```
+
+macOS/Linux:
+```bash
+cd frontend/mobile
+./gradlew installDebug -PMOBILE_BASE_URL=http://YOUR_LAPTOP_IP:8081/api/
+```
+
+Example: `-PMOBILE_BASE_URL=http://192.168.1.24:8081/api/`
+
 ```bash
 cd frontend/mobile
 ./gradlew clean
