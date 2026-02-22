@@ -19,6 +19,9 @@
         android:id="@+id/nav_driver_history"
         android:title="Driver History" />
     <item
+        android:id="@+id/nav_reports"
+        android:title="Ride Reports" />
+    <item
         android:id="@+id/nav_profile"
         android:title="Profile" />
     <item
@@ -33,6 +36,9 @@
     <item
         android:id="@+id/nav_admin_pricing"
         android:title="Ride Pricing" />
+    <item
+        android:id="@+id/nav_admin_ride_monitor"
+        android:title="Ride Monitor" />
     <item
         android:id="@+id/nav_logout"
         android:title="Logout" />

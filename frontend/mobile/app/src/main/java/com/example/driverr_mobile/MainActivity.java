@@ -111,6 +111,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(new Intent(this, DriverHistoryActivity.class));
             return;
         }
+        if (item.getItemId() == R.id.nav_reports) {
+            startActivity(new Intent(this, RideReportsActivity.class));
+            return;
+        }
         if (item.getItemId() == R.id.nav_profile) {
             startActivity(new Intent(this, ProfileActivity.class));
             return;
@@ -129,6 +133,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         if (item.getItemId() == R.id.nav_admin_pricing) {
             startActivity(new Intent(this, AdminPricingActivity.class));
+            return;
+        }
+        if (item.getItemId() == R.id.nav_admin_ride_monitor) {
+            startActivity(new Intent(this, AdminRideMonitorActivity.class));
             return;
         }
         if (item.getItemId() == R.id.nav_logout) {
@@ -162,12 +170,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         setVisible(menu, R.id.nav_current_ride, isDriver);
         setVisible(menu, R.id.nav_driver_history, isDriver);
+        setVisible(menu, R.id.nav_reports, true);
 
         setVisible(menu, R.id.nav_profile, isClient || isDriver);
         setVisible(menu, R.id.nav_admin_approvals, isAdmin);
         setVisible(menu, R.id.nav_driver_registration, isAdmin);
         setVisible(menu, R.id.nav_user_management, isAdmin);
         setVisible(menu, R.id.nav_admin_pricing, isAdmin);
+        setVisible(menu, R.id.nav_admin_ride_monitor, isAdmin);
     }
 
     private void setVisible(Menu menu, int itemId, boolean visible) {

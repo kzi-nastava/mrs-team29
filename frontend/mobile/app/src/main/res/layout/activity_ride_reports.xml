@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/reports_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/reports_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="?attr/colorPrimary"
+        app:title="Ride Reports"
+        app:titleTextColor="@android:color/white" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/reports_role_hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="My ride report"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/reports_admin_filters"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginTop="8dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Scope (CLIENT or DRIVER)">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/reports_scope_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="DRIVER" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="User email (optional)">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/reports_user_email_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:hint="Start date (yyyy-MM-dd)">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/reports_start_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="End date (yyyy-MM-dd)">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/reports_end_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/reports_load_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Load report" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:id="@+id/reports_range_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Range: -"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/reports_total_rides"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Total rides: 0" />
+
+                    <TextView
+                        android:id="@+id/reports_total_km"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Total kilometers: 0" />
+
+                    <TextView
+                        android:id="@+id/reports_total_amount"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Total amount: 0" />
+
+                    <TextView
+                        android:id="@+id/reports_avg_rides"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Avg rides/day: 0" />
+
+                    <TextView
+                        android:id="@+id/reports_avg_km"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Avg kilometers/day: 0" />
+
+                    <TextView
+                        android:id="@+id/reports_avg_amount"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Avg amount/day: 0" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Daily chart"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/reports_daily_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

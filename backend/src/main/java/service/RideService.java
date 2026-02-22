@@ -3,6 +3,7 @@ package service;
 import java.util.List;
 
 import domain.entities.Ride;
+import dto.admin.AdminRideStateDTO;
 import dto.ride.*;
 
 public interface RideService {
@@ -37,4 +38,7 @@ public interface RideService {
 	// Inconsistency notes (2.6.2)
 	InconsistencyNoteResponseDTO reportDriverInconsistency(InconsistencyNoteDTO dto, String passengerId);
 	List<InconsistencyNoteResponseDTO> getRideInconsistencyNotes(String rideId);
+
+	// Admin monitoring (2.13)
+	List<AdminRideStateDTO> getAdminActiveRideStates(String driverName);
 }
