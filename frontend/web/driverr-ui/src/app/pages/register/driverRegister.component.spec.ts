@@ -36,7 +36,6 @@ describe('AdminDriverRegisterComponent', () => {
       lastName: 'Driver',
       username: 'test',
       email: 'test@test.com',
-      password: 'pass',
       vehicleModel: 'Model',
       registrationPlate: 'PLATE'
     });
@@ -60,7 +59,6 @@ describe('AdminDriverRegisterComponent', () => {
       gender: 'MALE',
       username: 'test-driver',
       email: 'driver@test.com',
-      password: 'pass',
       phoneNumber: '123',
       vehicleModel: 'Model X',
       vehicleType: 'STANDARD',
@@ -88,7 +86,6 @@ describe('AdminDriverRegisterComponent', () => {
       gender: 'MALE',
       username: 'test-driver',
       email: 'driver@test.com',
-      password: 'pass',
       phoneNumber: '123',
       vehicleModel: 'Model X',
       vehicleType: 'STANDARD',

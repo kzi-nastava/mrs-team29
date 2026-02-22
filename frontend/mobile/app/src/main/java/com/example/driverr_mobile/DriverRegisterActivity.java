@@ -38,7 +38,6 @@ public class DriverRegisterActivity extends AppCompatActivity {
         MaterialAutoCompleteTextView genderInput = findViewById(R.id.driver_register_gender);
         TextInputEditText usernameInput = findViewById(R.id.driver_register_username);
         TextInputEditText emailInput = findViewById(R.id.driver_register_email);
-        TextInputEditText passwordInput = findViewById(R.id.driver_register_password);
         TextInputEditText phoneInput = findViewById(R.id.driver_register_phone);
         TextInputEditText vehicleModelInput = findViewById(R.id.driver_register_vehicle_model);
         MaterialAutoCompleteTextView vehicleTypeInput = findViewById(R.id.driver_register_vehicle_type);
@@ -64,7 +63,6 @@ public class DriverRegisterActivity extends AppCompatActivity {
             String gender = textOf(genderInput);
             String username = textOf(usernameInput);
             String email = textOf(emailInput);
-            String password = textOf(passwordInput);
             String phone = textOf(phoneInput);
             String vehicleModel = textOf(vehicleModelInput);
             String vehicleType = textOf(vehicleTypeInput);
@@ -72,7 +70,7 @@ public class DriverRegisterActivity extends AppCompatActivity {
             String seatsText = textOf(seatsInput);
 
             if (firstName.isEmpty() || lastName.isEmpty() || username.isEmpty() || email.isEmpty()
-                    || password.isEmpty() || vehicleModel.isEmpty() || vehicleType.isEmpty()
+                    || vehicleModel.isEmpty() || vehicleType.isEmpty()
                     || registrationPlate.isEmpty() || seatsText.isEmpty()) {
                 Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
                 return;
@@ -99,7 +97,6 @@ public class DriverRegisterActivity extends AppCompatActivity {
                     gender.isEmpty() ? null : gender,
                     username,
                     email,
-                    password,
                     phone.isEmpty() ? null : phone,
                     vehicleModel,
                     vehicleType,

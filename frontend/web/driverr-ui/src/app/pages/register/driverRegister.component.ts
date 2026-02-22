@@ -27,7 +27,6 @@ export class AdminDriverRegisterComponent {
       gender: [''],
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
       phoneNumber: [''],
       vehicleModel: ['', Validators.required],
       vehicleType: ['STANDARD', Validators.required],

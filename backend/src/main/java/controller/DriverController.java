@@ -56,10 +56,14 @@ public class DriverController {
     @PostMapping("/activate")
     public ResponseEntity<?> activateDriver(@Valid @RequestBody DriverActivationDTO dto) {
         if (!dto.getPassword().equals(dto.getConfirmPassword())) {
-            return ResponseEntity.badRequest().body("Passwords do not match");
+            return ResponseEntity.badRequest().body(ApiResponse.error("Passwords do not match"));
         }
-        driverService.activateDriver(dto.getToken(), dto.getPassword());
-        return ResponseEntity.ok("Driver activated successfully");
+        try {
+            driverService.activateDriver(dto.getToken(), dto.getPassword());
+            return ResponseEntity.ok(ApiResponse.success("Driver activated successfully", null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
     
     @GetMapping("/{driverId}/working-hours")

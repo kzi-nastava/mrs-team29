@@ -13,6 +13,12 @@ public class EmailService {
     @Value("${app.backend.url:http://localhost:8081}")
     private String backendUrl;
 
+    @Value("${app.web.url:http://localhost:4200}")
+    private String webUrl;
+
+    @Value("${app.mobile.deepLink:driverr://driver-activate}")
+    private String mobileDeepLink;
+
     @Value("${spring.mail.username:}")
     private String mailFrom;
 
@@ -33,6 +39,24 @@ public class EmailService {
                 + "Activation Link: " + activationLink + "\n\n"
                 + "This link will expire in 24 hours.\n\n"
                 + "If you did not create this account, please ignore this email.\n\n"
+                + "Best regards,\n"
+                + "Driverr Team";
+
+        sendEmail(toEmail, subject, body);
+    }
+
+    public void sendDriverActivationEmail(String toEmail, String fullName, String activationToken) {
+        String webActivationLink = webUrl + "/driver-activate?token=" + activationToken;
+        String mobileActivationLink = mobileDeepLink + "?token=" + activationToken;
+
+        String subject = "Set Your Driverr Driver Password";
+        String body = "Dear " + fullName + ",\n\n"
+            + "Your driver account is ready for activation. Please set your initial password using one of the links below.\n\n"
+            + "Web activation link: " + webActivationLink + "\n"
+            + "Mobile activation link: " + mobileActivationLink + "\n\n"
+                + "After successful password setup, this activation link becomes invalid.\n"
+                + "This link will expire in 24 hours.\n\n"
+                + "If you did not expect this invitation, please ignore this email.\n\n"
                 + "Best regards,\n"
                 + "Driverr Team";
 

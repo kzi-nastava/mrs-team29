@@ -42,6 +42,18 @@
             android:name=".DriverRegisterActivity"
             android:exported="false" />
         <activity
+            android:name=".DriverActivationActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="driverr"
+                    android:host="driver-activate" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".ProfileActivity"
             android:exported="false" />
         <activity

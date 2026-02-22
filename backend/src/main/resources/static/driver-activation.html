@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Driver Activation - Set Password</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f7fb; margin: 0; }
+    .wrap { max-width: 420px; margin: 40px auto; background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 4px 18px rgba(0,0,0,.08); }
+    h2 { margin-top: 0; }
+    label { display: block; margin: 12px 0 6px; font-size: 14px; }
+    input { width: 100%; padding: 10px; border: 1px solid #d7dbe8; border-radius: 8px; box-sizing: border-box; }
+    button { margin-top: 16px; width: 100%; padding: 11px; border: 0; border-radius: 8px; color: #fff; background: #2563eb; cursor: pointer; }
+    button:disabled { opacity: .7; cursor: not-allowed; }
+    .msg { margin-top: 12px; font-size: 14px; }
+    .ok { color: #166534; }
+    .err { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>Set Initial Password</h2>
+    <p>Enter your new password and confirmation to activate your driver account.</p>
+
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="new-password" />
+
+    <label for="confirmPassword">Confirm password</label>
+    <input id="confirmPassword" type="password" autocomplete="new-password" />
+
+    <button id="activateBtn">Activate Account</button>
+    <div id="message" class="msg"></div>
+  </div>
+
+  <script>
+    const qs = new URLSearchParams(window.location.search);
+    const token = qs.get('token');
+
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirmPassword');
+    const button = document.getElementById('activateBtn');
+    const message = document.getElementById('message');
+
+    function show(text, ok) {
+      message.textContent = text;
+      message.className = 'msg ' + (ok ? 'ok' : 'err');
+    }
+
+    if (!token) {
+      show('Activation token is missing from the link.', false);
+      button.disabled = true;
+    }
+
+    button.addEventListener('click', async () => {
+      const password = passwordInput.value.trim();
+      const confirmPassword = confirmInput.value.trim();
+
+      if (!password || !confirmPassword) {
+        show('Please fill in both password fields.', false);
+        return;
+      }
+      if (password !== confirmPassword) {
+        show('Passwords do not match.', false);
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Activating...';
+
+      try {
+        const res = await fetch('/api/drivers/activate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, password, confirmPassword })
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          show((data && data.message) || 'Driver account activated successfully.', true);
+          passwordInput.disabled = true;
+          confirmInput.disabled = true;
+          button.disabled = true;
+          button.textContent = 'Activated';
+          return;
+        }
+
+        show((data && data.message) || 'Activation failed.', false);
+      } catch (e) {
+        show('Network error. Please try again.', false);
+      } finally {
+        if (!passwordInput.disabled) {
+          button.disabled = false;
+          button.textContent = 'Activate Account';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
