@@ -1,5 +1,6 @@
 package com.example.driverr_mobile;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -14,6 +15,7 @@ import androidx.core.view.WindowInsetsCompat;
 import android.widget.ArrayAdapter;
 
 import com.example.driverr_mobile.data.model.ChangePasswordRequest;
+import com.example.driverr_mobile.data.model.ApiResponse;
 import com.example.driverr_mobile.data.model.UpdateUserProfileRequest;
 import com.example.driverr_mobile.data.model.UserProfile;
 import com.example.driverr_mobile.data.network.ApiClient;
@@ -135,7 +137,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         saveButton.setOnClickListener(v -> saveProfile());
         resetButton.setOnClickListener(v -> resetProfile());
-        togglePasswordButton.setOnClickListener(v -> togglePasswordSection());
+        togglePasswordButton.setOnClickListener(v -> startActivity(new Intent(ProfileActivity.this, ChangePasswordActivity.class)));
         updatePasswordButton.setOnClickListener(v -> changePassword());
 
         passwordSection.setVisibility(View.GONE);
@@ -363,9 +365,9 @@ public class ProfileActivity extends AppCompatActivity {
 
         ChangePasswordRequest request = new ChangePasswordRequest(oldPassword, newPassword, confirmPassword);
         ApiClient.getUserApi().changePassword(userId, request)
-                .enqueue(new retrofit2.Callback<Object>() {
+                .enqueue(new retrofit2.Callback<ApiResponse<Object>>() {
                     @Override
-                    public void onResponse(retrofit2.Call<Object> call, retrofit2.Response<Object> response) {
+                    public void onResponse(retrofit2.Call<ApiResponse<Object>> call, retrofit2.Response<ApiResponse<Object>> response) {
                         updatePasswordButton.setEnabled(true);
                         updatePasswordButton.setText("Update password");
 
@@ -381,7 +383,7 @@ public class ProfileActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(retrofit2.Call<Object> call, Throwable t) {
+                    public void onFailure(retrofit2.Call<ApiResponse<Object>> call, Throwable t) {
                         updatePasswordButton.setEnabled(true);
                         updatePasswordButton.setText("Update password");
                         Toast.makeText(ProfileActivity.this, "Network error", Toast.LENGTH_SHORT).show();

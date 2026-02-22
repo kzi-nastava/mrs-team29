@@ -3,6 +3,7 @@ package com.example.driverr_mobile.data.network;
 import com.example.driverr_mobile.data.model.ChangePasswordRequest;
 import com.example.driverr_mobile.data.model.UpdateUserProfileRequest;
 import com.example.driverr_mobile.data.model.UserProfile;
+import com.example.driverr_mobile.data.model.ApiResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -20,5 +21,5 @@ public interface UserApi {
     Call<UserProfile> updateProfile(@Path("id") String userId, @Body UpdateUserProfileRequest request);
 
     @POST("users/{id}/change-password")
-    Call<Object> changePassword(@Path("id") String userId, @Body ChangePasswordRequest request);
+    Call<ApiResponse<Object>> changePassword(@Path("id") String userId, @Body ChangePasswordRequest request);
 }

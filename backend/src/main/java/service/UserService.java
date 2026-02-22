@@ -12,7 +12,6 @@ public interface UserService {
 	UserProfileDTO getUserProfile(String userId);
     UserProfileDTO updateProfile(String userId, UpdateUserProfileDTO dto);
     void changePassword(String userId, ChangePasswordDTO dto);
-    void changePassword(String userId, PasswordResetDTO dto);
     List<ProfileChangeRequestDTO> getProfileChangeRequests(String userId);
     List<ProfileChangeRequestDTO> getAllPendingProfileChangeRequests();
     void approveProfileChangeRequest(String requestId);

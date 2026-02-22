@@ -1,5 +1,6 @@
 package controller;
 
+import dto.ApiResponse;
 import dto.user.*;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -35,14 +36,14 @@ public class UserController {
     @PostMapping("/{id}/change-password")
     public ResponseEntity<?> changePassword(
             @PathVariable String id,
-            @Valid @RequestBody PasswordResetDTO dto) {
+            @Valid @RequestBody ChangePasswordDTO dto) {
         
         if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
-            return ResponseEntity.badRequest().body("Passwords do not match");
+            return ResponseEntity.badRequest().body(ApiResponse.error("Passwords do not match"));
         }
         
         userService.changePassword(id, dto);
-        return ResponseEntity.ok("Password changed successfully");
+        return ResponseEntity.ok(ApiResponse.success("Password changed successfully", null));
     }
     
     @GetMapping("/{id}/profile-change-requests")

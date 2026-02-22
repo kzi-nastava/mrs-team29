@@ -420,21 +420,16 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new RuntimeException("Passwords do not match");
+        }
+
         if (!user.getPassword().equals(dto.getOldPassword())) {
             throw new RuntimeException("Invalid old password");
         }
 
-        user.setPassword(dto.getNewPassword());
-        userRepository.save(user);
-    }
-    
-    @Override
-    public void changePassword(String userId, PasswordResetDTO dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (!user.getPassword().equals(dto.getOldPassword())) {
-            throw new RuntimeException("Invalid old password");
+        if (dto.getOldPassword().equals(dto.getNewPassword())) {
+            throw new RuntimeException("New password must be different from old password");
         }
 
         user.setPassword(dto.getNewPassword());
