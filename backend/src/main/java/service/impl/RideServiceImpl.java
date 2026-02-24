@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import domain.entities.*;
 import domain.enums.*;
 import service.EmailService;
+import service.NotificationService;
 import service.RidePricingService;
 import service.RideService;
 import repository.*;
@@ -39,6 +40,7 @@ public class RideServiceImpl implements RideService {
     private final RidePricingService ridePricingService;
     private final DriverInconsistencyNoteRepository inconsistencyNoteRepository;
     private final EmailService emailService;
+    private final NotificationService notificationService;
 	
     public RideServiceImpl(
             RideRepository rideRepository,
@@ -48,7 +50,8 @@ public class RideServiceImpl implements RideService {
             FavoriteRouteRepository favoriteRouteRepository,
             RidePricingService ridePricingService,
             DriverInconsistencyNoteRepository inconsistencyNoteRepository,
-            EmailService emailService
+                EmailService emailService,
+                NotificationService notificationService
     ) {
         this.rideRepository = rideRepository;
         this.userRepository = userRepository;
@@ -58,6 +61,7 @@ public class RideServiceImpl implements RideService {
         this.ridePricingService = ridePricingService;
         this.inconsistencyNoteRepository = inconsistencyNoteRepository;
         this.emailService = emailService;
+        this.notificationService = notificationService;
     }
     	
     @Override
@@ -145,6 +149,8 @@ public class RideServiceImpl implements RideService {
         ride.setTimestamps(List.of(nowInAppZone()));
 
         rideRepository.save(ride);
+
+        notifyRideAccepted(ride, creator);
 
         return RideResponseDTO.fromRide(ride);
     }
@@ -237,6 +243,14 @@ public class RideServiceImpl implements RideService {
                     pickupAddr,
                     destAddr,
                     ride.getPrice()
+                );
+
+                notificationService.createNotification(
+                    passenger,
+                    ride,
+                    NotificationType.RIDE_FINISHED,
+                    "Ride completed",
+                    "Your ride has been completed. You can rate the driver and vehicle now."
                 );
             } catch (Exception e) {
                 System.err.println("Failed to send ride finished email to " + passenger.getEmail() + ": " + e.getMessage());
@@ -541,6 +555,44 @@ public class RideServiceImpl implements RideService {
 	    
 	    return dto;
 	}
+
+    private void notifyRideAccepted(Ride ride, User creator) {
+        if (ride.getPassengers() == null || ride.getPassengers().isEmpty()) {
+            return;
+        }
+
+        String pickupAddr = ride.getPickupAddress() == null ? "" :
+                ride.getPickupAddress().getStreet() + " " + ride.getPickupAddress().getStreetNumber() + ", " + ride.getPickupAddress().getCity();
+        String destAddr = ride.getDestinationAddress() == null ? "" :
+                ride.getDestinationAddress().getStreet() + " " + ride.getDestinationAddress().getStreetNumber() + ", " + ride.getDestinationAddress().getCity();
+
+        for (User passenger : ride.getPassengers()) {
+            if (creator != null && creator.getId() != null && creator.getId().equals(passenger.getId())) {
+                continue;
+            }
+
+            try {
+                String fullName = passenger.getFirstName() + " " + passenger.getLastName();
+                emailService.sendRideAcceptedEmail(
+                    passenger.getEmail(),
+                    fullName,
+                    ride.getId(),
+                    pickupAddr,
+                    destAddr
+                );
+
+                notificationService.createNotification(
+                    passenger,
+                    ride,
+                    NotificationType.RIDE_ACCEPTED,
+                    "Ride accepted",
+                    "You have been added to a ride that has been accepted by a driver. Tap to track it."
+                );
+            } catch (Exception e) {
+                System.err.println("Failed to send ride accepted notification to " + passenger.getEmail() + ": " + e.getMessage());
+            }
+        }
+    }
 	
 	/**
 	 * Calculate distance between two addresses using Haversine formula

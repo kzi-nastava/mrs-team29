@@ -55,7 +55,16 @@
         </activity>
         <activity
             android:name=".PassengerRideTrackingActivity"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="driverr"
+                    android:host="track-ride" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ProfileActivity"
             android:exported="false" />
@@ -76,6 +85,9 @@
             android:exported="false" />
         <activity
             android:name=".ClientRideHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NotificationsActivity"
             android:exported="false" />
         <activity
             android:name=".FavoriteRoutesActivity"

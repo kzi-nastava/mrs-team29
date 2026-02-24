@@ -19,6 +19,9 @@ public class EmailService {
     @Value("${app.mobile.deepLink:driverr://driver-activate}")
     private String mobileDeepLink;
 
+    @Value("${app.mobile.trackRideDeepLink:driverr://track-ride}")
+    private String trackRideDeepLink;
+
     @Value("${spring.mail.username:}")
     private String mailFrom;
 
@@ -95,6 +98,24 @@ public class EmailService {
                 + "Total Price: $" + String.format("%.2f", price) + "\n\n"
                 + "Thank you for choosing Driverr! We hope you had a pleasant journey.\n\n"
                 + "You can rate your ride experience by logging into your account.\n\n"
+                + "Best regards,\n"
+                + "Driverr Team";
+
+        sendEmail(toEmail, subject, body);
+    }
+
+    public void sendRideAcceptedEmail(String toEmail, String fullName, String rideId,
+                                      String pickupAddress, String destinationAddress) {
+        String trackLink = trackRideDeepLink + "?rideId=" + rideId;
+
+        String subject = "Your Ride Has Been Accepted";
+        String body = "Dear " + fullName + ",\n\n"
+                + "Your ride has been accepted and a driver is on the way.\n\n"
+                + "Ride Details:\n"
+                + "Ride ID: " + rideId + "\n"
+                + "From: " + pickupAddress + "\n"
+                + "To: " + destinationAddress + "\n\n"
+                + "Track your ride here: " + trackLink + "\n\n"
                 + "Best regards,\n"
                 + "Driverr Team";
 

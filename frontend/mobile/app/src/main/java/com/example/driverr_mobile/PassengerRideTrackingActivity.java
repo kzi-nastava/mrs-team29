@@ -57,6 +57,13 @@ public class PassengerRideTrackingActivity extends AppCompatActivity {
         reportButton = findViewById(R.id.ride_tracking_report_button);
         refreshButton = findViewById(R.id.ride_tracking_refresh_button);
 
+        if (getIntent() != null && getIntent().getData() != null) {
+            String rideId = getIntent().getData().getQueryParameter("rideId");
+            if (rideId != null && !rideId.isBlank()) {
+                statusText.setText("Opening ride tracking...");
+            }
+        }
+
         reportButton.setOnClickListener(v -> showReportDialog());
         refreshButton.setOnClickListener(v -> loadRideStatus());
 

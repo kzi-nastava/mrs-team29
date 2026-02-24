@@ -13,6 +13,9 @@
         android:id="@+id/nav_client_history"
         android:title="My Ride History" />
     <item
+        android:id="@+id/nav_notifications"
+        android:title="Notifications" />
+    <item
         android:id="@+id/nav_track_ride"
         android:title="Track My Ride" />
     <item

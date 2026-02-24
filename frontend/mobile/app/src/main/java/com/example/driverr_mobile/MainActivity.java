@@ -103,6 +103,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             startActivity(new Intent(this, ClientRideHistoryActivity.class));
             return;
         }
+        if (item.getItemId() == R.id.nav_notifications) {
+            startActivity(new Intent(this, NotificationsActivity.class));
+            return;
+        }
         if (item.getItemId() == R.id.nav_track_ride) {
             startActivity(new Intent(this, PassengerRideTrackingActivity.class));
             return;
@@ -171,6 +175,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setVisible(menu, R.id.nav_order, isClient);
         setVisible(menu, R.id.nav_favorites, isClient);
         setVisible(menu, R.id.nav_client_history, isClient);
+        setVisible(menu, R.id.nav_notifications, isClient);
         setVisible(menu, R.id.nav_track_ride, isClient);
 
         setVisible(menu, R.id.nav_current_ride, isDriver);
