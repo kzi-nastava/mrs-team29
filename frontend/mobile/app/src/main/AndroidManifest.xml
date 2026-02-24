@@ -75,6 +75,9 @@
             android:name=".RideOrderActivity"
             android:exported="false" />
         <activity
+            android:name=".ClientRideHistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".FavoriteRoutesActivity"
             android:exported="false" />
         <activity

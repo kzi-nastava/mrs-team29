@@ -15,6 +15,7 @@ public final class ApiClient {
     private static AdminApi adminApi;
     private static RideApi rideApi;
     private static ReportApi reportApi;
+    private static RatingApi ratingApi;
     private static AddressApi addressApi;
     private static FavoriteRouteApi favoriteRouteApi;
 
@@ -64,6 +65,13 @@ public final class ApiClient {
             reportApi = getRetrofit().create(ReportApi.class);
         }
         return reportApi;
+    }
+
+    public static RatingApi getRatingApi() {
+        if (ratingApi == null) {
+            ratingApi = getRetrofit().create(RatingApi.class);
+        }
+        return ratingApi;
     }
 
     public static AddressApi getAddressApi() {
